@@ -1,0 +1,30 @@
+diff --git a/node_modules/react-native-view-shot/ios/RNViewShot.mm b/node_modules/react-native-view-shot/ios/RNViewShot.mm
+index 2cf632f..cfba9fc 100644
+--- a/node_modules/react-native-view-shot/ios/RNViewShot.mm
++++ b/node_modules/react-native-view-shot/ios/RNViewShot.mm
+@@ -4,7 +4,6 @@
+ #import <React/UIView+React.h>
+ #import <React/RCTUtils.h>
+ #import <React/RCTConvert.h>
+-#import <React/RCTScrollView.h>
+ #import <React/RCTUIManager.h>
+ #if __has_include(<React/RCTUIManagerUtils.h>)
+ #import <React/RCTUIManagerUtils.h>
+@@ -79,13 +78,10 @@ - (dispatch_queue_t)methodQueue
+ 
+     UIView* rendered;
+     UIScrollView* scrollView;
+-    if (snapshotContentContainer) {
+-      if (![view isKindOfClass:[RCTScrollView class]]) {
+-        reject(RCTErrorUnspecified, [NSString stringWithFormat:@"snapshotContentContainer can only be used on a RCTScrollView. instead got: %@", view], nil);
+-        return;
+-      }
+-      RCTScrollView* rctScrollView = view;
+-      scrollView = rctScrollView.scrollView;
++    if (snapshotContentContainer && [view isKindOfClass:[UIScrollView class]]) {
++      // Patched for RN 0.85: RCTScrollView header isn't exposed via prebuilt
++      // React-Core. Capture a plain UIScrollView's content directly.
++      scrollView = (UIScrollView*) view;
+       rendered = scrollView;
+     }
+     else {
