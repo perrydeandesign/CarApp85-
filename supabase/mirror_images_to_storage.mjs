@@ -15,7 +15,7 @@ const sb = createClient(URL, KEY, { auth: { persistSession: false } });
 const BUCKET = 'media';
 const PREFIX = 'mirror';
 const UA = 'MODIFIED-app-seed/1.0 (https://modified.app; demo seed)';
-const CONCURRENCY = 8;
+const CONCURRENCY = 3; // low — Wikimedia rate-limits bulk pulls
 
 const FIELDS = [
   ['cars', 'primary_image_url'],
@@ -73,32 +73,53 @@ async function pool(items, n, worker) {
   const urlList = [...urls];
   console.log(`${urlList.length} distinct Wikimedia URLs to mirror`);
 
-  // 3. Download + upload each once, building old→new map.
+  // Pre-list everything already in the bucket so re-runs skip done work
+  // reliably (the per-file list({search}) was unreliable).
+  const existing = new Set();
+  {
+    let offset = 0;
+    while (true) {
+      const { data } = await sb.storage.from(BUCKET).list(PREFIX, { limit: 1000, offset });
+      if (!data || data.length === 0) break;
+      data.forEach((f) => existing.add(f.name));
+      if (data.length < 1000) break;
+      offset += 1000;
+    }
+  }
+  console.log(`   ${existing.size} already in Storage`);
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // 3. Download + upload each once (throttled + retried — Wikimedia rate-limits
+  // bulk pulls), building old→new map.
   const map = new Map();
   let done = 0, failed = 0;
   await pool(urlList, CONCURRENCY, async (u) => {
-    const key = `${PREFIX}/${hashUrl(u)}.jpg`;
-    const publicUrl = sb.storage.from(BUCKET).getPublicUrl(key).data.publicUrl;
-    try {
-      // Skip re-download if already uploaded.
-      const { data: head } = await sb.storage.from(BUCKET).list(PREFIX, { search: `${hashUrl(u)}.jpg` });
-      if (head && head.length > 0) {
-        map.set(u, publicUrl); done++; return;
+    const name = `${hashUrl(u)}.jpg`;
+    const publicUrl = sb.storage.from(BUCKET).getPublicUrl(`${PREFIX}/${name}`).data.publicUrl;
+    if (existing.has(name)) { map.set(u, publicUrl); done++; return; }
+
+    // Retry with exponential backoff to survive 429s.
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const res = await fetch(u, { headers: { 'User-Agent': UA } });
+        if (res.status === 429) { await sleep(1500 * (attempt + 1)); continue; }
+        if (!res.ok) break;
+        const buf = Buffer.from(await res.arrayBuffer());
+        const { error } = await sb.storage.from(BUCKET).upload(`${PREFIX}/${name}`, buf, {
+          contentType: res.headers.get('content-type') || 'image/jpeg',
+          upsert: true,
+        });
+        if (error) break;
+        map.set(u, publicUrl);
+        done++;
+        await sleep(120); // politeness
+        return;
+      } catch {
+        await sleep(1000 * (attempt + 1));
       }
-      const res = await fetch(u, { headers: { 'User-Agent': UA } });
-      if (!res.ok) { failed++; return; }
-      const buf = Buffer.from(await res.arrayBuffer());
-      const { error } = await sb.storage.from(BUCKET).upload(key, buf, {
-        contentType: res.headers.get('content-type') || 'image/jpeg',
-        upsert: true,
-      });
-      if (error) { failed++; return; }
-      map.set(u, publicUrl);
-      done++;
-    } catch {
-      failed++;
     }
-    if ((done + failed) % 50 === 0) process.stdout.write(`   ${done} uploaded, ${failed} failed\r`);
+    failed++;
   });
   console.log(`\nmirrored ${done}, failed ${failed}`);
 
