@@ -10,6 +10,7 @@ import {
   Modal,
   SafeAreaView,
   RefreshControl,
+  StyleSheet,
 } from 'react-native';
 import { GridTileSkeleton } from '../components/Skeleton';
 import { FadeInImage } from '../ui/FadeInImage';
@@ -17,6 +18,7 @@ import { AnimatedCount } from '../ui/AnimatedCount';
 import { PressableScale } from '../ui/PressableScale';
 import { Button } from '../ui/Button';
 import { BuildCard, buildUrl } from '../components/BuildCard';
+import { BannerFade } from '../components/BannerFade';
 import { captureRef } from 'react-native-view-shot';
 import Animated, {
   useSharedValue,
@@ -74,8 +76,8 @@ import { useCollections } from '../social/hooks/useCollections';
 import { T, IC } from '../constants/theme';
 
 // Constants
-const AVATAR_SZ = 90;
-const BANNER_H = 180;
+const AVATAR_SZ = 100;
+const BANNER_H = 165; // 25% shorter than the 220 redesign height
 
 export function ProfileScreen() {
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
@@ -328,7 +330,7 @@ export function ProfileScreen() {
         {activeCar.image ? (
           <Image
             source={{ uri: activeCar.image }}
-            style={{ width: '100%', height: '100%', opacity: 0.6 }}
+            style={{ width: '100%', height: '100%', opacity: 0.7 }}
             resizeMode="cover"
           />
         ) : (
@@ -346,6 +348,9 @@ export function ProfileScreen() {
             />
           </View>
         )}
+
+        {/* Subtle bottom gradient so the avatar + name sit on darkness. */}
+        <BannerFade height={100} />
 
         {/* Edit + Share */}
         {isMe && (
@@ -400,84 +405,77 @@ export function ProfileScreen() {
       <View
         style={{
           flexDirection: 'row',
-          alignItems: 'center',
+          alignItems: 'flex-end',
           paddingHorizontal: 16,
           marginTop: -AVATAR_SZ / 2,
         }}
       >
+        {/* Avatar — thin dark stroke, no teal ring (IG-style restraint). */}
         <View
           style={{
-            borderRadius: AVATAR_SZ / 2 + 3,
-            borderWidth: 3,
-            borderColor: '#0A0A0A',
-            backgroundColor: '#0A0A0A',
+            borderRadius: AVATAR_SZ / 2 + 2,
+            borderWidth: 2,
+            borderColor: T.bg,
+            backgroundColor: T.bg,
           }}
         >
           <Avatar
             initials={profileUser.username[0]?.toUpperCase()}
             size={AVATAR_SZ}
-            accent
             img={profileUser.avatar}
           />
         </View>
 
-        <View style={{ flex: 1, marginLeft: 12, marginTop: AVATAR_SZ / 2 + 30 }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: T.wh }}>
+        <View style={{ flex: 1, marginLeft: 12, marginBottom: 6 }}>
+          <Text style={{ fontSize: 22, fontWeight: '800', color: T.wh }}>
             {profileUser.username}
           </Text>
           <Text
-            style={{
-              fontSize: 13,
-              fontWeight: '600',
-              color: T.wh,
-              marginTop: 2,
-            }}
+            style={{ fontSize: 13, fontWeight: '600', color: T.tx2, marginTop: 2 }}
+            numberOfLines={1}
           >
             {activeCar.name}
           </Text>
         </View>
-
-        {/* Garage moved to a profile tab below. */}
       </View>
 
-      {/* ════════════════════ STATS ════════════════════ */}
+      {/* ════════════════════ STATS (tight 3-up) ════════════════════ */}
       <View
         style={{
           flexDirection: 'row',
           paddingHorizontal: 16,
-          marginTop: 28,
-          gap: 20,
+          marginTop: 18,
         }}
       >
         {[
-          { label: 'Posts', value: profileUser.posts, page: 'posts' },
-          { label: 'Followers', value: profileUser.followers, page: 'connected' },
-          {
-            label: 'Following',
-            value: profileUser.following,
-            page: 'connections',
-          },
+          { label: 'POSTS', value: profileUser.posts, page: 'posts' },
+          { label: 'FOLLOWERS', value: profileUser.followers, page: 'connected' },
+          { label: 'FOLLOWING', value: profileUser.following, page: 'connections' },
         ].map((s, i) => (
           <TouchableOpacity
             key={i}
             onPress={() => setSubPage(s.page as any)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            activeOpacity={0.7}
+            style={{ flex: 1, alignItems: 'center' }}
           >
             <AnimatedCount
               value={Number(s.value) || 0}
-              style={{ fontSize: 15, fontWeight: '800', color: T.accent }}
+              style={{ fontSize: 19, fontWeight: '800', color: T.wh }}
             />
-            <Text style={{ fontSize: 13, color: T.wh }}>{s.label}</Text>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: T.mu, letterSpacing: 0.6, marginTop: 2 }}>
+              {s.label}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* ════════════════════ BIO ════════════════════ */}
+      {/* ════════════════════ BIO (tight, 2-line) ════════════════════ */}
       <Text
+        numberOfLines={2}
         style={{
           fontSize: 13,
-          color: T.wh,
-          marginTop: 12,
+          color: T.tx2,
+          marginTop: 16,
           paddingHorizontal: 16,
           lineHeight: 19,
         }}
@@ -485,41 +483,63 @@ export function ProfileScreen() {
         {profileUser.bio}
       </Text>
 
+      {/* ════════════════════ PRIMARY ACTION ════════════════════ */}
+      <View style={{ paddingHorizontal: 16, marginTop: 14 }}>
+        <Button
+          label={isMe ? 'Edit Profile' : 'Follow'}
+          variant={isMe ? 'secondary' : 'primary'}
+          size="md"
+          fullWidth
+          onPress={() =>
+            isMe ? Alert.alert('Edit Profile', 'Coming soon') : undefined
+          }
+        />
+      </View>
+
       {/* ════════════════════ TAB BAR (INSTAGRAM STYLE) ════════════════════ */}
       <View
         style={{
           flexDirection: 'row',
-          justifyContent: 'space-around',
           marginTop: 20,
-          paddingVertical: 10,
-          borderBottomWidth: 1,
-          borderColor: '#222',
+          paddingTop: 6,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: T.bd,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: T.bd,
         }}
       >
         {([
           { key: 'hero', icon: 'grid', fam: 'ion', size: 22 },
-          { key: 'posts', icon: 'image-outline', fam: 'ion', size: 24 },
-          { key: 'videos', icon: 'play-circle-outline', fam: 'ion', size: 26 },
-          { key: 'garage', icon: 'garage', fam: 'mci', size: 24 },
+          { key: 'posts', icon: 'image-outline', fam: 'ion', size: 23 },
+          { key: 'videos', icon: 'play-circle-outline', fam: 'ion', size: 24 },
+          { key: 'garage', icon: 'garage', fam: 'mci', size: 23 },
         ] as const).map((t) => {
           const active = activeTab === t.key;
-          const color = active ? T.accent : T.wh;
+          const color = active ? T.accent : T.tx2;
           return (
             <TouchableOpacity
               key={t.key}
               onPress={() => setActiveTab(t.key)}
-              style={{ alignItems: 'center', flex: 1, paddingBottom: 8 }}
+              activeOpacity={0.7}
+              style={{ flex: 1, alignItems: 'center', paddingVertical: 10 }}
             >
-              {t.fam === 'mci' ? (
-                <MaterialCommunityIcons name={t.icon as any} size={t.size} color={color} />
-              ) : (
-                <Ionicons name={t.icon as any} size={t.size} color={color} />
-              )}
-              {active && (
-                <View
-                  style={{ height: 2, width: 36, backgroundColor: T.accent, marginTop: 8 }}
-                />
-              )}
+              {/* Active-tab fill behind the icon. */}
+              <View
+                style={{
+                  width: 44,
+                  height: 30,
+                  borderRadius: 9,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: active ? T.accentDim : 'transparent',
+                }}
+              >
+                {t.fam === 'mci' ? (
+                  <MaterialCommunityIcons name={t.icon as any} size={t.size} color={color} />
+                ) : (
+                  <Ionicons name={t.icon as any} size={t.size} color={color} />
+                )}
+              </View>
             </TouchableOpacity>
           );
         })}
