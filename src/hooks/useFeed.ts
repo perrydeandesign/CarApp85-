@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import {
   mapServerPost,
@@ -67,31 +67,64 @@ async function fetchEngagementFlags(
  */
 export function useFeed() {
   const [state, setState] = useState<FeedState>({ posts: [], loading: true, error: null });
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  // Keyset cursor — the created_at of the last post we've loaded.
+  const cursorRef = useRef<string | null>(null);
 
-  const fetchFeed = useCallback(async () => {
-    setState((s) => ({ ...s, loading: true, error: null }));
-    const { data, error } = await supabase
+  // Fetch one page. `before` = created_at cursor for the next page (null = first).
+  const fetchPage = useCallback(async (before: string | null): Promise<Post[]> => {
+    let q = supabase
       .from('posts')
       .select(SERVER_POST_SELECT)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE);
+    if (before) q = q.lt('created_at', before);
 
-    if (error) {
-      setState({ posts: [], loading: false, error: error.message });
-      return;
-    }
+    const { data, error } = await q;
+    if (error) throw error;
 
     const rows = (data ?? []) as unknown as ServerPostRow[];
+    if (rows.length < PAGE_SIZE) setHasMore(false);
+    if (rows.length > 0) cursorRef.current = rows[rows.length - 1].created_at;
+
     const flags = await fetchEngagementFlags(
       rows.map((r) => r.id),
       Array.from(new Set(rows.map((r) => r.author?.id).filter(Boolean) as string[])),
     );
-    const mapped = rows
-      .map((r) => mapServerPost(r, flags))
-      .filter((p): p is Post => p !== null);
-
-    setState({ posts: mapped, loading: false, error: null });
+    return rows.map((r) => mapServerPost(r, flags)).filter((p): p is Post => p !== null);
   }, []);
+
+  // Refresh — reset to the first page.
+  const fetchFeed = useCallback(async () => {
+    setState((s) => ({ ...s, loading: true, error: null }));
+    cursorRef.current = null;
+    setHasMore(true);
+    try {
+      const page = await fetchPage(null);
+      setState({ posts: page, loading: false, error: null });
+    } catch (e: any) {
+      setState({ posts: [], loading: false, error: e?.message ?? String(e) });
+    }
+  }, [fetchPage]);
+
+  // Load the next page and append (de-duped).
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || !cursorRef.current) return;
+    setLoadingMore(true);
+    try {
+      const page = await fetchPage(cursorRef.current);
+      setState((s) => {
+        const seen = new Set(s.posts.map((p) => p.id));
+        const fresh = page.filter((p) => !seen.has(p.id));
+        return { ...s, posts: [...s.posts, ...fresh] };
+      });
+    } catch {
+      // keep current posts on a paging error
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [fetchPage, hasMore, loadingMore]);
 
   useEffect(() => {
     void fetchFeed();
@@ -108,5 +141,5 @@ export function useFeed() {
     }));
   }, []);
 
-  return { ...state, refresh: fetchFeed, setAuthorFollowed };
+  return { ...state, loadingMore, hasMore, refresh: fetchFeed, loadMore, setAuthorFollowed };
 }
