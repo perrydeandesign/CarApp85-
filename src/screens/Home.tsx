@@ -15,7 +15,9 @@ import { ME } from '../data/users';
 import { ViewProfileContext } from '../context/ViewProfileContext';
 import { useMeProfile } from '../hooks/useMeProfile';
 import { useCreatePost } from '../hooks/useCreatePost';
+import { useModeration } from '../hooks/useModeration';
 import { Avatar } from '../components/Avatar';
+import { ReportSheet } from '../components/ReportSheet';
 
 import { CreatePostBar } from '../components/CreatePostBar';
 import { Stories } from '../components/Stories';
@@ -109,6 +111,14 @@ export function HomeTab() {
       setRefreshing(false);
     }
   };
+
+  // UGC moderation — report/block. Blocked authors are filtered from the feed.
+  const moderation = useModeration();
+  const [reportPost, setReportPost] = useState<{ id: string; authorId?: string; username?: string } | null>(null);
+  const visiblePosts = useMemo(
+    () => social.posts.filter((p) => !moderation.isBlocked(p.author.id)),
+    [social.posts, moderation],
+  );
 
   const openPost = social.posts.find((p) => p.id === openPostId);
 
@@ -234,6 +244,7 @@ export function HomeTab() {
               img: sp.author.avatarUrl,
             })
           }
+          onMore={() => setReportPost({ id: sp.id, authorId: sp.author.id, username: sp.author.username })}
         />
         {index === 0 ? <DiscoverSection onProfile={(conn) => openProfile?.(conn)} /> : null}
       </>
@@ -245,7 +256,7 @@ export function HomeTab() {
     <View style={{ flex: 1 }}>
       <FlatList
         style={{ flex: 1 }}
-        data={social.posts}
+        data={visiblePosts}
         keyExtractor={(sp) => `v2-${sp.id}`}
         renderItem={renderPost}
         ListHeaderComponent={ListHeader}
@@ -327,6 +338,16 @@ export function HomeTab() {
         isInCollection={(collectionId) =>
           savePostId ? collections.isInCollection(savePostId, collectionId) : false
         }
+      />
+
+      {/* UGC moderation — report / block */}
+      <ReportSheet
+        visible={reportPost != null}
+        postId={reportPost?.id ?? null}
+        authorId={reportPost?.authorId}
+        authorUsername={reportPost?.username}
+        onClose={() => setReportPost(null)}
+        onBlocked={() => moderation.refreshBlocks()}
       />
     </View>
   );
