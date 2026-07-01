@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Switch } from 'react-native';
 import { Icon } from '../../ui/Icon';
 import { T } from '../../constants/theme';
+import { useFontScale } from '../../context/AppPrefsContext';
 
 type Props = {
   icon?: string;
@@ -23,6 +24,7 @@ export function SettingsToggleRow({
   disabled,
   last,
 }: Props) {
+  const fs = useFontScale();
   return (
     <View
       style={{
@@ -52,9 +54,9 @@ export function SettingsToggleRow({
       ) : null}
 
       <View style={{ flex: 1, marginRight: 10 }}>
-        <Text style={{ color: T.tx, fontSize: 15, fontWeight: '500' }}>{label}</Text>
+        <Text style={{ color: T.tx, fontSize: 15 * fs, fontWeight: '500' }}>{label}</Text>
         {subtitle ? (
-          <Text style={{ color: T.mu, fontSize: 12, marginTop: 2 }}>{subtitle}</Text>
+          <Text style={{ color: T.mu, fontSize: 12 * fs, marginTop: 2 }}>{subtitle}</Text>
         ) : null}
       </View>
 

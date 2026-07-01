@@ -18,7 +18,7 @@ import { SettingsPicker } from '../../components/settings/SettingsPicker';
 import { Avatar } from '../../components/Avatar';
 import { T } from '../../constants/theme';
 import { supabase } from '../../lib/supabase';
-import { useSettingsPrefs } from '../../lib/settingsPrefs';
+import { useSettingsPrefs } from '../../context/AppPrefsContext';
 import { signOut, deleteAccount, sendPasswordReset } from '../../auth/emailAuth';
 
 // ---------------------------------------------------------------------------

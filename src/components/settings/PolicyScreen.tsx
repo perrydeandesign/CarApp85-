@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, View, Text } from 'react-native';
 import { SubPage } from '../SubPage';
 import { T } from '../../constants/theme';
+import { useFontScale } from '../../context/AppPrefsContext';
 
 type Props = {
   title: string;
@@ -13,6 +14,7 @@ type Props = {
 /** Renders a legal/policy document (Terms, Privacy, Community Guidelines). */
 export function PolicyScreen({ title, lastUpdated, body, onBack }: Props) {
   const lines = body.trim().split('\n');
+  const fs = useFontScale();
 
   return (
     <SubPage title={title} onBack={onBack}>
@@ -28,7 +30,7 @@ export function PolicyScreen({ title, lastUpdated, body, onBack }: Props) {
             return (
               <Text
                 key={i}
-                style={{ color: T.tx, fontSize: 16, fontWeight: '700', marginTop: 14, marginBottom: 4 }}
+                style={{ color: T.tx, fontSize: 16 * fs, fontWeight: '700', marginTop: 14, marginBottom: 4 }}
               >
                 {line.slice(3)}
               </Text>
@@ -38,7 +40,7 @@ export function PolicyScreen({ title, lastUpdated, body, onBack }: Props) {
             return (
               <Text
                 key={i}
-                style={{ color: T.tx, fontSize: 19, fontWeight: '800', marginTop: 8, marginBottom: 6 }}
+                style={{ color: T.tx, fontSize: 19 * fs, fontWeight: '800', marginTop: 8, marginBottom: 6 }}
               >
                 {line.slice(2)}
               </Text>
@@ -47,13 +49,13 @@ export function PolicyScreen({ title, lastUpdated, body, onBack }: Props) {
           if (line.startsWith('- ')) {
             return (
               <View key={i} style={{ flexDirection: 'row', marginBottom: 5, paddingLeft: 4 }}>
-                <Text style={{ color: T.mu, fontSize: 14, marginRight: 8 }}>•</Text>
-                <Text style={{ color: T.tx2, fontSize: 14, lineHeight: 21, flex: 1 }}>{line.slice(2)}</Text>
+                <Text style={{ color: T.mu, fontSize: 14 * fs, marginRight: 8 }}>•</Text>
+                <Text style={{ color: T.tx2, fontSize: 14 * fs, lineHeight: 21 * fs, flex: 1 }}>{line.slice(2)}</Text>
               </View>
             );
           }
           return (
-            <Text key={i} style={{ color: T.tx2, fontSize: 14, lineHeight: 21, marginBottom: 6 }}>
+            <Text key={i} style={{ color: T.tx2, fontSize: 14 * fs, lineHeight: 21 * fs, marginBottom: 6 }}>
               {line}
             </Text>
           );

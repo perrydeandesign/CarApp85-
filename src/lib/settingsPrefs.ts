@@ -5,7 +5,6 @@
 // on the server and is intentionally NOT stored here (stubbed until a
 // user_settings migration exists).
 
-import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type SettingsPrefs = {
@@ -67,7 +66,7 @@ export const DEFAULT_PREFS: SettingsPrefs = {
 
 const KEY = 'settings_prefs_v1';
 
-async function readPrefs(): Promise<SettingsPrefs> {
+export async function readPrefs(): Promise<SettingsPrefs> {
   try {
     const raw = await AsyncStorage.getItem(KEY);
     return raw ? { ...DEFAULT_PREFS, ...(JSON.parse(raw) as Partial<SettingsPrefs>) } : DEFAULT_PREFS;
@@ -76,36 +75,17 @@ async function readPrefs(): Promise<SettingsPrefs> {
   }
 }
 
-/**
- * Hook: read + update device settings prefs. Writes persist to AsyncStorage.
- */
-export function useSettingsPrefs() {
-  const [prefs, setPrefs] = useState<SettingsPrefs>(DEFAULT_PREFS);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    readPrefs().then((p) => {
-      if (!cancelled) {
-        setPrefs(p);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const setPref = useCallback(
-    <K extends keyof SettingsPrefs>(key: K, value: SettingsPrefs[K]) => {
-      setPrefs((prev) => {
-        const next = { ...prev, [key]: value };
-        void AsyncStorage.setItem(KEY, JSON.stringify(next));
-        return next;
-      });
-    },
-    [],
-  );
-
-  return { prefs, setPref, loading };
+export async function writePrefs(prefs: SettingsPrefs): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEY, JSON.stringify(prefs));
+  } catch {
+    /* non-fatal */
+  }
 }
+
+/** Text-size pref → font multiplier applied by useFontScale / scaleFont. */
+export const FONT_SCALE: Record<SettingsPrefs['textSize'], number> = {
+  default: 1,
+  large: 1.15,
+  xlarge: 1.3,
+};

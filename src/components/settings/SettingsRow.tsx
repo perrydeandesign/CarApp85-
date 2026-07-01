@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Icon } from '../../ui/Icon';
 import { T } from '../../constants/theme';
+import { useFontScale } from '../../context/AppPrefsContext';
 
 type Variant = 'nav' | 'value' | 'destructive';
 
@@ -32,6 +33,7 @@ export function SettingsRow({
 }: Props) {
   const destructive = variant === 'destructive';
   const labelColor = destructive ? T.danger : T.tx;
+  const fs = useFontScale();
 
   const content = (
     <View
@@ -61,9 +63,9 @@ export function SettingsRow({
       ) : null}
 
       <View style={{ flex: 1 }}>
-        <Text style={{ color: labelColor, fontSize: 15, fontWeight: '500' }}>{label}</Text>
+        <Text style={{ color: labelColor, fontSize: 15 * fs, fontWeight: '500' }}>{label}</Text>
         {subtitle ? (
-          <Text style={{ color: T.mu, fontSize: 12, marginTop: 2 }} numberOfLines={2}>
+          <Text style={{ color: T.mu, fontSize: 12 * fs, marginTop: 2 }} numberOfLines={2}>
             {subtitle}
           </Text>
         ) : null}
@@ -73,7 +75,7 @@ export function SettingsRow({
         right
       ) : (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {value ? <Text style={{ color: T.mu, fontSize: 14, marginRight: 6 }}>{value}</Text> : null}
+          {value ? <Text style={{ color: T.mu, fontSize: 14 * fs, marginRight: 6 }}>{value}</Text> : null}
           {!destructive && onPress ? (
             <Icon name="chevron-forward" size="sm" color={T.mu} />
           ) : null}
