@@ -74,6 +74,14 @@
 				<string>REVERSED_CLIENT_ID_FROM_GOOGLESERVICE_INFO</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>app.modified.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>modified</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

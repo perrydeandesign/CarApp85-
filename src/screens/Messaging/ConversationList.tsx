@@ -15,6 +15,7 @@ import { useGoHome } from '../../context/GoHomeContext';
 
 // NEW DATA LAYER IMPORTS
 import { sb, getConversations, getMessages } from '../../lib/data';
+import { getLastReadMap } from '../../lib/readState';
 
 export function ConversationListScreen({ navigation }: any) {
   const goHome = useGoHome();
@@ -41,13 +42,19 @@ export function ConversationListScreen({ navigation }: any) {
       }
 
       const convos = await getConversations(uid);
+      // Local read-state (no server-side read tracking exists).
+      const lastRead = await getLastReadMap();
 
       // Attach last message + unread count
       const enriched = await Promise.all(
         convos.map(async (c) => {
           const msgs = await getMessages(c.id);
           const last = msgs[msgs.length - 1] || null;
-          const unread = msgs.filter((m) => !m.read_at && m.sender_id !== uid).length;
+          // Unread = messages from someone else newer than my last open of this chat.
+          const seenAt = lastRead[c.id];
+          const unread = msgs.filter(
+            (m) => m.sender_id !== uid && (!seenAt || m.created_at > seenAt),
+          ).length;
 
           return {
             ...c,

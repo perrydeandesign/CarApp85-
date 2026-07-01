@@ -17,6 +17,7 @@ import { ReactionPicker } from '../../components/ReactionPicker';
 
 // NEW DATA LAYER IMPORTS
 import { sb, getMessages, sendMessage, subscribeToMessages } from '../../lib/data';
+import { markConversationRead } from '../../lib/readState';
 
 export function ChatScreen({ route, navigation }: any) {
   const conversationId = route?.params?.conversationId;
@@ -38,6 +39,8 @@ export function ChatScreen({ route, navigation }: any) {
     try {
       const msgs = await getMessages(conversationId);
       setMessages(msgs);
+      // Opening the chat marks it read on this device (local read-state).
+      void markConversationRead(conversationId);
     } catch (e: any) {
       setError(e?.message ?? 'Could not load messages.');
     }

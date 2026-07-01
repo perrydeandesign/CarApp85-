@@ -5,6 +5,7 @@ import { AuthProvider } from './src/auth/useAuth';
 import { ConversationsProvider } from './src/hooks/useConversations';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { initObservability } from './src/lib/observability';
+import { linking } from './src/navigation/linking';
 
 // Init crash reporting once at startup (no-op until a Sentry DSN is configured).
 initObservability();
@@ -14,7 +15,7 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
         <ConversationsProvider>
-          <NavigationContainer>
+          <NavigationContainer linking={linking}>
             <AppNavigator />
           </NavigationContainer>
         </ConversationsProvider>
