@@ -30,6 +30,14 @@ export type SettingsPrefs = {
   theme: 'system' | 'dark' | 'light';
   autoplayVideos: 'always' | 'wifi' | 'never';
   dataSaver: boolean;
+  // Accessibility
+  textSize: 'default' | 'large' | 'xlarge';
+  reduceMotion: boolean;
+  highContrast: boolean;
+  // Quiet hours (mutes push between start–end, device-local)
+  quietHoursEnabled: boolean;
+  quietStart: string; // '00'..'23'
+  quietEnd: string; // '00'..'23'
 };
 
 export const DEFAULT_PREFS: SettingsPrefs = {
@@ -49,6 +57,12 @@ export const DEFAULT_PREFS: SettingsPrefs = {
   theme: 'system',
   autoplayVideos: 'wifi',
   dataSaver: false,
+  textSize: 'default',
+  reduceMotion: false,
+  highContrast: false,
+  quietHoursEnabled: false,
+  quietStart: '22',
+  quietEnd: '07',
 };
 
 const KEY = 'settings_prefs_v1';

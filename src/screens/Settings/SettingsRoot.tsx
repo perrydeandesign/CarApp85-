@@ -11,11 +11,13 @@ import {
 import {
   SettingsHub,
   AccountSettings,
+  EditProfile,
   PrivacySafetySettings,
   SecuritySettings,
   NotificationsSettings,
   LanguageRegionSettings,
   AppearanceSettings,
+  AccessibilitySettings,
   PrivacyCentre,
   HelpSettings,
   AboutLegal,
@@ -29,8 +31,16 @@ import {
  * Groups/Vendors pattern) so it drops into MainNavigator's state-based routing
  * without touching the existing navigators. `onClose` returns to the app home.
  */
-export function SettingsRoot({ onClose }: { onClose: () => void }) {
-  const [stack, setStack] = useState<SettingsRoute[]>(['hub']);
+export function SettingsRoot({
+  onClose,
+  initial,
+}: {
+  onClose: () => void;
+  initial?: SettingsRoute;
+}) {
+  const [stack, setStack] = useState<SettingsRoute[]>(
+    initial && initial !== 'hub' ? ['hub', initial] : ['hub'],
+  );
   const current = stack[stack.length - 1];
 
   const nav = useCallback((r: SettingsRoute) => setStack((s) => [...s, r]), []);
@@ -50,6 +60,8 @@ export function SettingsRoot({ onClose }: { onClose: () => void }) {
     switch (current) {
       case 'account':
         return <AccountSettings {...props} />;
+      case 'editProfile':
+        return <EditProfile {...props} />;
       case 'privacy':
         return <PrivacySafetySettings {...props} />;
       case 'security':
@@ -60,6 +72,8 @@ export function SettingsRoot({ onClose }: { onClose: () => void }) {
         return <LanguageRegionSettings {...props} />;
       case 'appearance':
         return <AppearanceSettings {...props} />;
+      case 'accessibility':
+        return <AccessibilitySettings {...props} />;
       case 'privacyCentre':
         return <PrivacyCentre {...props} />;
       case 'help':

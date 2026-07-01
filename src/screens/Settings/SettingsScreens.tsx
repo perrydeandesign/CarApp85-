@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  ScrollView,
+  View,
+  Text,
+  Alert,
+  ActivityIndicator,
+  TouchableOpacity,
+  TextInput,
+  Share,
+  Linking,
+} from 'react-native';
 import { SubPage } from '../../components/SubPage';
 import { SettingsSection } from '../../components/settings/SettingsSection';
 import { SettingsRow } from '../../components/settings/SettingsRow';
@@ -17,11 +27,13 @@ import { signOut, deleteAccount, sendPasswordReset } from '../../auth/emailAuth'
 export type SettingsRoute =
   | 'hub'
   | 'account'
+  | 'editProfile'
   | 'privacy'
   | 'security'
   | 'notifications'
   | 'language'
   | 'appearance'
+  | 'accessibility'
   | 'privacyCentre'
   | 'help'
   | 'aboutLegal'
@@ -29,6 +41,20 @@ export type SettingsRoute =
   | 'terms'
   | 'privacyPolicy'
   | 'guidelines';
+
+// App Store listing URL — replace with the real ID once the app is live.
+const APP_STORE_URL = 'https://apps.apple.com/app/id0000000000';
+
+/** Native share sheet for a user's profile. */
+async function shareProfile(username: string | null) {
+  try {
+    await Share.share({
+      message: `Check out ${username ? '@' + username : 'my profile'} on MODIFIED — modified://user/${username ?? ''}`,
+    });
+  } catch {
+    /* user dismissed */
+  }
+}
 
 export type SettingsNavProps = {
   nav: (r: SettingsRoute) => void;
@@ -57,6 +83,7 @@ export function SettingsHub({ nav, back }: SettingsNavProps) {
           <SettingsSection title="Preferences">
             <SettingsRow icon="notifications-outline" label="Notifications" onPress={() => nav('notifications')} />
             <SettingsRow icon="color-palette-outline" label="Appearance & Data" onPress={() => nav('appearance')} />
+            <SettingsRow icon="accessibility-outline" label="Accessibility" onPress={() => nav('accessibility')} />
             <SettingsRow icon="language-outline" label="Language & Region" onPress={() => nav('language')} last />
           </SettingsSection>
 
@@ -76,12 +103,20 @@ export function SettingsHub({ nav, back }: SettingsNavProps) {
 // ---------------------------------------------------------------------------
 export function AccountSettings({ nav, back }: SettingsNavProps) {
   const [email, setEmail] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!cancelled) setEmail(data.user?.email ?? null);
-    });
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      setEmail(data.user?.email ?? null);
+      const uid = data.user?.id;
+      if (uid) {
+        const { data: prof } = await supabase.from('profiles').select('username').eq('id', uid).maybeSingle();
+        if (!cancelled) setUsername((prof as any)?.username ?? null);
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -156,7 +191,13 @@ export function AccountSettings({ nav, back }: SettingsNavProps) {
     <SubPage title="Account" onBack={back}>
       {wrap(
         <>
+          <SettingsSection title="Profile">
+            <SettingsRow icon="create-outline" label="Edit profile" onPress={() => nav('editProfile')} />
+            <SettingsRow icon="share-social-outline" label="Share profile" onPress={() => shareProfile(username)} last />
+          </SettingsSection>
+
           <SettingsSection title="Account info">
+            <SettingsRow icon="person-outline" label="Username" value={username ? '@' + username : '—'} />
             <SettingsRow icon="mail-outline" label="Email" value={email ?? '—'} last />
           </SettingsSection>
 
@@ -254,6 +295,11 @@ export function SecuritySettings({ back }: SettingsNavProps) {
 // ---------------------------------------------------------------------------
 // NOTIFICATIONS
 // ---------------------------------------------------------------------------
+const HOURS = Array.from({ length: 24 }, (_, h) => {
+  const v = String(h).padStart(2, '0');
+  return { label: `${v}:00`, value: v };
+});
+
 export function NotificationsSettings({ back }: SettingsNavProps) {
   const { prefs, setPref } = useSettingsPrefs();
   const off = !prefs.pushEnabled;
@@ -279,6 +325,17 @@ export function NotificationsSettings({ back }: SettingsNavProps) {
             <SettingsToggleRow label="Mentions" value={prefs.notifyMentions} onValueChange={(v) => setPref('notifyMentions', v)} disabled={off} />
             <SettingsToggleRow label="Messages" value={prefs.notifyMessages} onValueChange={(v) => setPref('notifyMessages', v)} disabled={off} />
             <SettingsToggleRow label="Competitions" value={prefs.notifyCompetitions} onValueChange={(v) => setPref('notifyCompetitions', v)} disabled={off} last />
+          </SettingsSection>
+
+          <SettingsSection title="Quiet hours" footer="Mute push notifications during these hours (this device).">
+            <SettingsToggleRow
+              icon="moon-outline"
+              label="Quiet hours"
+              value={prefs.quietHoursEnabled}
+              onValueChange={(v) => setPref('quietHoursEnabled', v)}
+            />
+            <SettingsPicker label="Start" value={prefs.quietStart} options={HOURS} onSelect={(v) => setPref('quietStart', v)} />
+            <SettingsPicker label="End" value={prefs.quietEnd} options={HOURS} onSelect={(v) => setPref('quietEnd', v)} last />
           </SettingsSection>
 
           <SettingsSection title="Email">
@@ -384,6 +441,160 @@ export function AppearanceSettings({ back }: SettingsNavProps) {
 }
 
 // ---------------------------------------------------------------------------
+// ACCESSIBILITY
+// ---------------------------------------------------------------------------
+export function AccessibilitySettings({ back }: SettingsNavProps) {
+  const { prefs, setPref } = useSettingsPrefs();
+  return (
+    <SubPage title="Accessibility" onBack={back}>
+      {wrap(
+        <SettingsSection footer="Preferences are saved on this device.">
+          <SettingsPicker
+            icon="text-outline"
+            label="Text size"
+            value={prefs.textSize}
+            options={[
+              { label: 'Default', value: 'default' },
+              { label: 'Large', value: 'large' },
+              { label: 'Extra large', value: 'xlarge' },
+            ]}
+            onSelect={(v) => setPref('textSize', v as any)}
+          />
+          <SettingsToggleRow
+            icon="film-outline"
+            label="Reduce motion"
+            subtitle="Minimise animations and transitions"
+            value={prefs.reduceMotion}
+            onValueChange={(v) => setPref('reduceMotion', v)}
+          />
+          <SettingsToggleRow
+            icon="contrast-outline"
+            label="High contrast"
+            subtitle="Increase text and border contrast"
+            value={prefs.highContrast}
+            onValueChange={(v) => setPref('highContrast', v)}
+            last
+          />
+        </SettingsSection>,
+      )}
+    </SubPage>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// EDIT PROFILE (writes to profiles — RLS owner-only)
+// ---------------------------------------------------------------------------
+export function EditProfile({ back }: SettingsNavProps) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [bio, setBio] = useState('');
+  const [location, setLocation] = useState('');
+  const [uid, setUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const id = data.user?.id ?? null;
+      if (cancelled) return;
+      setUid(id);
+      if (id) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('display_name, bio, location')
+          .eq('id', id)
+          .maybeSingle();
+        if (!cancelled && prof) {
+          setDisplayName((prof as any).display_name ?? '');
+          setBio((prof as any).bio ?? '');
+          setLocation((prof as any).location ?? '');
+        }
+      }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const save = async () => {
+    if (!uid) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ display_name: displayName.trim() || null, bio: bio.trim() || null, location: location.trim() || null })
+      .eq('id', uid);
+    setSaving(false);
+    if (error) {
+      Alert.alert('Could not save', error.message);
+      return;
+    }
+    Alert.alert('Saved', 'Your profile has been updated.');
+    back();
+  };
+
+  const field = (label: string, value: string, onChange: (t: string) => void, opts?: { multiline?: boolean; max?: number }) => (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{ color: T.mu, fontSize: 12, fontWeight: '700', marginBottom: 6, marginLeft: 4 }}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChange}
+        maxLength={opts?.max}
+        multiline={opts?.multiline}
+        placeholder={label}
+        placeholderTextColor={T.mu}
+        style={{
+          color: T.tx,
+          backgroundColor: T.card,
+          borderWidth: 1,
+          borderColor: T.bd,
+          borderRadius: 12,
+          paddingHorizontal: 14,
+          paddingVertical: 12,
+          fontSize: 15,
+          minHeight: opts?.multiline ? 90 : undefined,
+          textAlignVertical: opts?.multiline ? 'top' : 'center',
+        }}
+      />
+    </View>
+  );
+
+  return (
+    <SubPage title="Edit profile" onBack={back}>
+      {loading ? (
+        <View style={{ paddingTop: 40, alignItems: 'center' }}>
+          <ActivityIndicator color={T.accent} />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+          {field('Display name', displayName, setDisplayName, { max: 50 })}
+          {field('Bio', bio, setBio, { multiline: true, max: 160 })}
+          {field('Location', location, setLocation, { max: 60 })}
+
+          <TouchableOpacity
+            onPress={save}
+            disabled={saving}
+            style={{
+              backgroundColor: T.accent,
+              borderRadius: 12,
+              paddingVertical: 14,
+              alignItems: 'center',
+              marginTop: 8,
+              opacity: saving ? 0.6 : 1,
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>
+              {saving ? 'Saving…' : 'Save changes'}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
+    </SubPage>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // PRIVACY CENTRE
 // ---------------------------------------------------------------------------
 export function PrivacyCentre({ nav, back }: SettingsNavProps) {
@@ -438,6 +649,16 @@ export function AboutLegal({ nav, back }: SettingsNavProps) {
             <SettingsRow icon="lock-closed-outline" label="Privacy Policy" onPress={() => nav('privacyPolicy')} />
             <SettingsRow icon="people-outline" label="Community Guidelines" onPress={() => nav('guidelines')} last />
           </SettingsSection>
+          <SettingsSection title="Support MODIFIED">
+            <SettingsRow icon="star-outline" label="Rate the app" onPress={() => Linking.openURL(APP_STORE_URL)} />
+            <SettingsRow
+              icon="share-social-outline"
+              label="Share MODIFIED"
+              onPress={() => Share.share({ message: 'Check out MODIFIED — the app for car builds. ' + APP_STORE_URL })}
+              last
+            />
+          </SettingsSection>
+
           <SettingsSection title="About">
             <SettingsRow icon="information-circle-outline" label="Version" value="0.0.1" />
             <SettingsRow icon="code-slash-outline" label="Open-source licenses" onPress={() => Alert.alert('Licenses', 'Coming soon.')} last />

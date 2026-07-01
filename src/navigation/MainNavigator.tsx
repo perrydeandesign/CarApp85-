@@ -104,7 +104,7 @@ function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNa
   const items = [
     { icon: 'home-outline', label: 'Home', action: () => { navigation.closeDrawer(); onNavigate('home'); } },
     { icon: 'chatbubbles-outline', label: 'Messages', action: () => { navigation.closeDrawer(); onNavigate('messages'); } },
-    { icon: 'create-outline', label: 'Edit Profile', action: () => { navigation.closeDrawer(); onNavigate('home'); } },
+    { icon: 'create-outline', label: 'Edit Profile', action: () => { navigation.closeDrawer(); onNavigate('editProfile'); } },
     { icon: 'settings-outline', label: 'Settings', action: () => { navigation.closeDrawer(); onNavigate('settings'); } },
     { icon: 'help-circle-outline', label: 'Help', action: () => { navigation.closeDrawer(); Alert.alert('Help', 'support@modified.app'); } },
   ];
@@ -256,13 +256,19 @@ function MainWithDrawer({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
 export function MainNavigator() {
   // Self-managed screen routing so AppNavigator can render <MainNavigator /> with no props.
   const [screen, setScreen] = useState<'home' | 'messages' | 'settings'>('home');
+  const [settingsInitial, setSettingsInitial] = useState<string | undefined>(undefined);
 
   const goHome = () => setScreen('home');
   const goMessages = () => setScreen('messages');
   const handleNavigate = (s: string) => {
     if (s === 'messages') setScreen('messages');
-    else if (s === 'settings') setScreen('settings');
-    else setScreen('home');
+    else if (s === 'settings') {
+      setSettingsInitial(undefined);
+      setScreen('settings');
+    } else if (s === 'editProfile') {
+      setSettingsInitial('editProfile');
+      setScreen('settings');
+    } else setScreen('home');
   };
 
   if (screen === 'messages') {
@@ -274,7 +280,7 @@ export function MainNavigator() {
   }
 
   if (screen === 'settings') {
-    return <SettingsRoot onClose={goHome} />;
+    return <SettingsRoot onClose={goHome} initial={settingsInitial as any} />;
   }
 
   return <MainWithDrawer onMsg={goMessages} onNavigate={handleNavigate} />;
