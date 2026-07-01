@@ -335,7 +335,8 @@ export async function getConversations(profileId: string) {
 
   if (error) {
     console.error('getConversations error', error.message);
-    return [];
+    captureError(error, { fn: 'getConversations', profileId });
+    throw new Error(error.message);
   }
   return data as Conversation[];
 }
@@ -349,7 +350,8 @@ export async function getMessages(conversationId: string) {
 
   if (error) {
     console.error('getMessages error', error.message);
-    return [];
+    captureError(error, { fn: 'getMessages', conversationId });
+    throw new Error(error.message);
   }
   return data as Message[];
 }

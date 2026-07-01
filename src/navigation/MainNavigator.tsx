@@ -6,7 +6,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../constants/theme';
 import type { Conn } from '../constants/types';
-import { signOut } from '../auth/emailAuth';
+import { signOut, deleteAccount } from '../auth/emailAuth';
 
 import { Avatar } from '../components/Avatar';
 import { NotifDrop } from '../components/NotifDrop';
@@ -169,6 +169,50 @@ function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNa
           <Ionicons name="log-out-outline" size={IC.drawer} color="#FF6B6B" />
         </View>
         <Text style={{ color: '#FF6B6B', fontSize: 15, marginLeft: 12 }}>Log Out</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() =>
+          // Two-step confirm — account deletion is permanent (App Store 5.1.1(v)).
+          Alert.alert(
+            'Delete account',
+            'This permanently deletes your account, posts, photos, and all your data. This cannot be undone.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: () =>
+                  Alert.alert('Are you sure?', 'Your account and all data will be permanently erased.', [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Delete forever',
+                      style: 'destructive',
+                      onPress: async () => {
+                        try {
+                          await deleteAccount();
+                          // Session cleared → AppNavigator returns to the auth flow.
+                        } catch (err: any) {
+                          Alert.alert('Could not delete account', err?.message ?? String(err));
+                        }
+                      },
+                    },
+                  ]),
+              },
+            ],
+          )
+        }
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+        }}
+      >
+        <View style={{ width: 32, alignItems: 'center' }}>
+          <Ionicons name="trash-outline" size={IC.drawer} color={T.mu} />
+        </View>
+        <Text style={{ color: T.mu, fontSize: 15, marginLeft: 12 }}>Delete Account</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

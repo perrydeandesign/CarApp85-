@@ -33,3 +33,17 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }
+
+/**
+ * Permanently delete the signed-in user's account (App Store 5.1.1(v)).
+ * Calls the `delete-account` edge function (service-role removes the auth
+ * user + owned data + storage), then clears the local session.
+ */
+export async function deleteAccount() {
+  const { error } = await supabase.functions.invoke('delete-account', {
+    method: 'POST',
+  });
+  if (error) throw error;
+  // Clear the local session; AppNavigator swaps back to the auth flow.
+  await supabase.auth.signOut();
+}

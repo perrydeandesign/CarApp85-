@@ -23,36 +23,46 @@ export function ConversationListScreen({ navigation }: any) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'unread' | 'groups'>('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // ------------------------------------------------------------
   // LOAD CONVERSATIONS FROM SUPABASE
   // ------------------------------------------------------------
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
 
-    const session = await sb.auth.getSession();
-    const uid = session?.data?.session?.user?.id;
-    if (!uid) return;
+    try {
+      const session = await sb.auth.getSession();
+      const uid = session?.data?.session?.user?.id;
+      if (!uid) {
+        setLoading(false);
+        return;
+      }
 
-    const convos = await getConversations(uid);
+      const convos = await getConversations(uid);
 
-    // Attach last message + unread count
-    const enriched = await Promise.all(
-      convos.map(async (c) => {
-        const msgs = await getMessages(c.id);
-        const last = msgs[msgs.length - 1] || null;
-        const unread = msgs.filter((m) => !m.read_at && m.sender_id !== uid).length;
+      // Attach last message + unread count
+      const enriched = await Promise.all(
+        convos.map(async (c) => {
+          const msgs = await getMessages(c.id);
+          const last = msgs[msgs.length - 1] || null;
+          const unread = msgs.filter((m) => !m.read_at && m.sender_id !== uid).length;
 
-        return {
-          ...c,
-          lastMessage: last,
-          unreadCount: unread,
-        };
-      })
-    );
+          return {
+            ...c,
+            lastMessage: last,
+            unreadCount: unread,
+          };
+        })
+      );
 
-    setConversations(enriched);
-    setLoading(false);
+      setConversations(enriched);
+    } catch (e: any) {
+      setError(e?.message ?? 'Could not load conversations.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -244,19 +254,44 @@ export function ConversationListScreen({ navigation }: any) {
         ))}
       </View>
 
-      {/* LIST */}
-      <FlatList
-        data={filtered}
-        keyExtractor={(i) => i.id}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          !loading && (
-            <Text style={{ color: T.mu, textAlign: 'center', marginTop: 40 }}>
-              No conversations
-            </Text>
-          )
-        }
-      />
+      {/* ERROR STATE */}
+      {error ? (
+        <View style={{ alignItems: 'center', marginTop: 48, paddingHorizontal: 32 }}>
+          <Ionicons name="cloud-offline-outline" size={40} color={T.mu} />
+          <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600', marginTop: 12 }}>
+            Couldn't load messages
+          </Text>
+          <Text style={{ color: T.mu, fontSize: 13, textAlign: 'center', marginTop: 4 }}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            onPress={load}
+            style={{
+              marginTop: 16,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              borderRadius: 20,
+              backgroundColor: T.ac,
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: '600' }}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        /* LIST */
+        <FlatList
+          data={filtered}
+          keyExtractor={(i) => i.id}
+          renderItem={renderItem}
+          ListEmptyComponent={
+            !loading && (
+              <Text style={{ color: T.mu, textAlign: 'center', marginTop: 40 }}>
+                No conversations
+              </Text>
+            )
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }

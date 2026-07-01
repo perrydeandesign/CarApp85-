@@ -26,6 +26,7 @@ export function ChatScreen({ route, navigation }: any) {
   const [replyTo, setReplyTo] = useState<any | null>(null);
   const [showReactions, setShowReactions] = useState<string | null>(null);
   const [otherTyping, setOtherTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -33,8 +34,13 @@ export function ChatScreen({ route, navigation }: any) {
   // LOAD MESSAGES
   // ------------------------------------------------------------
   const load = useCallback(async () => {
-    const msgs = await getMessages(conversationId);
-    setMessages(msgs);
+    setError(null);
+    try {
+      const msgs = await getMessages(conversationId);
+      setMessages(msgs);
+    } catch (e: any) {
+      setError(e?.message ?? 'Could not load messages.');
+    }
   }, [conversationId]);
 
   useEffect(() => {
@@ -227,6 +233,26 @@ export function ChatScreen({ route, navigation }: any) {
       </View>
 
       {/* MESSAGES */}
+      {error && (
+        <TouchableOpacity
+          onPress={load}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            paddingVertical: 10,
+            paddingHorizontal: 14,
+            backgroundColor: T.cd2,
+          }}
+        >
+          <Ionicons name="warning-outline" size={16} color={T.mu} />
+          <Text style={{ color: T.mu, fontSize: 13 }}>
+            Couldn't load messages — tap to retry
+          </Text>
+        </TouchableOpacity>
+      )}
+
       <FlatList
         ref={flatListRef}
         data={messages}
