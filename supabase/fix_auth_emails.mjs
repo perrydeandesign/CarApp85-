@@ -30,10 +30,10 @@ const sb = createClient(URL, KEY, { auth: { persistSession: false } });
     const wanted = `${p.username}@modified.demo`;
     const { data: userResp, error: getErr } = await sb.auth.admin.getUserById(p.id);
     if (getErr || !userResp?.user) { failed++; continue; }
-    if (userResp.user.email === wanted) { already++; continue; }
     const { error: updErr } = await sb.auth.admin.updateUserById(p.id, {
       email: wanted,
       email_confirm: true,
+      password: 'Demo!Password123', // uniform demo password for every seeded user
       user_metadata: { ...userResp.user.user_metadata, username: p.username },
     });
     if (updErr) { failed++; if (failed < 5) console.error('  ✗', p.username, updErr.message); }

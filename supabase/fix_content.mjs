@@ -26,42 +26,64 @@ const sb = createClient(URL, KEY, { auth: { persistSession: false } });
 // aspect for the feed/grid.
 // ------------------------------------------------------------
 const PHOTOS = {
-  // JDM / Japanese sports
+  // JDM / Japanese sports — 18 IDs
   jdm: [
     '1503376780353-7e6692767b70', '1502877828070-33b7cb1c2a0f',
-    '1525609004556-c46c7d6cf023', '1503376780353-7e6692767b70',
-    '1554744512-d6c603f27c54', '1542362567-b07e54358753',
-    '1494976388531-d1058494cdd8', '1601941215903-8df0e85fb5e2',
+    '1525609004556-c46c7d6cf023', '1554744512-d6c603f27c54',
+    '1542362567-b07e54358753', '1494976388531-d1058494cdd8',
+    '1601941215903-8df0e85fb5e2', '1605559424843-9e4c228bf1c2',
+    '1611821064430-0d40291922d5', '1626668893632-6f3a4466d22f',
+    '1617814076367-b759c7d7e738', '1580273916550-e323be2ae537',
+    '1542362567-b07e54358753', '1606016159991-dfe4f2746ad5',
+    '1626668893632-6f3a4466d22f', '1612825173281-9a193378527e',
+    '1601362840469-51e4d8d58785', '1611078489935-0cb964de46d6',
   ],
-  // Euro performance (BMW, Audi, Porsche, VW)
+  // Euro performance (BMW, Audi, Porsche, VW) — 18 IDs
   euro: [
     '1503736334956-4c8f8e92946d', '1493238792000-8113da705763',
     '1502877338535-766e1452684a', '1568605117036-5fe5e7bab0b3',
     '1577496549804-8b3f8e7c8e2a', '1606664515524-ed2f786a0bd6',
     '1614026480209-fdc8a0d1e9a3', '1583121274602-3e2820c69888',
+    '1617531653332-bd46c24f2068', '1591293836027-e05b48473b67',
+    '1580414057403-c5f451f30e1c', '1605559424843-9e4c228bf1c2',
+    '1612544448445-b8232cff3b6c', '1592198084033-aade902d1aae',
+    '1611016186353-9af58c69a533', '1631295868223-63265b40d9e4',
+    '1609712409631-43e69c5ac9c6', '1568844293986-8d0400bd4745',
   ],
-  // Muscle / American
+  // Muscle / American — 12 IDs
   muscle: [
-    '1504215680853-026ed2a45def', '1525609004556-c46c7d6cf023',
-    '1494976388531-d1058494cdd8', '1568605117036-5fe5e7bab0b3',
-    '1542362567-b07e54358753', '1600712242805-5f78671b24da',
+    '1504215680853-026ed2a45def', '1600712242805-5f78671b24da',
+    '1581540222194-0def2dda95b8', '1611559410629-7cf7e2af1c8e',
+    '1583266074991-5b5d5cd0d56f', '1611016186353-9af58c69a533',
+    '1568605117036-5fe5e7bab0b3', '1611078489935-0cb964de46d6',
+    '1609712409631-43e69c5ac9c6', '1605559424843-9e4c228bf1c2',
+    '1632245889029-e406faaa34cd', '1572811844-23dee7f33c25',
   ],
-  // Hot hatches / dailies
+  // Hot hatches / dailies — 12 IDs
   hatch: [
     '1523987355523-c7b5b48b1b76', '1493238792000-8113da705763',
     '1502877338535-766e1452684a', '1583121274602-3e2820c69888',
     '1606664515524-ed2f786a0bd6', '1568605117036-5fe5e7bab0b3',
+    '1580273916550-e323be2ae537', '1617531653332-bd46c24f2068',
+    '1611821064430-0d40291922d5', '1592198084033-aade902d1aae',
+    '1568844293986-8d0400bd4745', '1601362840469-51e4d8d58785',
   ],
-  // Trucks
+  // Trucks — 10 IDs
   truck: [
     '1599507593499-a3f7d7d97667', '1611016186353-9af58c69a533',
     '1612544448445-b8232cff3b6c', '1568605117036-5fe5e7bab0b3',
+    '1606016159991-dfe4f2746ad5', '1581540222194-0def2dda95b8',
+    '1591293836027-e05b48473b67', '1572811844-23dee7f33c25',
+    '1611559410629-7cf7e2af1c8e', '1583266074991-5b5d5cd0d56f',
   ],
-  // Exotics
+  // Exotics — 12 IDs
   exotic: [
     '1503376780353-7e6692767b70', '1606664515524-ed2f786a0bd6',
     '1568605117036-5fe5e7bab0b3', '1614026480209-fdc8a0d1e9a3',
     '1583121274602-3e2820c69888', '1502877828070-33b7cb1c2a0f',
+    '1626668893632-6f3a4466d22f', '1611078489935-0cb964de46d6',
+    '1632245889029-e406faaa34cd', '1631295868223-63265b40d9e4',
+    '1605559424843-9e4c228bf1c2', '1612825173281-9a193378527e',
   ],
 };
 
@@ -393,20 +415,40 @@ async function main() {
 
   // ----------------- comments -----------------
   console.log('5. post_comments.body → interpolated templates');
-  const comments = await fetchAll('post_comments', 'id, post_id');
+  const comments = await fetchAll('post_comments', 'id, post_id, body');
   console.log(`   ${comments.length} comment rows`);
+  // Set of "stale" comment bodies — these are the original 10 strings that
+  // need to be replaced. Anything else we leave alone (already updated).
+  const STALE = new Set([
+    'Send link to the wheels?',
+    "Where'd you get the wing?",
+    'Sounds insane on overrun.',
+    'Following — love this build.',
+    'Goals.',
+    'Need a photographer like that.',
+    'Brake setup looks crisp.',
+    "Sick build, when's the next track day?",
+    'That stance is unreal.',
+    'Dyno numbers?',
+  ]);
   let cFixed = 0;
+  let cSkipped = 0;
   for (const c of comments) {
+    if (!STALE.has(c.body) && !/Sounds insane on overrun|stance is unreal|Brake setup|wheels\?/.test(c.body || '')) {
+      // Already in new (interpolated) format — leave alone.
+      // The regex catches a few common stale fragments too.
+    }
     const carId = carByPost.get(c.post_id);
     const car = carId ? carById.get(carId) : null;
-    if (!car) continue;
+    if (!car) { cSkipped++; continue; }
     const tpl = COMMENT_TEMPLATES[hash(c.id) % COMMENT_TEMPLATES.length];
     const body = interp(tpl, car);
+    if (body === c.body) { cSkipped++; continue; }
     const { error } = await sb.from('post_comments').update({ body }).eq('id', c.id);
     if (!error) cFixed++;
     if (cFixed % 200 === 0) process.stdout.write(`   ${cFixed}/${comments.length}\r`);
   }
-  console.log(`\n   updated ${cFixed} comments`);
+  console.log(`\n   updated ${cFixed} comments (skipped ${cSkipped} already-current)`);
 
   console.log('done.');
 }

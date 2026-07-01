@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
+import { Icon } from '../ui/Icon';
 import { T } from '../constants/theme';
 import type { CarRow } from '../hooks/useProfileData';
 
@@ -49,7 +49,7 @@ export function CarSwitcherSheet({ visible, cars, selectedId, onClose, onSelect 
               My Garage
             </Text>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Feather name="x" size={18} color={T.tx2} />
+              <Icon name="x" size={18} color={T.tx2} />
             </TouchableOpacity>
           </View>
 
@@ -90,7 +90,7 @@ export function CarSwitcherSheet({ visible, cars, selectedId, onClose, onSelect 
                       </Text>
                     ) : null}
                   </View>
-                  {active && <Feather name="check" size={16} color={T.accent} />}
+                  {active && <Icon name="check" size={16} color={T.accent} />}
                 </TouchableOpacity>
               );
             })

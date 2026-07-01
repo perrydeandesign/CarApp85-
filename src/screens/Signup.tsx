@@ -55,7 +55,12 @@ export default function Signup() {
       );
       navigation.navigate('Login');
     } catch (err: any) {
-      Alert.alert('Sign-up Failed', err?.message || 'Please try again.');
+      const msg =
+        err?.message ||
+        err?.error_description ||
+        err?.statusText ||
+        (typeof err === 'string' ? err : `HTTP ${err?.status ?? '?'}`);
+      Alert.alert('Sign-up Failed', msg);
     } finally {
       setSubmitting(false);
     }
@@ -72,7 +77,7 @@ export default function Signup() {
         >
           <View style={{ alignItems: 'center', paddingTop: 40, marginBottom: 28 }}>
             <ModifiedLogo />
-            <Text style={{ fontSize: 14, color: '#888', marginTop: 12 }}>
+            <Text style={{ fontSize: 14, color: '#C9D1D9', marginTop: 12 }}>
               {MODIFIED_TAGLINE}
             </Text>
           </View>
@@ -111,7 +116,7 @@ export default function Signup() {
               marginTop: 24,
             }}
           >
-            <Text style={{ fontSize: 13, color: '#888' }}>Already have an account?</Text>
+            <Text style={{ fontSize: 13, color: '#C9D1D9' }}>Already have an account?</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
               <Text style={{ fontSize: 13, color: T.accent }}>Log in</Text>
             </TouchableOpacity>

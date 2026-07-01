@@ -31,7 +31,7 @@ export type EngagementFlags = {
 export function mapServerPost(row: ServerPostRow, flags?: EngagementFlags): Post | null {
   if (!row.author) return null;
   const firstMedia = row.post_media?.[0];
-  if (!firstMedia) return null;
+  // Text posts have no media — keep them (mediaUrl='' signals a text card).
 
   const author: UserPreview = {
     id: row.author.id,
@@ -45,7 +45,7 @@ export function mapServerPost(row: ServerPostRow, flags?: EngagementFlags): Post
   return {
     id: row.id,
     author,
-    mediaUrl: firstMedia.media_url,
+    mediaUrl: firstMedia?.media_url ?? '',
     caption,
     likeCount: row.like_count,
     commentCount: row.comment_count,
@@ -66,5 +66,5 @@ export const SERVER_POST_SELECT = `
   like_count,
   comment_count,
   author:profiles!posts_profile_id_fkey ( id, username, avatar_url ),
-  post_media ( id, media_type, media_url )
+  post_media:post_media!post_id ( id, media_url, media_type )
 `;

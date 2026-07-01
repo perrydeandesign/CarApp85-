@@ -32,9 +32,9 @@ async function fetchEngagementFlags(
     supabase.from(TABLES.savedPosts).select('post_id').eq('user_id', uid).in('post_id', postIds).then((r) => r, () => ({ data: [], error: null })),
     supabase
       .from(TABLES.follows)
-      .select('followee_id')
+      .select('following_id')
       .eq('follower_id', uid)
-      .eq('followee_id', authorId)
+      .eq('following_id', authorId)
       .maybeSingle(),
   ]);
 
@@ -65,8 +65,7 @@ export function useProfilePosts(userId: string | null) {
     const { data, error: err } = await supabase
       .from('posts')
       .select(SERVER_POST_SELECT)
-      .eq('author_id', userId)
-      .eq('is_published', true)
+      .eq('profile_id', userId)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE);
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
+import { Icon } from '../ui/Icon';
 import { T } from '../constants/theme';
 
 const VISIBLE_LIMIT = 3;
@@ -62,7 +62,7 @@ export function ModsList({ items, categoryLabel }: Props) {
             paddingVertical: 8,
           }}
         >
-          <Feather
+          <Icon
             name={expanded ? 'chevron-up' : 'chevron-down'}
             size={14}
             color={T.accent}

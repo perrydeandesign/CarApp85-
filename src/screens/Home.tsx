@@ -142,7 +142,7 @@ export function HomeTab() {
 
     const { error } = await supabase
       .from('follows')
-      .insert({ follower_id: uid, followee_id: authorId });
+      .insert({ follower_id: uid, following_id: authorId });
 
     if (error && !/duplicate key/i.test(error.message)) {
       feed.setAuthorFollowed(authorId, false);

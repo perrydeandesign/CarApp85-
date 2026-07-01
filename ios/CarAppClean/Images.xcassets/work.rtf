@@ -1,0 +1,138 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset0 HelveticaNeue-Bold;\f2\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c1\c1;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\slleading60\pardirnatural\partightenfactor0
+
+\f0\fs26 \cf2 Takes ~3\'965 minutes (rate-limited by Reddit fetches, cached per subreddit).\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\slleading60\pardirnatural\partightenfactor0
+
+\f1\b \cf2 What it produces
+\f0\b0 \cf2 \
+\
+| Entity | Count | Pattern |\
+|---|---|---|\
+| Auth users + profiles | 50 | 
+\f2 \cf2 <username>@modified.demo
+\f0 \cf2  / password 
+\f2 \cf2 Demo!Password123
+\f0 \cf2  |\
+| Cars | ~100 | 1\'963 per profile, picked from 12-row CAR_CATALOG (WRX STI, R34, MK4 Supra, S2000, Evo X, RX-7 FD, GTI, M3, 911, RS3, Mustang, S15) |\
+| car_images | ~600 | 6 angles per car (front/rear/side/rolling/detail/night) \'97 each angle pulled from a different subreddit so the angle matches |\
+| Posts | ~1800 | 18-entry build timeline per car, mix of all 5 types, spread across the last 420 days |\
+| post_media | ~2400 | 1\'962 per post |\
+| Modifications | ~1600 | 16 per car, 4 per category, brand-templated by build_type |\
+| Competitions | 4 | Rolling Shots / Engine Bay Flex / Best Night Shot / JDM Only |\
+| competition_entries | 48 | 12 per competition, images pulled from category-correct subreddits |\
+\
+
+\f1\b \cf2 Realism guardrails baked in
+\f0\b0 \cf2 \
+\'95 Image angle \uc0\u8594  subreddit map ensures angle-accurate photos (e.g. 
+\f2 \cf2 rolling
+\f0 \cf2  \uc0\u8594  
+\f2 \cf2 r/AmateurRollingShots
+\f0 \cf2 )\
+\'95 Mod templates by build_type (
+\f2 \cf2 Track
+\f0 \cf2  / 
+\f2 \cf2 JDM
+\f0 \cf2  / 
+\f2 \cf2 Show
+\f0 \cf2  / 
+\f2 \cf2 Daily
+\f0 \cf2  / 
+\f2 \cf2 Drift
+\f0 \cf2 ) \'97 never wheels-as-engine\
+\'95 Competition photos sourced from category subreddits \'97 JDM Only only pulls from 
+\f2 \cf2 r/JDM
+\f0 \cf2 , Night Shot only from 
+\f2 \cf2 r/carsatnight
+\f0 \cf2 \
+\'95 Likes/comments randomized within believable ranges (5-220 likes, 0-30 comments)\
+\'95 Posts dated across 420 days so the build feels like a real timeline\
+\
+
+\f1\b \cf2 Auth user creation
+\f0\b0 \cf2 \
+Uses 
+\f2 \cf2 auth.admin.createUser
+\f0 \cf2  with the service-role key \'97 this triggers the existing 
+\f2 \cf2 on_auth_user_created
+\f0 \cf2  Postgres trigger so 
+\f2 \cf2 public.profiles
+\f0 \cf2  is auto-created, then we 
+\f2 \cf2 UPDATE
+\f0 \cf2  it with the curated avatar/bio/location.\
+\
+
+\f1\b \cf2 Idempotency
+\f0\b0 \cf2 \
+\'95 Re-running creates duplicates (no 
+\f2 \cf2 on conflict
+\f0 \cf2  on posts/cars). For a clean re-seed, run 
+\f2 \cf2 truncate public.posts, public.cars, public.modifications, public.competitions cascade;
+\f0 \cf2  first.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\slleading60\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 UI rewiring plan (next, post-seed)
+\f0\b0\fs26 \cf2 \
+\
+Order I'll work through, smallest first:\
+\
+1. 
+\f1\b \cf2 Feed
+\f0\b0 \cf2  \'97 flip 
+\f2 \cf2 SERVER_POST_SELECT
+\f0 \cf2  to use the new FK name 
+\f2 \cf2 posts_profile_id_fkey
+\f0 \cf2  so the join works; the red error banner clears immediately.\
+2. 
+\f1\b \cf2 Profile car switcher
+\f0\b0 \cf2  \'97 bottom sheet on header tap, queries 
+\f2 \cf2 cars where profile_id
+\f0 \cf2 ; selected car drives 
+\f2 \cf2 modifications
+\f0 \cf2  and 
+\f2 \cf2 posts where car_id
+\f0 \cf2 .\
+3. 
+\f1\b \cf2 Timeline
+\f0\b0 \cf2  \'97 
+\f2 \cf2 posts join post_media where car_id = selected order by created_at desc
+\f0 \cf2 .\
+4. 
+\f1\b \cf2 Post gallery
+\f0\b0 \cf2  \'97 
+\f2 \cf2 posts where profile_id
+\f0 \cf2 , grid of 
+\f2 \cf2 post_media[0]
+\f0 \cf2 .\
+5. 
+\f1\b \cf2 Search pills
+\f0\b0 \cf2  \'97 add 
+\f2 \cf2 Builds
+\f0 \cf2  + 
+\f2 \cf2 Competitions
+\f0 \cf2  pills next to existing For You / Cars / Users; queries 
+\f2 \cf2 cars
+\f0 \cf2  and 
+\f2 \cf2 competitions
+\f0 \cf2  respectively.\
+6. 
+\f1\b \cf2 Competitions card
+\f0\b0 \cf2  \'97 swap the live Reddit fetch for 
+\f2 \cf2 competitions
+\f0 \cf2  + 
+\f2 \cf2 competition_entries
+\f0 \cf2  + 
+\f2 \cf2 competition_media
+\f0 \cf2  so investor demo is deterministic.\
+\
+Confirm seed ran clean (
+\f2 \cf2 npm run seed
+\f0 \cf2  to "done.") and I'll start with step 1 \'97 feed query fix.}

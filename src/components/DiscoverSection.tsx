@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Avatar } from './Avatar';
 import { T } from '../constants/theme';
-import { CONNS } from '../data/users';
+import { CONNS, ME } from '../data/users';
 
 type Props = {
   onProfile?: (c: any) => void;
@@ -10,7 +10,8 @@ type Props = {
 
 export function DiscoverSection({ onProfile }: Props) {
   const [followed, setFollowed] = useState<Record<string, boolean>>({});
-  const cards = CONNS.slice(0, 6);
+  // Don't suggest the current user to themselves.
+  const cards = CONNS.filter((c) => c.user !== ME.user && c.userId !== ME.id).slice(0, 6);
 
   return (
     <View style={{ paddingTop: 6, paddingBottom: 12 }}>

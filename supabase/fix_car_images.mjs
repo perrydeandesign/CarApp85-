@@ -73,8 +73,11 @@ const HANDLE_RULES = [
 const DEFAULT_RULE = ['Subaru', 'WRX STI', 'Track', 'subaru,wrx,sti'];
 
 function detect(username) {
+  // Underscore is a regex \w char, so \bsti\b never matches jake_sti.
+  // Normalize underscores → spaces before testing.
+  const normal = String(username || '').replace(/_/g, ' ');
   for (const [rx, make, model, build_type, tags] of HANDLE_RULES) {
-    if (rx.test(username)) return { make, model, build_type, tags };
+    if (rx.test(normal)) return { make, model, build_type, tags };
   }
   const [make, model, build_type, tags] = DEFAULT_RULE;
   return { make, model, build_type, tags };
@@ -143,44 +146,66 @@ async function main() {
   // 3. Fix every post_media so it matches its post's car, with a unique seed
   //    so two posts on the same car don't show the same photo.
   console.log('3. Updating post_media (this takes a bit) …');
-  const { data: posts, error: postErr } = await sb
-    .from('posts')
-    .select('id, car_id')
-    .limit(20000);
-  if (postErr) throw postErr;
-  const carByPost = new Map(posts.map((p) => [p.id, p.car_id]));
+  const carByPost = new Map();
+  {
+    const PAGE = 1000;
+    let from = 0;
+    while (true) {
+      const { data, error } = await sb
+        .from('posts')
+        .select('id, car_id')
+        .order('id', { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      data.forEach((p) => carByPost.set(p.id, p.car_id));
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    console.log(`   loaded ${carByPost.size} posts`);
+  }
 
-  const PAGE = 500;
+  // Fetch ALL post_media ids up-front (in pages) so we don't depend on
+  // PostgREST's range behaviour during the slow update loop.
+  const allMedia = [];
+  const PAGE = 1000;
   let from = 0;
-  let mediaFixed = 0;
   while (true) {
-    const { data: media, error: mErr } = await sb
+    const { data, error } = await sb
       .from('post_media')
       .select('id, post_id')
+      .order('id', { ascending: true })
       .range(from, from + PAGE - 1);
-    if (mErr) throw mErr;
-    if (!media || media.length === 0) break;
-
-    for (const m of media) {
-      const carId = carByPost.get(m.post_id);
-      const rule = carId ? carRule.get(carId) : null;
-      if (!rule) continue;
-      const seed = hash(m.id);
-      const { error } = await sb
-        .from('post_media')
-        .update({ media_url: flickr(rule.tags, seed) })
-        .eq('id', m.id);
-      if (error) {
-        console.error(`  ✗ media ${m.id}:`, error.message);
-        continue;
-      }
-      mediaFixed++;
-    }
-    process.stdout.write(`   ${mediaFixed} updated\r`);
-    if (media.length < PAGE) break;
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allMedia.push(...data);
+    if (data.length < PAGE) break;
     from += PAGE;
   }
-  console.log(`\n   updated ${mediaFixed} post_media rows`);
+  console.log(`   ${allMedia.length} post_media rows to update`);
+
+  let mediaFixed = 0;
+  let mediaSkipped = 0;
+  for (let i = 0; i < allMedia.length; i++) {
+    const m = allMedia[i];
+    const carId = carByPost.get(m.post_id);
+    const rule = carId ? carRule.get(carId) : null;
+    if (!rule) { mediaSkipped++; continue; }
+    const seed = hash(m.id);
+    const newUrl = flickr(rule.tags, seed);
+    let attempt = 0;
+    while (attempt < 3) {
+      const { error } = await sb
+        .from('post_media')
+        .update({ media_url: newUrl })
+        .eq('id', m.id);
+      if (!error) { mediaFixed++; break; }
+      attempt++;
+      if (attempt >= 3) console.error(`  ✗ media ${m.id}:`, error.message);
+    }
+    if (i % 100 === 0) process.stdout.write(`   ${mediaFixed}/${allMedia.length}\r`);
+  }
+  console.log(`\n   updated ${mediaFixed} post_media rows (skipped ${mediaSkipped})`);
 
   console.log('done.');
 }

@@ -6,6 +6,9 @@
 //
 // Deploy:  supabase functions deploy mirror-image
 // Call:    POST { "url": "https://upload.wikimedia.org/..." }
+//          Requires a valid user JWT (Authorization: Bearer …) — supabase-js
+//          functions.invoke() attaches it automatically. Only allow-listed
+//          https hosts are mirrored (see ALLOWED_HOSTS), max 15 MB.
 //          → { "storageUrl": "https://<proj>.supabase.co/storage/v1/.../media/mirror/<hash>.jpg" }
 //
 // Wire-up idea: in FadeInImage, if the source is a wikimedia URL, fire-and-
@@ -17,6 +20,27 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const BUCKET = 'media';
 const PREFIX = 'mirror';
 
+// Only mirror from these hosts. Prevents SSRF (file://, internal metadata IPs,
+// arbitrary attacker-chosen origins) and abuse of the function as an open proxy.
+const ALLOWED_HOSTS = new Set([
+  'upload.wikimedia.org',
+  'commons.wikimedia.org',
+]);
+
+// Cap the mirrored payload so the function can't be used to pull huge files.
+const MAX_BYTES = 15 * 1024 * 1024; // 15 MB
+
+/** Returns true only for https URLs whose host is explicitly allow-listed. */
+function isAllowedUrl(raw: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    return false;
+  }
+  return u.protocol === 'https:' && ALLOWED_HOSTS.has(u.hostname);
+}
+
 async function sha1Hex(s: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(s));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 20);
@@ -24,9 +48,29 @@ async function sha1Hex(s: string): Promise<string> {
 
 Deno.serve(async (req) => {
   try {
+    // 1. Require an authenticated caller — the function is not an open proxy.
+    const authHeader = req.headers.get('Authorization') ?? '';
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401 });
+    }
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: userData, error: authErr } = await authClient.auth.getUser();
+    if (authErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401 });
+    }
+
     const { url } = await req.json();
     if (!url || typeof url !== 'string') {
       return new Response(JSON.stringify({ error: 'missing url' }), { status: 400 });
+    }
+
+    // 2. Only mirror from allow-listed https hosts (SSRF / abuse guard).
+    if (!isAllowedUrl(url)) {
+      return new Response(JSON.stringify({ error: 'url not allowed' }), { status: 400 });
     }
 
     const supabase = createClient(
@@ -49,7 +93,15 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       return new Response(JSON.stringify({ error: `fetch ${res.status}` }), { status: 502 });
     }
+    // 3. Enforce a size cap — reject oversized payloads (declared or actual).
+    const declared = Number(res.headers.get('content-length') ?? '0');
+    if (declared > MAX_BYTES) {
+      return new Response(JSON.stringify({ error: 'image too large' }), { status: 413 });
+    }
     const bytes = new Uint8Array(await res.arrayBuffer());
+    if (bytes.byteLength > MAX_BYTES) {
+      return new Response(JSON.stringify({ error: 'image too large' }), { status: 413 });
+    }
     const { error } = await supabase.storage.from(BUCKET).upload(name, bytes, {
       contentType: res.headers.get('content-type') || 'image/jpeg',
       upsert: true,

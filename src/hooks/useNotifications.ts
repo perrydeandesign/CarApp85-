@@ -8,8 +8,12 @@ export type Notification = {
   type: NotifType;
   body: string | null;
   read: boolean;
+  /** Compat shim: `readAt` mirrors `!!read` so legacy consumers keep working. */
+  readAt: string | null;
+  /** Compat shim — v2 schema has no postId; kept null for compatibility. */
+  postId: string | null;
   createdAt: string;
-  actor: { username: string; avatarUrl: string };
+  actor: { id: string; username: string; avatarUrl: string };
 };
 
 type ServerRow = {
@@ -18,12 +22,12 @@ type ServerRow = {
   body: string | null;
   read: boolean;
   created_at: string;
-  actor: { username: string; avatar_url: string | null } | null;
+  actor: { id: string; username: string; avatar_url: string | null } | null;
 };
 
 const SELECT = `
   id, type, body, read, created_at,
-  actor:profiles!notifications_actor_id_fkey ( username, avatar_url )
+  actor:profiles!notifications_actor_id_fkey ( id, username, avatar_url )
 `;
 
 /**
@@ -52,8 +56,11 @@ export function useNotifications(profileId: string | null, pageSize = 30) {
       type: r.type,
       body: r.body,
       read: r.read,
+      readAt: r.read ? r.created_at : null,
+      postId: null,
       createdAt: r.created_at,
       actor: {
+        id: r.actor?.id ?? '',
         username: r.actor?.username ?? 'someone',
         avatarUrl: r.actor?.avatar_url ?? '',
       },

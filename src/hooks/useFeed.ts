@@ -43,16 +43,16 @@ async function fetchEngagementFlags(
     authorIds.length > 0
       ? supabase
           .from('follows')
-          .select('followee_id')
+          .select('following_id')
           .eq('follower_id', uid)
-          .in('followee_id', authorIds)
-      : Promise.resolve({ data: [] as { followee_id: string }[], error: null } as any),
+          .in('following_id', authorIds)
+      : Promise.resolve({ data: [] as { following_id: string }[], error: null } as any),
   ]);
 
   return {
     likedPostIds: new Set((likes.data ?? []).map((r: any) => r.post_id)),
     savedPostIds: new Set((saves.data ?? []).map((r: any) => r.post_id)),
-    followedAuthorIds: new Set((follows.data ?? []).map((r: any) => r.followee_id)),
+    followedAuthorIds: new Set((follows.data ?? []).map((r: any) => r.following_id)),
   };
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { captureError } from '../lib/observability';
 
 export type ConversationRow = {
   id: string;
@@ -37,19 +38,27 @@ export function useConversations(meId: string | null) {
       if (convIds.length === 0) { if (!cancelled) { setData([]); setLoading(false); } return; }
 
       // 2. The OTHER participant in each conversation
-      const { data: others } = await supabase
+      const { data: others, error: oErr } = await supabase
         .from('conversation_members')
         .select('conversation_id, profile:profiles ( id, username, avatar_url )')
         .in('conversation_id', convIds)
         .neq('profile_id', meId);
 
       // 3. Last message per conversation (one round-trip; client picks max)
-      const { data: msgs } = await supabase
+      const { data: msgs, error: msgErr } = await supabase
         .from('messages')
         .select('conversation_id, body, created_at')
         .in('conversation_id', convIds)
         .order('created_at', { ascending: false })
         .limit(convIds.length * 5);
+
+      // Steps 2/3 are non-fatal (we can still list conversations by id), but
+      // surface the failure instead of silently showing a degraded list.
+      if (!cancelled && (oErr || msgErr)) {
+        const e = (oErr ?? msgErr)!;
+        setError(e.message);
+        captureError(e, { hook: 'useConversations', step: oErr ? 'others' : 'messages', meId });
+      }
 
       const lastByConv = new Map<string, { body: string; createdAt: string }>();
       for (const m of msgs ?? []) {
@@ -76,7 +85,10 @@ export function useConversations(meId: string | null) {
       }).sort((a, b) => (b.lastAt ?? '').localeCompare(a.lastAt ?? ''));
 
       if (!cancelled) { setData(rows); setLoading(false); }
-    })().catch((e) => { if (!cancelled) { setError(e.message); setLoading(false); } });
+    })().catch((e) => {
+      if (!cancelled) { setError(e.message); setLoading(false); }
+      captureError(e, { hook: 'useConversations', meId });
+    });
     return () => { cancelled = true; };
   }, [meId]);
 
@@ -87,18 +99,26 @@ export function useConversations(meId: string | null) {
 export function useMessages(conversationId: string | null) {
   const [data, setData] = useState<MessageRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!conversationId) return;
     let cancelled = false;
     setLoading(true);
+    setError(null);
     supabase
       .from('messages')
       .select('id, conversation_id, sender_id, body, created_at')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true })
-      .then(({ data: rows }) => {
+      .then(({ data: rows, error: err }) => {
         if (cancelled) return;
+        if (err) {
+          setError(err.message);
+          setLoading(false);
+          captureError(err, { hook: 'useMessages', conversationId });
+          return;
+        }
         setData(
           (rows ?? []).map((r) => ({
             id: r.id,
@@ -113,5 +133,5 @@ export function useMessages(conversationId: string | null) {
     return () => { cancelled = true; };
   }, [conversationId]);
 
-  return { data, loading };
+  return { data, loading, error };
 }

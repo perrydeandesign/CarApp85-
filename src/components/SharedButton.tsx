@@ -8,6 +8,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { PressableScale } from '../ui/PressableScale';
+import { haptic } from '../lib/haptics';
 import { T, IC } from '../constants/theme';
 
 const TAB_ITEMS: { key: string; icon: string; label: string }[] = [
@@ -47,7 +48,7 @@ function TabIcon({
         <Ionicons
           name={active ? (item.icon.replace('-outline', '') as any) : item.icon}
           size={IC.tab}
-          color={active ? T.accent : T.mu}
+          color={active ? T.accent : T.wh}
         />
       </Animated.View>
       <View
@@ -76,7 +77,15 @@ export function BottomTabBar({ active, onTab }: { active: string; onTab: (k: str
       }}
     >
       {TAB_ITEMS.map((t) => (
-        <TabIcon key={t.key} item={t} active={active === t.key} onPress={() => onTab(t.key)} />
+        <TabIcon
+          key={t.key}
+          item={t}
+          active={active === t.key}
+          onPress={() => {
+            haptic('selection');
+            onTab(t.key);
+          }}
+        />
       ))}
     </View>
   );
