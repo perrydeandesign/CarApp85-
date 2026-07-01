@@ -11,4 +11,4 @@
  * everything to the logged-in user (see useMeProfile). This flag only controls
  * whether the login screen is enforced.
  */
-export const SKIP_AUTH = true;
+export const SKIP_AUTH = false;
