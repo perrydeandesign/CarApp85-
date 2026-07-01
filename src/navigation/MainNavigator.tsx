@@ -7,6 +7,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../constants/theme';
 import type { Conn } from '../constants/types';
 import { signOut, deleteAccount } from '../auth/emailAuth';
+import { SettingsRoot } from '../screens/Settings/SettingsRoot';
 
 import { Avatar } from '../components/Avatar';
 import { NotifDrop } from '../components/NotifDrop';
@@ -104,7 +105,7 @@ function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNa
     { icon: 'home-outline', label: 'Home', action: () => { navigation.closeDrawer(); onNavigate('home'); } },
     { icon: 'chatbubbles-outline', label: 'Messages', action: () => { navigation.closeDrawer(); onNavigate('messages'); } },
     { icon: 'create-outline', label: 'Edit Profile', action: () => { navigation.closeDrawer(); onNavigate('home'); } },
-    { icon: 'settings-outline', label: 'Settings', action: () => { navigation.closeDrawer(); Alert.alert('Settings', 'Coming soon'); } },
+    { icon: 'settings-outline', label: 'Settings', action: () => { navigation.closeDrawer(); onNavigate('settings'); } },
     { icon: 'help-circle-outline', label: 'Help', action: () => { navigation.closeDrawer(); Alert.alert('Help', 'support@modified.app'); } },
   ];
 
@@ -254,12 +255,13 @@ function MainWithDrawer({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
 
 export function MainNavigator() {
   // Self-managed screen routing so AppNavigator can render <MainNavigator /> with no props.
-  const [screen, setScreen] = useState<'home' | 'messages'>('home');
+  const [screen, setScreen] = useState<'home' | 'messages' | 'settings'>('home');
 
   const goHome = () => setScreen('home');
   const goMessages = () => setScreen('messages');
   const handleNavigate = (s: string) => {
     if (s === 'messages') setScreen('messages');
+    else if (s === 'settings') setScreen('settings');
     else setScreen('home');
   };
 
@@ -269,6 +271,10 @@ export function MainNavigator() {
         <MessagesStack />
       </GoHomeContext.Provider>
     );
+  }
+
+  if (screen === 'settings') {
+    return <SettingsRoot onClose={goHome} />;
   }
 
   return <MainWithDrawer onMsg={goMessages} onNavigate={handleNavigate} />;
