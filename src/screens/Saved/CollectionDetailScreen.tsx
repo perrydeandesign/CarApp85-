@@ -88,7 +88,7 @@ export const CollectionDetailScreen: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#05070B' },
+  container: { flex: 1, backgroundColor: '#0D1117' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

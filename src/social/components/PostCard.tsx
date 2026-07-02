@@ -167,7 +167,7 @@ export const PostCard: React.FC<Props> = ({
 };
 
 const stylesCard = StyleSheet.create({
-  container: { backgroundColor: '#05070B', marginBottom: 16 },
+  container: { backgroundColor: '#0D1117', marginBottom: 16 },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',

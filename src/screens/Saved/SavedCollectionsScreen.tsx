@@ -188,7 +188,7 @@ export const SavedCollectionsScreen: React.FC<Props> = ({ onBack }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#05070B' },
+  container: { flex: 1, backgroundColor: '#0D1117' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

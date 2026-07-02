@@ -127,7 +127,7 @@ export default function PostDetailRoute({ route }: any) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#05070B' },
+  safe: { flex: 1, backgroundColor: '#0D1117' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1167,16 +1167,16 @@ export function FloatingYearPicker({ years, selected, onSelect }: { years: numbe
     <View style={{ position: 'absolute', right: 12, top: 8, zIndex: 50, alignItems: 'flex-end' }}>
       {/* Collapsed pill */}
       {!expanded && (
-        <TouchableOpacity onPress={toggle} activeOpacity={0.8} style={{ backgroundColor: '#0F0F0F', borderWidth: 1, borderColor: '#00D1C1', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 6, elevation: 8 }}>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: '#00D1C1' }}>{selected}</Text>
+        <TouchableOpacity onPress={toggle} activeOpacity={0.8} style={{ backgroundColor: '#0F0F0F', borderWidth: 1, borderColor: '#00C9A7', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 6, elevation: 8 }}>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: '#00C9A7' }}>{selected}</Text>
         </TouchableOpacity>
       )}
       {/* Expanded picker */}
       {expanded && (
-        <Animated.View style={{ backgroundColor: '#0F0F0F', borderWidth: 1, borderColor: '#00D1C1', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 12, elevation: 12, opacity: animVal, transform: [{ scale: animVal.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }] }}>
+        <Animated.View style={{ backgroundColor: '#0F0F0F', borderWidth: 1, borderColor: '#00C9A7', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 12, elevation: 12, opacity: animVal, transform: [{ scale: animVal.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }] }}>
           {sorted.map(y => (
             <TouchableOpacity key={y} onPress={() => selectYear(y)} style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: y === selected ? 'rgba(0,209,193,0.12)' : 'transparent' }}>
-              <Text style={{ fontSize: 13, fontWeight: y === selected ? '700' : '500', color: y === selected ? '#00D1C1' : '#888' }}>{y}</Text>
+              <Text style={{ fontSize: 13, fontWeight: y === selected ? '700' : '500', color: y === selected ? '#00C9A7' : '#888' }}>{y}</Text>
             </TouchableOpacity>
           ))}
           <View style={{ height: 1, backgroundColor: '#222', marginVertical: 4, marginHorizontal: 8 }} />
@@ -1198,7 +1198,7 @@ export function ProfilePostsTab({ photos }: { photos: string[] }) {
   const galleryPhotos: GalleryPhoto[] = photos.map((url, i) => ({ id: `pp_${i}`, url, car: '' }));
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+    <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: GAP }}>
         {photos.map((url, i) => (
           <TouchableOpacity key={i} onPress={() => setViewerIdx(i)} activeOpacity={0.85}>
@@ -1220,7 +1220,7 @@ export function ProfileVideosTab({ videos }: { videos: { thumbnail: string; vide
   const tileSize = (SCREEN_W - GAP * 2) / 3;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+    <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: GAP }}>
         {videos.map((v, i) => (
           <TouchableOpacity key={i} onPress={() => setViewerIdx(i)} activeOpacity={0.85} style={{ width: tileSize, height: tileSize }}>
@@ -1239,8 +1239,8 @@ export function ProfileVideosTab({ videos }: { videos: { thumbnail: string; vide
           <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}>
             <Image source={{ uri: videos[viewerIdx].thumbnail }} style={{ width: SCREEN_W, height: SCREEN_W }} resizeMode="contain" />
             <View style={{ ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' }}>
-              <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(0,209,193,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#00D1C1' }}>
-                <Ionicons name="play" size={28} color="#00D1C1" style={{ marginLeft: 3 }} />
+              <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(0,209,193,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#00C9A7' }}>
+                <Ionicons name="play" size={28} color="#00C9A7" style={{ marginLeft: 3 }} />
               </View>
               <Text style={{ color: '#C9D1D9', fontSize: 12, marginTop: 12 }}>Video playback coming soon</Text>
             </View>

@@ -57,7 +57,7 @@ const AZ_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export function VendorDirectoryScreen({ initialCategory, onBack, onVendor }: { initialCategory?: string; onBack: () => void; onVendor: (v: Vendor) => void }) {
   return (
-    <View style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+    <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
 
@@ -94,7 +94,7 @@ export function VendorTab() {
   const TILE_W = (SCREEN_W - 32 - GRID_GAP) / 2;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+    <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
     <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
       {/* Title */}
       <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
@@ -134,8 +134,8 @@ export function VendorTab() {
             backgroundColor: fitsOnly ? T.accent : 'transparent',
           }}
         >
-          <Ionicons name="car-sport" size={15} color={fitsOnly ? '#05070A' : T.accent} />
-          <Text style={{ fontSize: 13, fontWeight: '700', color: fitsOnly ? '#05070A' : 'white' }}>
+          <Ionicons name="car-sport" size={15} color={fitsOnly ? '#0D1117' : T.accent} />
+          <Text style={{ fontSize: 13, fontWeight: '700', color: fitsOnly ? '#0D1117' : 'white' }}>
             Fits your car
           </Text>
         </TouchableOpacity>

@@ -9,7 +9,7 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
   const fits = product.fitsSelectedCar ?? productFitsGarage(product).fits;
   const vendor = VENDORS.find(v => v.id === product.vendorId);
   return (
-    <View style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+    <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Product Image */}
         <View style={{ height: 260, backgroundColor: product.color }}>

@@ -50,7 +50,7 @@ export function VStore({ vendor, onBack }: { vendor: Vendor; onBack?: () => void
 
   if (selectedProduct) return <ProductDetailScreen product={selectedProduct} onBack={() => setSelectedProduct(null)} />;
   return (
-    <View style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+    <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero image */}
         <View style={{ height: 220, backgroundColor: vendor.color }}>

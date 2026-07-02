@@ -147,7 +147,7 @@ export const UserPickerModal: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#05070B' },
+  safe: { flex: 1, backgroundColor: '#0D1117' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

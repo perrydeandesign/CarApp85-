@@ -8,6 +8,9 @@ export const T = {
   // on the dark backgrounds while staying a touch below pure white for hierarchy.
   mu: '#C9D1D9', tx: '#F0F6FC', tx2: '#C9D1D9', wh: '#FFFFFF',
   accent: '#00C9A7', accentDim: 'rgba(0,201,167,0.12)',
+  // Text/icons placed ON the bright teal accent — dark for WCAG contrast
+  // (white-on-teal fails). Use for primary-CTA labels.
+  onAccent: '#04110E',
   danger: '#F87171', me: '#00C9A7', them: '#161B2E',
   ac: '#00C9A7', cd: '#161B22', cd2: '#21262D',
 };
@@ -23,9 +26,23 @@ export const SP = {
   xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24,
 } as const;
 
-// Canonical radii.
+// Canonical radii. sm=8 md=12 lg=16 xl=18(sheets) pill=999.
 export const RADIUS = {
-  sm: 8, md: 12, lg: 16, pill: 999,
+  sm: 8, md: 12, lg: 16, xl: 18, pill: 999,
+} as const;
+
+// Typography scale — snap text to these so titles/body/meta stay consistent.
+// display=page hero, h1=screen title, h2=modal/section, title=row/card title,
+// body=primary, label=secondary action, caption=muted meta, small=badges.
+export const TYPO = {
+  display: { fontSize: 28, fontWeight: '800' as const },
+  h1: { fontSize: 22, fontWeight: '800' as const },
+  h2: { fontSize: 17, fontWeight: '700' as const },
+  title: { fontSize: 15, fontWeight: '700' as const },
+  body: { fontSize: 15, fontWeight: '500' as const },
+  label: { fontSize: 14, fontWeight: '600' as const },
+  caption: { fontSize: 12, fontWeight: '600' as const },
+  small: { fontSize: 11, fontWeight: '600' as const },
 } as const;
 
 // Standard screen gutter (horizontal page padding).

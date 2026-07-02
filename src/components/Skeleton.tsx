@@ -80,6 +80,6 @@ export function GridTileSkeleton() {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#05070B', marginBottom: 16 },
+  card: { backgroundColor: '#0D1117', marginBottom: 16 },
   row: { flexDirection: 'row', alignItems: 'center', padding: 12 },
 });

@@ -39,7 +39,7 @@ const stylesComment = StyleSheet.create({
     padding: 12,
     borderTopWidth: 1,
     borderTopColor: '#1A1F2A',
-    backgroundColor: '#05070B',
+    backgroundColor: '#0D1117',
     alignItems: 'center',
   },
   input: {
