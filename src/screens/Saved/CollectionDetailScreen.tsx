@@ -44,7 +44,7 @@ export const CollectionDetailScreen: React.FC<Props> = ({
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={26} color="#fff" />
+          <Ionicons name="chevron-back" size={26} color="#F0F6FC" />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{name}</Text>
         <View style={styles.headerActions}>
@@ -76,7 +76,7 @@ export const CollectionDetailScreen: React.FC<Props> = ({
                   onPress={() => onRemovePost(p.id)}
                   hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                 >
-                  <Ionicons name="close-circle" size={22} color="#fff" />
+                  <Ionicons name="close-circle" size={22} color="#F0F6FC" />
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#1A1F2A',
   },
   headerTitle: {
-    color: '#fff',
+    color: '#F0F6FC',
     fontSize: 17,
     fontWeight: '700',
     flex: 1,
@@ -135,6 +135,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 36,
   },
-  emptyTitle: { color: '#fff', fontSize: 16, fontWeight: '700', marginTop: 12 },
+  emptyTitle: { color: '#F0F6FC', fontSize: 16, fontWeight: '700', marginTop: 12 },
   emptyBody: { color: '#C9D1D9', textAlign: 'center', marginTop: 6 },
 });

@@ -131,7 +131,7 @@ export default function PostPreview({ route, navigation }) {
 
         <Text style={styles.label}>Tag people</Text>
         <TouchableOpacity onPress={() => setPickerOpen(true)} style={styles.tagBtn}>
-          <Ionicons name="pricetag-outline" size={16} color="#fff" />
+          <Ionicons name="pricetag-outline" size={16} color="#F0F6FC" />
           <Text style={styles.tagBtnText}>
             {taggedUsernames.length === 0 ? 'Add people' : `${taggedUsernames.length} tagged`}
           </Text>
@@ -144,7 +144,7 @@ export default function PostPreview({ route, navigation }) {
               <View key={u} style={styles.taggedChip}>
                 <Text style={styles.taggedChipText}>@{u}</Text>
                 <TouchableOpacity onPress={() => setTaggedUsernames((prev) => prev.filter((x) => x !== u))}>
-                  <Ionicons name="close" size={14} color="#fff" />
+                  <Ionicons name="close" size={14} color="#F0F6FC" />
                 </TouchableOpacity>
               </View>
             ))}
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     borderColor: '#333',
     paddingHorizontal: 10,
     paddingVertical: 8,
-    color: '#fff',
+    color: '#F0F6FC',
     marginBottom: 8,
     fontSize: 14,
     minHeight: 44,
@@ -243,8 +243,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 4,
   },
-  previewAuthor: { color: '#fff', fontWeight: '600', fontSize: 14, lineHeight: 20 },
-  previewCaption: { color: '#fff', fontSize: 14, fontWeight: '400' },
+  previewAuthor: { color: '#F0F6FC', fontWeight: '600', fontSize: 14, lineHeight: 20 },
+  previewCaption: { color: '#F0F6FC', fontSize: 14, fontWeight: '400' },
   tokensRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1F2A33',
   },
   mentionChip: { backgroundColor: '#0E5C4F' },
-  tokenText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  tokenText: { color: '#F0F6FC', fontSize: 12, fontWeight: '600' },
   tagBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     borderColor: '#333',
     borderRadius: 8,
   },
-  tagBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  tagBtnText: { color: '#F0F6FC', fontWeight: '600', fontSize: 14 },
   taggedRow: { gap: 6, marginTop: 6, paddingVertical: 4 },
   taggedChip: {
     flexDirection: 'row',
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 12,
   },
-  taggedChipText: { color: '#fff', fontWeight: '600', fontSize: 12 },
+  taggedChipText: { color: '#F0F6FC', fontWeight: '600', fontSize: 12 },
   row: { flexDirection: 'row', gap: 8, marginTop: 4 },
   col: { flex: 1 },
   button: {
@@ -291,5 +291,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  buttonText: { color: '#F0F6FC', fontWeight: '600', fontSize: 15 },
 });

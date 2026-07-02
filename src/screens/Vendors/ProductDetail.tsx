@@ -27,7 +27,7 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
 
         {/* Product Info */}
         <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: 'white' }}>{product.name}</Text>
+          <Text style={{ fontSize: 20, fontWeight: '800', color: '#F0F6FC' }}>{product.name}</Text>
           {product.brand ? <Text style={{ fontSize: 14, color: '#C9D1D9', marginTop: 4 }}>{product.brand}</Text> : null}
 
           {/* Price */}
@@ -48,14 +48,14 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
           <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginTop: 16 }} />
 
           {/* Fitment */}
-          <Text style={{ fontSize: 17, fontWeight: '700', color: 'white', marginTop: 16 }}>Fitment</Text>
+          <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', marginTop: 16 }}>Fitment</Text>
           <Text style={{ fontSize: 15, color: '#C9D1D9', lineHeight: 22, marginTop: 6 }}>{product.fitment || product.compat}</Text>
 
           {/* Divider */}
           <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginTop: 16 }} />
 
           {/* Description */}
-          <Text style={{ fontSize: 17, fontWeight: '700', color: 'white', marginTop: 16 }}>Description</Text>
+          <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', marginTop: 16 }}>Description</Text>
           <Text style={{ fontSize: 15, color: '#C9D1D9', lineHeight: 22, marginTop: 6 }}>{product.desc}</Text>
         </View>
 

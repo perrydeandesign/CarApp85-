@@ -45,7 +45,7 @@ export default function CameraScreen({ navigation }) {
   };
 
   if (!device) {
-    return <ActivityIndicator style={{ flex: 1 }} color="#fff" />;
+    return <ActivityIndicator style={{ flex: 1 }} color="#F0F6FC" />;
   }
 
   return (
@@ -62,7 +62,7 @@ export default function CameraScreen({ navigation }) {
 
           <View style={styles.topBar}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Ionicons name="close" size={32} color="#fff" />
+              <Ionicons name="close" size={32} color="#F0F6FC" />
             </TouchableOpacity>
           </View>
 
@@ -78,7 +78,7 @@ export default function CameraScreen({ navigation }) {
 
           <View style={styles.previewActions}>
             <TouchableOpacity onPress={retake} style={styles.actionButton}>
-              <Ionicons name="refresh" size={28} color="#fff" />
+              <Ionicons name="refresh" size={28} color="#F0F6FC" />
               <Text style={styles.actionText}>Retake</Text>
             </TouchableOpacity>
 
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     borderWidth: 6,
-    borderColor: '#fff',
+    borderColor: '#F0F6FC',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   innerCircle: {
     width: 60,
     height: 60,
-    backgroundColor: '#fff',
+    backgroundColor: '#F0F6FC',
     borderRadius: 30,
   },
 
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
 
   actionText: {
-    color: '#fff',
+    color: '#F0F6FC',
     marginTop: 6,
     fontSize: 14,
   },

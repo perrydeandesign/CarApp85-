@@ -26,7 +26,7 @@ export function VendorCard({ vendor, onPress }: { vendor: Vendor; onPress: () =>
       <View style={{ padding: 12 }}>
         {/* Name + Fits badge */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={{ color: 'white', fontSize: 16, fontWeight: '700', flex: 1 }}>{vendor.name}</Text>
+          <Text style={{ color: '#F0F6FC', fontSize: 16, fontWeight: '700', flex: 1 }}>{vendor.name}</Text>
           {fits && (
             <View style={{ borderWidth: 1, borderColor: T.accent, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, marginLeft: 8 }}>
               <Text style={{ fontSize: 11, fontWeight: '600', color: T.accent }}>Fits Car</Text>
@@ -59,7 +59,7 @@ export function VendorDirectoryScreen({ initialCategory, onBack, onVendor }: { i
   return (
     <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
+        <Text style={{ fontSize: 28, fontWeight: '800', color: '#F0F6FC', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
 
         {VENDORS.map(vendor => (
           <View key={vendor.id} style={{ paddingHorizontal: 16, marginTop: 16 }}>
@@ -97,7 +97,7 @@ export function VendorTab() {
     <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
     <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
       {/* Title */}
-      <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
+      <Text style={{ fontSize: 28, fontWeight: '800', color: '#F0F6FC', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
 
       {/* 2x2 Category Grid */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: GRID_GAP, paddingHorizontal: 16, marginTop: 16 }}>
@@ -110,7 +110,7 @@ export function VendorTab() {
               onPress={() => setSelectedCategory(isSelected ? null : cat)}
               style={{ width: TILE_W, padding: 12, backgroundColor: isSelected ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)', borderRadius: 12, borderWidth: isSelected ? 1 : 0, borderColor: isSelected ? T.accent : 'transparent' }}
             >
-              <Text style={{ fontSize: 14, fontWeight: '700', color: 'white' }} numberOfLines={1}>{CAT_TITLE[cat] || cat}</Text>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#F0F6FC' }} numberOfLines={1}>{CAT_TITLE[cat] || cat}</Text>
               <Text style={{ fontSize: 11, color: '#C9D1D9', marginTop: 4, lineHeight: 15 }} numberOfLines={2}>{CAT_SUBTITLE[cat]}</Text>
             </TouchableOpacity>
           );
@@ -135,7 +135,7 @@ export function VendorTab() {
           }}
         >
           <Ionicons name="car-sport" size={15} color={fitsOnly ? '#0D1117' : T.accent} />
-          <Text style={{ fontSize: 13, fontWeight: '700', color: fitsOnly ? '#0D1117' : 'white' }}>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: fitsOnly ? '#0D1117' : '#F0F6FC' }}>
             Fits your car
           </Text>
         </TouchableOpacity>
@@ -143,7 +143,7 @@ export function VendorTab() {
 
       {/* Vendor List */}
       <View style={{ marginTop: 20 }}>
-        <Text style={{ fontSize: 17, fontWeight: '700', color: 'white', paddingHorizontal: 16, marginBottom: 12 }}>
+        <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', paddingHorizontal: 16, marginBottom: 12 }}>
           {fitsOnly ? 'Vendors that fit your car' : 'Vendors'}
         </Text>
         {filteredVendors.length === 0 && (
@@ -161,7 +161,7 @@ export function VendorTab() {
       {/* Trending Products */}
       {trendingProducts.length > 0 && (
         <View style={{ marginTop: 16 }}>
-          <Text style={{ fontSize: 17, fontWeight: '700', color: 'white', paddingHorizontal: 16, marginBottom: 8 }}>Trending Products</Text>
+          <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', paddingHorizontal: 16, marginBottom: 8 }}>Trending Products</Text>
           {trendingProducts.map((p, i) => (
             <View key={i} style={{ paddingHorizontal: 16, marginBottom: 8 }}>
               <VendorProductRow product={p} onPress={() => { setSelProd(p); setScreen('product'); }} />

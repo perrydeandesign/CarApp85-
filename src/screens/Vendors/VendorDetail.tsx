@@ -22,7 +22,7 @@ export function VendorProductRow({ product, onPress }: { product: VProduct; onPr
       </View>
       {/* Name, brand, price */}
       <View style={{ flex: 1, justifyContent: 'center' }}>
-        <Text style={{ fontSize: 14, fontWeight: '700', color: 'white', marginBottom: 3 }} numberOfLines={2}>{product.name}</Text>
+        <Text style={{ fontSize: 14, fontWeight: '700', color: '#F0F6FC', marginBottom: 3 }} numberOfLines={2}>{product.name}</Text>
         {product.brand ? <Text style={{ fontSize: 12, color: '#C9D1D9', marginBottom: 4 }}>{product.brand}</Text> : null}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Text style={{ fontSize: 14, fontWeight: '700', color: T.accent }}>${product.price}</Text>
@@ -70,7 +70,7 @@ export function VStore({ vendor, onBack }: { vendor: Vendor; onBack?: () => void
 
         {/* Vendor info */}
         <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
-          <Text style={{ fontSize: 24, fontWeight: '800', color: 'white' }}>{vendor.name}</Text>
+          <Text style={{ fontSize: 24, fontWeight: '800', color: '#F0F6FC' }}>{vendor.name}</Text>
           <Text style={{ fontSize: 15, color: '#C9D1D9', lineHeight: 22, marginTop: 8 }}>{vendor.desc}</Text>
           {cats.length > 0 && (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
@@ -92,7 +92,7 @@ export function VStore({ vendor, onBack }: { vendor: Vendor; onBack?: () => void
             <Text style={{ fontSize: 12, fontWeight: '700', color: following ? T.accent : '#000' }}>{following ? 'Following' : 'Follow'}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { if (vendor.website) Linking.openURL(vendor.website); }} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(96,165,250,0.8)', borderRadius: 12 }}>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: 'white' }}>Website</Text>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: '#F0F6FC' }}>Website</Text>
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
           <TouchableOpacity onPress={async () => { try { await Share.share({ message: `Check out ${vendor.name} on MODIFIED` }); } catch (_) {} }} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' }}>
@@ -102,7 +102,7 @@ export function VStore({ vendor, onBack }: { vendor: Vendor; onBack?: () => void
 
         {/* Products */}
         <View style={{ marginTop: 24 }}>
-          <Text style={{ fontSize: 17, fontWeight: '700', color: 'white', paddingHorizontal: 16, marginBottom: 12 }}>Products</Text>
+          <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', paddingHorizontal: 16, marginBottom: 12 }}>Products</Text>
           <View style={{ paddingHorizontal: 16, gap: 12 }}>
             {vendorProds.map((p, i) => (
               <VendorProductRow key={i} product={p} onPress={() => setSelectedProduct(p)} />

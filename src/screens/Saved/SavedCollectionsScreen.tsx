@@ -92,7 +92,7 @@ export const SavedCollectionsScreen: React.FC<Props> = ({ onBack }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={26} color="#fff" />
+          <Ionicons name="chevron-back" size={26} color="#F0F6FC" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Saved</Text>
         <View style={{ width: 26 }} />
@@ -107,14 +107,14 @@ export const SavedCollectionsScreen: React.FC<Props> = ({ onBack }) => {
             <Image source={{ uri: savedPosts[0].mediaUrl }} style={styles.savedCover} />
           ) : (
             <View style={[styles.savedCover, styles.coverPlaceholder]}>
-              <Ionicons name="bookmark-outline" size={22} color="#fff" />
+              <Ionicons name="bookmark-outline" size={22} color="#F0F6FC" />
             </View>
           )}
           <View style={styles.savedTextBlock}>
             <Text style={styles.savedTitle}>Saved</Text>
             <Text style={styles.savedSubtitle}>Private</Text>
           </View>
-          <Ionicons name="bookmark" size={22} color="#fff" />
+          <Ionicons name="bookmark" size={22} color="#F0F6FC" />
         </TouchableOpacity>
 
         <View style={styles.sectionHeader}>
@@ -136,7 +136,7 @@ export const SavedCollectionsScreen: React.FC<Props> = ({ onBack }) => {
                 <Image source={{ uri: cover }} style={styles.collectionCover} />
               ) : (
                 <View style={[styles.collectionCover, styles.coverPlaceholder]}>
-                  <Ionicons name="folder-outline" size={20} color="#fff" />
+                  <Ionicons name="folder-outline" size={20} color="#F0F6FC" />
                 </View>
               )}
               <View style={styles.collectionTextBlock}>
@@ -145,7 +145,7 @@ export const SavedCollectionsScreen: React.FC<Props> = ({ onBack }) => {
                   {c.isPrivate ? 'Private' : 'Public'}
                 </Text>
               </View>
-              <Ionicons name="add-circle-outline" size={22} color="#fff" />
+              <Ionicons name="add-circle-outline" size={22} color="#F0F6FC" />
             </TouchableOpacity>
           );
         })}
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#1A1F2A',
   },
-  headerTitle: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  headerTitle: { color: '#F0F6FC', fontSize: 17, fontWeight: '700' },
   savedRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   savedTextBlock: { flex: 1 },
-  savedTitle: { color: '#fff', fontWeight: '700', fontSize: 17 },
+  savedTitle: { color: '#F0F6FC', fontWeight: '700', fontSize: 17 },
   savedSubtitle: { color: '#C9D1D9', marginTop: 2, fontSize: 12 },
   sectionHeader: {
     flexDirection: 'row',
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 8,
   },
-  sectionTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  sectionTitle: { color: '#F0F6FC', fontSize: 16, fontWeight: '700' },
   newLink: { color: '#3897F0', fontWeight: '600' },
   collectionRow: {
     flexDirection: 'row',
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   collectionTextBlock: { flex: 1 },
-  collectionTitle: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  collectionTitle: { color: '#F0F6FC', fontWeight: '600', fontSize: 15 },
   collectionSubtitle: { color: '#C9D1D9', fontSize: 12, marginTop: 2 },
   modalBackdrop: {
     flex: 1,
@@ -257,9 +257,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 18,
   },
-  modalTitle: { color: '#fff', fontSize: 16, fontWeight: '700', marginBottom: 12 },
+  modalTitle: { color: '#F0F6FC', fontSize: 16, fontWeight: '700', marginBottom: 12 },
   modalInput: {
-    color: '#fff',
+    color: '#F0F6FC',
     borderBottomWidth: 1,
     borderBottomColor: '#1A1F2A',
     paddingVertical: 8,

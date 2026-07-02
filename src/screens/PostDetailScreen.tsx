@@ -134,8 +134,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  close: { color: '#fff', fontSize: 20 },
-  title: { flex: 1, textAlign: 'center', color: '#fff', fontWeight: '600' },
+  close: { color: '#F0F6FC', fontSize: 20 },
+  title: { flex: 1, textAlign: 'center', color: '#F0F6FC', fontWeight: '600' },
   scroll: { flex: 1 },
   image: {
     width: '100%',
@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 4,
   },
-  username: { fontWeight: '600', color: '#fff' },
-  captionText: { color: '#FFFFFF', fontSize: 14, flexShrink: 1 },
+  username: { fontWeight: '600', color: '#F0F6FC' },
+  captionText: { color: '#F0F6FC', fontSize: 14, flexShrink: 1 },
   tagged: {
     color: '#7DB6FF',
     paddingHorizontal: 12,
