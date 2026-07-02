@@ -77,15 +77,18 @@ export function VendorDirectoryScreen({ initialCategory, onBack, onVendor }: { i
 export function VendorTab() {
   const [screen, setScreen] = useState<'main' | 'store' | 'product'>('main');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [fitsOnly, setFitsOnly] = useState(false);
   const [sel, setSel] = useState<typeof VENDORS[0] | null>(null);
   const [selProd, setSelProd] = useState<VProduct | null>(null);
 
   if (screen === 'product' && selProd) return <ProductDetailScreen product={selProd} onBack={() => { setSelProd(null); setScreen('main'); }} />;
   if (screen === 'store' && sel) return <VStore vendor={sel} onBack={() => { setSel(null); setScreen('main'); }} />;
 
-  const filteredVendors = selectedCategory
-    ? VENDORS.filter(v => (v.categories ?? []).includes(selectedCategory))
-    : VENDORS;
+  const filteredVendors = VENDORS.filter(
+    v =>
+      (!selectedCategory || (v.categories ?? []).includes(selectedCategory)) &&
+      (!fitsOnly || v.fitsMyGarage),
+  );
   const trendingProducts = VPRODS.filter(p => p.img).slice(0, 5);
   const GRID_GAP = 8;
   const TILE_W = (SCREEN_W - 32 - GRID_GAP) / 2;
@@ -114,9 +117,40 @@ export function VendorTab() {
         })}
       </View>
 
+      {/* Fits-your-car filter */}
+      <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setFitsOnly(v => !v)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: fitsOnly ? T.accent : 'rgba(255,255,255,0.15)',
+            backgroundColor: fitsOnly ? T.accent : 'transparent',
+          }}
+        >
+          <Ionicons name="car-sport" size={15} color={fitsOnly ? '#05070A' : T.accent} />
+          <Text style={{ fontSize: 13, fontWeight: '700', color: fitsOnly ? '#05070A' : 'white' }}>
+            Fits your car
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Vendor List */}
-      <View style={{ marginTop: 24 }}>
-        <Text style={{ fontSize: 17, fontWeight: '700', color: 'white', paddingHorizontal: 16, marginBottom: 12 }}>Vendors</Text>
+      <View style={{ marginTop: 20 }}>
+        <Text style={{ fontSize: 17, fontWeight: '700', color: 'white', paddingHorizontal: 16, marginBottom: 12 }}>
+          {fitsOnly ? 'Vendors that fit your car' : 'Vendors'}
+        </Text>
+        {filteredVendors.length === 0 && (
+          <Text style={{ color: '#C9D1D9', fontSize: 13, paddingHorizontal: 16 }}>
+            No vendors match your car in this category yet.
+          </Text>
+        )}
         {filteredVendors.map(vendor => (
           <View key={vendor.id} style={{ paddingHorizontal: 16, marginBottom: 12 }}>
             <VendorCard vendor={vendor} onPress={() => { setSel(vendor); setScreen('store'); }} />
