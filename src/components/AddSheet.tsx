@@ -9,6 +9,8 @@ type Props = {
   onClose: () => void;
   /** Go to the camera/create-post flow. */
   onCreatePost: () => void;
+  /** Open the create-event flow. */
+  onCreateEvent?: () => void;
 };
 
 type Option = {
@@ -49,8 +51,10 @@ const OPTIONS: Option[] = [
     icon: 'calendar',
     label: 'Event',
     subtitle: 'Host a meet or car event',
-    soon: true,
-    onPress: () => Alert.alert('Events', 'Coming soon.'),
+    onPress: (p) => {
+      p.onClose();
+      p.onCreateEvent?.();
+    },
   },
 ];
 

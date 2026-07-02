@@ -8,6 +8,7 @@ import { T, IC } from '../constants/theme';
 import type { Conn } from '../constants/types';
 import { signOut, deleteAccount } from '../auth/emailAuth';
 import { SettingsRoot } from '../screens/Settings/SettingsRoot';
+import { EventsRoot } from '../screens/Events/EventsRoot';
 
 import { Avatar } from '../components/Avatar';
 import { NotifDrop } from '../components/NotifDrop';
@@ -45,7 +46,7 @@ export function MessagesStack() {
   );
 }
 
-function MainTabsScreen({ onMsg }: { onMsg: () => void }) {
+function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: (s: string) => void }) {
   const [tab, setTab] = useState('home');
   const [notifOpen, setNotifOpen] = useState(false);
   const [viewProf, setViewProf] = useState<any>(null);
@@ -106,6 +107,7 @@ function MainTabsScreen({ onMsg }: { onMsg: () => void }) {
             setViewProf(null);
             setTab('camera');
           }}
+          onCreateEvent={() => onNavigate('createEvent')}
         />
 
         <NotifDrop visible={notifOpen} onClose={() => setNotifOpen(false)} />
@@ -120,6 +122,7 @@ function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNa
   const items = [
     { icon: 'home-outline', label: 'Home', action: () => { navigation.closeDrawer(); onNavigate('home'); } },
     { icon: 'chatbubbles-outline', label: 'Messages', action: () => { navigation.closeDrawer(); onNavigate('messages'); } },
+    { icon: 'calendar-outline', label: 'Events', action: () => { navigation.closeDrawer(); onNavigate('events'); } },
     { icon: 'create-outline', label: 'Edit Profile', action: () => { navigation.closeDrawer(); onNavigate('editProfile'); } },
     { icon: 'settings-outline', label: 'Settings', action: () => { navigation.closeDrawer(); onNavigate('settings'); } },
     { icon: 'help-circle-outline', label: 'Help', action: () => { navigation.closeDrawer(); Alert.alert('Help', 'support@modified.app'); } },
@@ -254,7 +257,7 @@ function MainWithDrawer({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
         {() => (
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Tabs">
-              {() => <MainTabsScreen onMsg={onMsg} />}
+              {() => <MainTabsScreen onMsg={onMsg} onNavigate={onNavigate} />}
             </Stack.Screen>
 
             <Stack.Screen
@@ -271,8 +274,9 @@ function MainWithDrawer({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
 
 export function MainNavigator() {
   // Self-managed screen routing so AppNavigator can render <MainNavigator /> with no props.
-  const [screen, setScreen] = useState<'home' | 'messages' | 'settings'>('home');
+  const [screen, setScreen] = useState<'home' | 'messages' | 'settings' | 'events'>('home');
   const [settingsInitial, setSettingsInitial] = useState<string | undefined>(undefined);
+  const [eventsCreate, setEventsCreate] = useState(false);
 
   const goHome = () => setScreen('home');
   const goMessages = () => setScreen('messages');
@@ -284,6 +288,12 @@ export function MainNavigator() {
     } else if (s === 'editProfile') {
       setSettingsInitial('editProfile');
       setScreen('settings');
+    } else if (s === 'events') {
+      setEventsCreate(false);
+      setScreen('events');
+    } else if (s === 'createEvent') {
+      setEventsCreate(true);
+      setScreen('events');
     } else setScreen('home');
   };
 
@@ -297,6 +307,10 @@ export function MainNavigator() {
 
   if (screen === 'settings') {
     return <SettingsRoot onClose={goHome} initial={settingsInitial as any} />;
+  }
+
+  if (screen === 'events') {
+    return <EventsRoot onClose={goHome} initialCreate={eventsCreate} />;
   }
 
   return <MainWithDrawer onMsg={goMessages} onNavigate={handleNavigate} />;
