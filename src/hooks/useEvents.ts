@@ -20,6 +20,7 @@ type NewEvent = {
   title: string;
   description?: string;
   locationText?: string;
+  coverUrl?: string;
   startsAt: string; // ISO
   endsAt?: string;
 };
@@ -114,6 +115,7 @@ export function useEvents() {
           title: input.title.trim(),
           description: input.description?.trim() || null,
           location_text: input.locationText?.trim() || null,
+          cover_url: input.coverUrl?.trim() || null,
           starts_at: input.startsAt,
           ends_at: input.endsAt ?? null,
         })

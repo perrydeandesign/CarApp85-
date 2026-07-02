@@ -7,13 +7,23 @@ import {
   ActivityIndicator,
   TextInput,
   Alert,
+  Image,
 } from 'react-native';
 import { SubPage } from '../../components/SubPage';
 import { Icon } from '../../ui/Icon';
+import { MonthCalendar } from '../../components/MonthCalendar';
 import { T } from '../../constants/theme';
 import { useEvents, CarEvent, EventRSVP } from '../../hooks/useEvents';
 
 export type EventsRoute = 'list' | 'detail' | 'create';
+
+function dayKey(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function dateToKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 function fmtDate(iso: string): string {
   try {
@@ -45,9 +55,24 @@ export function EventsList({
   onCreate: () => void;
   onBack: () => void;
 }) {
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const marked = new Set(ev.events.map((e) => dayKey(e.startsAt)));
+  const filtered = selectedDay
+    ? ev.events.filter((e) => dayKey(e.startsAt) === dateToKey(selectedDay))
+    : ev.events;
+
   return (
     <SubPage title="Events" onBack={onBack}>
-      <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <View style={{ padding: 14, paddingBottom: 4 }}>
+          <MonthCalendar value={selectedDay} onChange={setSelectedDay} marked={marked} />
+          {selectedDay ? (
+            <TouchableOpacity onPress={() => setSelectedDay(null)} style={{ alignSelf: 'flex-end', paddingVertical: 8 }}>
+              <Text style={{ color: T.accent, fontSize: 13, fontWeight: '600' }}>Show all upcoming</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+
         <TouchableOpacity
           onPress={onCreate}
           style={{
@@ -69,13 +94,13 @@ export function EventsList({
           <ActivityIndicator color={T.accent} style={{ marginTop: 30 }} />
         ) : ev.error ? (
           <Text style={{ color: T.mu, textAlign: 'center', marginTop: 30 }}>{ev.error}</Text>
-        ) : ev.events.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <Text style={{ color: T.mu, textAlign: 'center', marginTop: 30 }}>
-            No upcoming events. Host the first one!
+            {selectedDay ? 'No events on this day.' : 'No upcoming events. Host the first one!'}
           </Text>
         ) : (
-          <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-            {ev.events.map((e) => (
+          <View>
+            {filtered.map((e) => (
               <TouchableOpacity
                 key={e.id}
                 onPress={() => onOpen(e)}
@@ -115,9 +140,9 @@ export function EventsList({
                 ) : null}
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         )}
-      </View>
+      </ScrollView>
     </SubPage>
   );
 }
@@ -166,6 +191,12 @@ export function EventDetail({
   return (
     <SubPage title="Event" onBack={onBack}>
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }}>
+        {event.coverUrl ? (
+          <Image
+            source={{ uri: event.coverUrl }}
+            style={{ width: '100%', height: 180, borderRadius: 12, marginBottom: 14, backgroundColor: T.card2 }}
+          />
+        ) : null}
         <Text style={{ color: T.tx, fontSize: 22, fontWeight: '800' }}>{event.title}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 }}>
           <Icon name="calendar-outline" size="sm" color={T.accent} />
@@ -204,14 +235,22 @@ export function CreateEvent({
   onCreate,
   onBack,
 }: {
-  onCreate: (input: { title: string; description?: string; locationText?: string; startsAt: string }) => Promise<void>;
+  onCreate: (input: {
+    title: string;
+    description?: string;
+    locationText?: string;
+    coverUrl?: string;
+    startsAt: string;
+  }) => Promise<void>;
   onBack: () => void;
 }) {
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState(''); // YYYY-MM-DD
-  const [time, setTime] = useState('18:00'); // HH:MM
+  const [coverUrl, setCoverUrl] = useState('');
+  const [dateObj, setDateObj] = useState<Date | null>(null);
+  const [hour, setHour] = useState(18);
+  const [minute, setMinute] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
@@ -219,14 +258,21 @@ export function CreateEvent({
       Alert.alert('Add a title', 'Your event needs a name.');
       return;
     }
-    const iso = new Date(`${date}T${time || '00:00'}:00`).toISOString();
-    if (!date || Number.isNaN(new Date(iso).getTime())) {
-      Alert.alert('Add a valid date', 'Use the format YYYY-MM-DD.');
+    if (!dateObj) {
+      Alert.alert('Pick a date', 'Choose a day for your event.');
       return;
     }
+    const start = new Date(dateObj);
+    start.setHours(hour, minute, 0, 0);
     setSaving(true);
     try {
-      await onCreate({ title, description, locationText: location, startsAt: iso });
+      await onCreate({
+        title,
+        description,
+        locationText: location,
+        coverUrl,
+        startsAt: start.toISOString(),
+      });
       onBack();
     } catch (e: any) {
       Alert.alert('Could not create event', e?.message ?? String(e));
@@ -234,6 +280,12 @@ export function CreateEvent({
       setSaving(false);
     }
   };
+
+  const bump = (unit: 'h' | 'm', dir: 1 | -1) => {
+    if (unit === 'h') setHour((h) => (h + dir + 24) % 24);
+    else setMinute((m) => (m + dir * 15 + 60) % 60);
+  };
+  const pad = (n: number) => String(n).padStart(2, '0');
 
   const field = (label: string, value: string, set: (t: string) => void, ph: string, opts?: { multiline?: boolean }) => (
     <View style={{ marginBottom: 14 }}>
@@ -264,9 +316,44 @@ export function CreateEvent({
     <SubPage title="Host an event" onBack={onBack}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {field('Title', title, setTitle, 'Sunday Cars & Coffee')}
-        {field('Date (YYYY-MM-DD)', date, setDate, '2026-07-15')}
-        {field('Time (HH:MM)', time, setTime, '18:00')}
+
+        <Text style={{ color: T.mu, fontSize: 12, fontWeight: '700', marginBottom: 6, marginLeft: 4 }}>Date</Text>
+        <View style={{ marginBottom: 14 }}>
+          <MonthCalendar value={dateObj} onChange={setDateObj} />
+        </View>
+
+        <Text style={{ color: T.mu, fontSize: 12, fontWeight: '700', marginBottom: 6, marginLeft: 4 }}>Start time</Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 20,
+            backgroundColor: T.card,
+            borderWidth: 1,
+            borderColor: T.bd,
+            borderRadius: 12,
+            paddingVertical: 12,
+            marginBottom: 14,
+          }}
+        >
+          {(['h', 'm'] as const).map((unit) => (
+            <View key={unit} style={{ alignItems: 'center' }}>
+              <TouchableOpacity onPress={() => bump(unit, 1)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Icon name="chevron-up" size="sm" color={T.mu} />
+              </TouchableOpacity>
+              <Text style={{ color: T.tx, fontSize: 26, fontWeight: '800', width: 44, textAlign: 'center' }}>
+                {unit === 'h' ? pad(hour) : pad(minute)}
+              </Text>
+              <TouchableOpacity onPress={() => bump(unit, -1)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Icon name="chevron-down" size="sm" color={T.mu} />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
         {field('Location', location, setLocation, 'Where is it?')}
+        {field('Cover image URL (optional)', coverUrl, setCoverUrl, 'https://…')}
         {field('Description', description, setDescription, 'Details, rules, what to bring…', { multiline: true })}
 
         <TouchableOpacity
