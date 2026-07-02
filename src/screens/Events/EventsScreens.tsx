@@ -12,6 +12,7 @@ import {
 import { SubPage } from '../../components/SubPage';
 import { Icon } from '../../ui/Icon';
 import { MonthCalendar } from '../../components/MonthCalendar';
+import { pickAndUploadImage, isImagePickerAvailable } from '../../lib/imagePicker';
 import { T } from '../../constants/theme';
 import { useEvents, CarEvent, EventRSVP } from '../../hooks/useEvents';
 
@@ -281,6 +282,15 @@ export function CreateEvent({
     }
   };
 
+  const pickCover = async () => {
+    if (!isImagePickerAvailable()) {
+      Alert.alert('Photo library not enabled', 'Paste an image URL for now, or enable the photo picker (npm i react-native-image-picker + pod install).');
+      return;
+    }
+    const uploaded = await pickAndUploadImage('events');
+    if (uploaded) setCoverUrl(uploaded);
+  };
+
   const bump = (unit: 'h' | 'm', dir: 1 | -1) => {
     if (unit === 'h') setHour((h) => (h + dir + 24) % 24);
     else setMinute((m) => (m + dir * 15 + 60) % 60);
@@ -354,6 +364,13 @@ export function CreateEvent({
 
         {field('Location', location, setLocation, 'Where is it?')}
         {field('Cover image URL (optional)', coverUrl, setCoverUrl, 'https://…')}
+        <TouchableOpacity
+          onPress={pickCover}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: -6, marginBottom: 14, marginLeft: 4 }}
+        >
+          <Icon name="image-outline" size="sm" color={T.accent} />
+          <Text style={{ color: T.accent, fontSize: 13, fontWeight: '600' }}>Choose from library</Text>
+        </TouchableOpacity>
         {field('Description', description, setDescription, 'Details, rules, what to bring…', { multiline: true })}
 
         <TouchableOpacity
