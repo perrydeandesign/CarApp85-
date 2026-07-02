@@ -12,6 +12,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { ErrorState } from '../../components/ErrorState';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { SearchBar } from '../../components/SearchBar';
 import { useGoHome } from '../../context/GoHomeContext';
 
@@ -204,27 +205,15 @@ export function ConversationListScreen({ navigation }: any) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: T.bg }}>
       {/* HEADER */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          padding: 14,
-          borderBottomWidth: 1,
-          borderBottomColor: T.bd,
-        }}
-      >
-        <TouchableOpacity onPress={goHome} style={{ marginRight: 12 }}>
-          <Ionicons name="chevron-back" size={IC.back} color={T.ac} />
-        </TouchableOpacity>
-
-        <Text style={{ color: T.tx, fontSize: 20, fontWeight: '700', flex: 1 }}>
-          Messages
-        </Text>
-
-        <TouchableOpacity onPress={() => navigation.navigate('NewConversation')}>
-          <Ionicons name="create-outline" size={IC.nav} color={T.ac} />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title="Messages"
+        onBack={goHome}
+        right={
+          <TouchableOpacity onPress={() => navigation.navigate('NewConversation')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="create-outline" size={IC.nav} color={T.accent} />
+          </TouchableOpacity>
+        }
+      />
 
       {/* SEARCH */}
       <View style={{ paddingHorizontal: 14, paddingVertical: 8 }}>

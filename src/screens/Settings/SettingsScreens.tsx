@@ -24,6 +24,7 @@ import { useMutedKeywords } from '../../hooks/useMutedKeywords';
 import { Icon } from '../../ui/Icon';
 import { pickAndUploadImage, isImagePickerAvailable } from '../../lib/imagePicker';
 import { PrimaryButton } from '../../components/PrimaryButton';
+import { haptic } from '../../lib/haptics';
 
 // ---------------------------------------------------------------------------
 // Navigation contract (state-based, provided by SettingsRoot)
@@ -282,6 +283,14 @@ export function MutedKeywords({ back }: SettingsNavProps) {
     setText('');
   };
 
+  const confirmRemove = (k: string) => {
+    haptic('warning');
+    Alert.alert('Remove keyword', `Un-mute “${k}”?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => void remove(k) },
+    ]);
+  };
+
   return (
     <SubPage title="Muted keywords" onBack={back}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
@@ -324,7 +333,7 @@ export function MutedKeywords({ back }: SettingsNavProps) {
             {keywords.map((k) => (
               <TouchableOpacity
                 key={k}
-                onPress={() => remove(k)}
+                onPress={() => confirmRemove(k)}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',

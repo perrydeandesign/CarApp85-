@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { Avatar } from '../../components/Avatar';
 import { TypingIndicator } from '../../components/TypingIndicator';
 import { ReactionPicker } from '../../components/ReactionPicker';
@@ -214,26 +215,7 @@ export function ChatScreen({ route, navigation }: any) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: T.bg }}>
       {/* HEADER */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          padding: 14,
-          borderBottomWidth: 1,
-          borderBottomColor: T.bd,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ marginRight: 12 }}
-        >
-          <Ionicons name="chevron-back" size={IC.back} color={T.ac} />
-        </TouchableOpacity>
-
-        <Text style={{ color: T.tx, fontWeight: '700', fontSize: 16 }}>
-          Chat
-        </Text>
-      </View>
+      <ScreenHeader title="Chat" onBack={() => navigation.goBack()} />
 
       {/* MESSAGES */}
       {error && (

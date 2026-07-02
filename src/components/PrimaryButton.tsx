@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, ViewStyle } from 'react-native';
 import { T, RADIUS, TYPO } from '../constants/theme';
+import { haptic } from '../lib/haptics';
 
 type Props = {
   label: string;
@@ -21,7 +22,10 @@ export function PrimaryButton({ label, onPress, loading, disabled, icon, style }
   return (
     <TouchableOpacity
       activeOpacity={0.85}
-      onPress={onPress}
+      onPress={() => {
+        haptic('light');
+        onPress();
+      }}
       disabled={off}
       style={[
         {
