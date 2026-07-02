@@ -11,6 +11,7 @@ import { SettingsRoot } from '../screens/Settings/SettingsRoot';
 
 import { Avatar } from '../components/Avatar';
 import { NotifDrop } from '../components/NotifDrop';
+import { AddSheet } from '../components/AddSheet';
 import { GoHomeContext } from '../context/GoHomeContext';
 import { ViewProfileContext } from '../context/ViewProfileContext';
 import { ME, CONNS, findUserById, getFullUser } from '../data/users';
@@ -48,6 +49,7 @@ function MainTabsScreen({ onMsg }: { onMsg: () => void }) {
   const [tab, setTab] = useState('home');
   const [notifOpen, setNotifOpen] = useState(false);
   const [viewProf, setViewProf] = useState<any>(null);
+  const [addOpen, setAddOpen] = useState(false);
   const navigation = useNavigation<any>();
 
   const openProfile = (user: any) => {
@@ -87,8 +89,22 @@ function MainTabsScreen({ onMsg }: { onMsg: () => void }) {
         <BottomTabBar
           active={tab}
           onTab={(k) => {
+            // Center "camera" tab opens the create hub instead of jumping straight in.
+            if (k === 'camera') {
+              setAddOpen(true);
+              return;
+            }
             setViewProf(null);
             setTab(k);
+          }}
+        />
+
+        <AddSheet
+          visible={addOpen}
+          onClose={() => setAddOpen(false)}
+          onCreatePost={() => {
+            setViewProf(null);
+            setTab('camera');
           }}
         />
 
