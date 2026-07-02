@@ -38,6 +38,7 @@ export type SettingsRoute =
   | 'appearance'
   | 'accessibility'
   | 'privacyCentre'
+  | 'yourReports'
   | 'help'
   | 'aboutLegal'
   | 'blocked'
@@ -688,6 +689,7 @@ export function PrivacyCentre({ nav, back }: SettingsNavProps) {
         <>
           <SettingsSection footer="Learn how MODIFIED handles your data and manage your choices.">
             <SettingsRow icon="reader-outline" label="How MODIFIED uses your data" onPress={() => nav('privacyPolicy')} />
+            <SettingsRow icon="flag-outline" label="Your reports" onPress={() => nav('yourReports')} />
             <SettingsRow icon="download-outline" label="Download your information" onPress={() => soon('Download your information')} />
             <SettingsRow icon="options-outline" label="Manage your data" onPress={() => nav('privacy')} last />
           </SettingsSection>
@@ -696,6 +698,69 @@ export function PrivacyCentre({ nav, back }: SettingsNavProps) {
             <SettingsRow icon="people-outline" label="Community Guidelines" onPress={() => nav('guidelines')} last />
           </SettingsSection>
         </>,
+      )}
+    </SubPage>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// YOUR REPORTS (follow-up status)
+// ---------------------------------------------------------------------------
+const STATUS_LABEL: Record<string, { label: string; color: string }> = {
+  open: { label: 'Under review', color: '#FBBF24' },
+  reviewed: { label: 'Reviewed', color: '#7EB3F5' },
+  actioned: { label: 'Action taken', color: '#4FD1B8' },
+  dismissed: { label: 'No action', color: '#C9D1D9' },
+};
+
+export function YourReports({ back }: SettingsNavProps) {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user?.id;
+      if (!uid) {
+        if (!cancelled) { setRows([]); setLoading(false); }
+        return;
+      }
+      const { data } = await supabase
+        .from('reports')
+        .select('id, target_type, reason, status, created_at')
+        .eq('reporter_id', uid)
+        .order('created_at', { ascending: false });
+      if (!cancelled) { setRows(data ?? []); setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return (
+    <SubPage title="Your reports" onBack={back}>
+      {loading ? (
+        <ActivityIndicator color={T.accent} style={{ marginTop: 40 }} />
+      ) : rows.length === 0 ? (
+        <Text style={{ color: T.mu, textAlign: 'center', marginTop: 40 }}>You haven't reported anything.</Text>
+      ) : (
+        <ScrollView contentContainerStyle={{ padding: 16 }}>
+          {rows.map((r) => {
+            const s = STATUS_LABEL[r.status] ?? STATUS_LABEL.open;
+            return (
+              <View key={r.id} style={{ backgroundColor: T.card, borderWidth: 1, borderColor: T.bd, borderRadius: 12, padding: 14, marginBottom: 10 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ color: T.tx, fontSize: 14, fontWeight: '600', textTransform: 'capitalize' }}>
+                    {r.target_type} · {r.reason}
+                  </Text>
+                  <Text style={{ color: s.color, fontSize: 12, fontWeight: '700' }}>{s.label}</Text>
+                </View>
+                <Text style={{ color: T.mu, fontSize: 12, marginTop: 4 }}>
+                  {new Date(r.created_at).toLocaleDateString()}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
       )}
     </SubPage>
   );

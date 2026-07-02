@@ -20,6 +20,7 @@ import {
   AppearanceSettings,
   AccessibilitySettings,
   PrivacyCentre,
+  YourReports,
   HelpSettings,
   AboutLegal,
   BlockedAccounts,
@@ -79,6 +80,8 @@ export function SettingsRoot({
         return <AccessibilitySettings {...props} />;
       case 'privacyCentre':
         return <PrivacyCentre {...props} />;
+      case 'yourReports':
+        return <YourReports {...props} />;
       case 'help':
         return <HelpSettings {...props} />;
       case 'aboutLegal':
