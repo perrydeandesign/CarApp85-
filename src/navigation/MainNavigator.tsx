@@ -9,6 +9,8 @@ import type { Conn } from '../constants/types';
 import { signOut, deleteAccount } from '../auth/emailAuth';
 import { SettingsRoot } from '../screens/Settings/SettingsRoot';
 import { EventsRoot } from '../screens/Events/EventsRoot';
+import { DiscoverPeople } from '../screens/Discover/DiscoverPeople';
+import { YourActivity } from '../screens/Activity/YourActivity';
 
 import { Avatar } from '../components/Avatar';
 import { NotifDrop } from '../components/NotifDrop';
@@ -123,6 +125,8 @@ function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNa
     { icon: 'home-outline', label: 'Home', action: () => { navigation.closeDrawer(); onNavigate('home'); } },
     { icon: 'chatbubbles-outline', label: 'Messages', action: () => { navigation.closeDrawer(); onNavigate('messages'); } },
     { icon: 'calendar-outline', label: 'Events', action: () => { navigation.closeDrawer(); onNavigate('events'); } },
+    { icon: 'compass-outline', label: 'Discover people', action: () => { navigation.closeDrawer(); onNavigate('discover'); } },
+    { icon: 'stats-chart-outline', label: 'Your activity', action: () => { navigation.closeDrawer(); onNavigate('activity'); } },
     { icon: 'create-outline', label: 'Edit Profile', action: () => { navigation.closeDrawer(); onNavigate('editProfile'); } },
     { icon: 'settings-outline', label: 'Settings', action: () => { navigation.closeDrawer(); onNavigate('settings'); } },
     { icon: 'help-circle-outline', label: 'Help', action: () => { navigation.closeDrawer(); Alert.alert('Help', 'support@modified.app'); } },
@@ -274,7 +278,7 @@ function MainWithDrawer({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
 
 export function MainNavigator() {
   // Self-managed screen routing so AppNavigator can render <MainNavigator /> with no props.
-  const [screen, setScreen] = useState<'home' | 'messages' | 'settings' | 'events'>('home');
+  const [screen, setScreen] = useState<'home' | 'messages' | 'settings' | 'events' | 'discover' | 'activity'>('home');
   const [settingsInitial, setSettingsInitial] = useState<string | undefined>(undefined);
   const [eventsCreate, setEventsCreate] = useState(false);
 
@@ -294,7 +298,9 @@ export function MainNavigator() {
     } else if (s === 'createEvent') {
       setEventsCreate(true);
       setScreen('events');
-    } else setScreen('home');
+    } else if (s === 'discover') setScreen('discover');
+    else if (s === 'activity') setScreen('activity');
+    else setScreen('home');
   };
 
   if (screen === 'messages') {
@@ -311,6 +317,14 @@ export function MainNavigator() {
 
   if (screen === 'events') {
     return <EventsRoot onClose={goHome} initialCreate={eventsCreate} />;
+  }
+
+  if (screen === 'discover') {
+    return <DiscoverPeople onClose={goHome} />;
+  }
+
+  if (screen === 'activity') {
+    return <YourActivity onClose={goHome} />;
   }
 
   return <MainWithDrawer onMsg={goMessages} onNavigate={handleNavigate} />;
