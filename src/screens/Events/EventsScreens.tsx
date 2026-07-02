@@ -12,6 +12,8 @@ import {
 import { SubPage } from '../../components/SubPage';
 import { Icon } from '../../ui/Icon';
 import { MonthCalendar } from '../../components/MonthCalendar';
+import { PrimaryButton } from '../../components/PrimaryButton';
+import { ErrorState } from '../../components/ErrorState';
 import { pickAndUploadImage, isImagePickerAvailable } from '../../lib/imagePicker';
 import { T } from '../../constants/theme';
 import { useEvents, CarEvent, EventRSVP } from '../../hooks/useEvents';
@@ -74,27 +76,17 @@ export function EventsList({
           ) : null}
         </View>
 
-        <TouchableOpacity
+        <PrimaryButton
+          label="Host an event"
           onPress={onCreate}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            margin: 14,
-            paddingVertical: 12,
-            borderRadius: 12,
-            backgroundColor: T.accent,
-          }}
-        >
-          <Icon name="add" size="sm" color="#fff" />
-          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Host an event</Text>
-        </TouchableOpacity>
+          icon={<Icon name="add" size="sm" color={T.onAccent} />}
+          style={{ margin: 14 }}
+        />
 
         {ev.loading ? (
           <ActivityIndicator color={T.accent} style={{ marginTop: 30 }} />
         ) : ev.error ? (
-          <Text style={{ color: T.mu, textAlign: 'center', marginTop: 30 }}>{ev.error}</Text>
+          <ErrorState message={ev.error} onRetry={ev.refresh} />
         ) : filtered.length === 0 ? (
           <Text style={{ color: T.mu, textAlign: 'center', marginTop: 30 }}>
             {selectedDay ? 'No events on this day.' : 'No upcoming events. Host the first one!'}
@@ -373,20 +365,7 @@ export function CreateEvent({
         </TouchableOpacity>
         {field('Description', description, setDescription, 'Details, rules, what to bring…', { multiline: true })}
 
-        <TouchableOpacity
-          onPress={submit}
-          disabled={saving}
-          style={{
-            backgroundColor: T.accent,
-            borderRadius: 12,
-            paddingVertical: 14,
-            alignItems: 'center',
-            marginTop: 6,
-            opacity: saving ? 0.6 : 1,
-          }}
-        >
-          <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>{saving ? 'Creating…' : 'Create event'}</Text>
-        </TouchableOpacity>
+        <PrimaryButton label="Create event" onPress={submit} loading={saving} style={{ marginTop: 6 }} />
       </ScrollView>
     </SubPage>
   );

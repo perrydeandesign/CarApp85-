@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SubPage } from '../../components/SubPage';
 import { Avatar } from '../../components/Avatar';
+import { ErrorState } from '../../components/ErrorState';
 import { T } from '../../constants/theme';
 import { supabase } from '../../lib/supabase';
 
@@ -15,27 +16,35 @@ export function DiscoverPeople({ onClose }: { onClose: () => void }) {
   const [people, setPeople] = useState<Person[]>([]);
   const [followed, setFollowed] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [uid, setUid] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data: sess } = await supabase.auth.getSession();
-    const me = sess.session?.user?.id ?? null;
-    setUid(me);
+    setError(null);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const me = sess.session?.user?.id ?? null;
+      setUid(me);
 
-    const [profilesRes, followsRes] = await Promise.all([
-      supabase.from('profiles').select('id, username, avatar_url, bio').limit(50),
-      me
-        ? supabase.from('follows').select('following_id').eq('follower_id', me)
-        : Promise.resolve({ data: [] as any[] } as any),
-    ]);
+      const [profilesRes, followsRes] = await Promise.all([
+        supabase.from('profiles').select('id, username, avatar_url, bio').limit(50),
+        me
+          ? supabase.from('follows').select('following_id').eq('follower_id', me)
+          : Promise.resolve({ data: [] as any[] } as any),
+      ]);
+      if (profilesRes.error) throw profilesRes.error;
 
-    const followingIds = new Set((followsRes.data ?? []).map((r: any) => r.following_id));
-    const suggestions = (profilesRes.data ?? []).filter(
-      (p: any) => p.id !== me && !followingIds.has(p.id),
-    );
-    setPeople(suggestions as Person[]);
-    setLoading(false);
+      const followingIds = new Set((followsRes.data ?? []).map((r: any) => r.following_id));
+      const suggestions = (profilesRes.data ?? []).filter(
+        (p: any) => p.id !== me && !followingIds.has(p.id),
+      );
+      setPeople(suggestions as Person[]);
+    } catch (e: any) {
+      setError(e?.message ?? 'Could not load suggestions.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -59,6 +68,8 @@ export function DiscoverPeople({ onClose }: { onClose: () => void }) {
     <SubPage title="Discover people" onBack={onClose}>
       {loading ? (
         <ActivityIndicator color={T.accent} style={{ marginTop: 40 }} />
+      ) : error ? (
+        <ErrorState message={error} onRetry={load} />
       ) : people.length === 0 ? (
         <Text style={{ color: T.mu, textAlign: 'center', marginTop: 40 }}>No suggestions right now.</Text>
       ) : (

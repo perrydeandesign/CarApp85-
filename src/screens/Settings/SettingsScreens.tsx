@@ -23,6 +23,7 @@ import { signOut, deleteAccount, sendPasswordReset } from '../../auth/emailAuth'
 import { useMutedKeywords } from '../../hooks/useMutedKeywords';
 import { Icon } from '../../ui/Icon';
 import { pickAndUploadImage, isImagePickerAvailable } from '../../lib/imagePicker';
+import { PrimaryButton } from '../../components/PrimaryButton';
 
 // ---------------------------------------------------------------------------
 // Navigation contract (state-based, provided by SettingsRoot)
@@ -681,22 +682,7 @@ export function EditProfile({ back }: SettingsNavProps) {
           {field('Bio', bio, setBio, { multiline: true, max: 160 })}
           {field('Location', location, setLocation, { max: 60 })}
 
-          <TouchableOpacity
-            onPress={save}
-            disabled={saving}
-            style={{
-              backgroundColor: T.accent,
-              borderRadius: 12,
-              paddingVertical: 14,
-              alignItems: 'center',
-              marginTop: 8,
-              opacity: saving ? 0.6 : 1,
-            }}
-          >
-            <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>
-              {saving ? 'Saving…' : 'Save changes'}
-            </Text>
-          </TouchableOpacity>
+          <PrimaryButton label="Save changes" onPress={save} loading={saving} style={{ marginTop: 8 }} />
         </ScrollView>
       )}
     </SubPage>

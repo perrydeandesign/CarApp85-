@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
+import { ErrorState } from '../../components/ErrorState';
 import { SearchBar } from '../../components/SearchBar';
 import { useGoHome } from '../../context/GoHomeContext';
 
@@ -129,9 +131,8 @@ export function ConversationListScreen({ navigation }: any) {
         }}
       >
         <Avatar
-          name={item.title || 'Chat'}
+          initials={(item.title || 'C').slice(0, 1).toUpperCase()}
           size={48}
-          online={false}
           img={item.avatar_url || undefined}
         />
 
@@ -261,41 +262,20 @@ export function ConversationListScreen({ navigation }: any) {
         ))}
       </View>
 
-      {/* ERROR STATE */}
+      {/* ERROR / LOADING / LIST */}
       {error ? (
-        <View style={{ alignItems: 'center', marginTop: 48, paddingHorizontal: 32 }}>
-          <Ionicons name="cloud-offline-outline" size={40} color={T.mu} />
-          <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600', marginTop: 12 }}>
-            Couldn't load messages
-          </Text>
-          <Text style={{ color: T.mu, fontSize: 13, textAlign: 'center', marginTop: 4 }}>
-            {error}
-          </Text>
-          <TouchableOpacity
-            onPress={load}
-            style={{
-              marginTop: 16,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              borderRadius: 20,
-              backgroundColor: T.ac,
-            }}
-          >
-            <Text style={{ color: '#fff', fontWeight: '600' }}>Try again</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState title="Couldn't load messages" message={error} onRetry={load} />
+      ) : loading ? (
+        <ActivityIndicator color={T.accent} style={{ marginTop: 40 }} />
       ) : (
-        /* LIST */
         <FlatList
           data={filtered}
           keyExtractor={(i) => i.id}
           renderItem={renderItem}
           ListEmptyComponent={
-            !loading && (
-              <Text style={{ color: T.mu, textAlign: 'center', marginTop: 40 }}>
-                No conversations
-              </Text>
-            )
+            <Text style={{ color: T.mu, textAlign: 'center', marginTop: 40 }}>
+              No conversations
+            </Text>
           }
         />
       )}
