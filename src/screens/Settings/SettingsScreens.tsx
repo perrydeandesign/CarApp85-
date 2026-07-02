@@ -22,6 +22,7 @@ import { useSettingsPrefs } from '../../context/AppPrefsContext';
 import { signOut, deleteAccount, sendPasswordReset } from '../../auth/emailAuth';
 import { useMutedKeywords } from '../../hooks/useMutedKeywords';
 import { Icon } from '../../ui/Icon';
+import { pickAndUploadImage, isImagePickerAvailable } from '../../lib/imagePicker';
 
 // ---------------------------------------------------------------------------
 // Navigation contract (state-based, provided by SettingsRoot)
@@ -574,6 +575,7 @@ export function EditProfile({ back }: SettingsNavProps) {
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uid, setUid] = useState<string | null>(null);
 
   useEffect(() => {
@@ -586,13 +588,14 @@ export function EditProfile({ back }: SettingsNavProps) {
       if (id) {
         const { data: prof } = await supabase
           .from('profiles')
-          .select('display_name, bio, location')
+          .select('display_name, bio, location, avatar_url')
           .eq('id', id)
           .maybeSingle();
         if (!cancelled && prof) {
           setDisplayName((prof as any).display_name ?? '');
           setBio((prof as any).bio ?? '');
           setLocation((prof as any).location ?? '');
+          setAvatarUrl((prof as any).avatar_url ?? null);
         }
       }
       if (!cancelled) setLoading(false);
@@ -607,7 +610,12 @@ export function EditProfile({ back }: SettingsNavProps) {
     setSaving(true);
     const { error } = await supabase
       .from('profiles')
-      .update({ display_name: displayName.trim() || null, bio: bio.trim() || null, location: location.trim() || null })
+      .update({
+        display_name: displayName.trim() || null,
+        bio: bio.trim() || null,
+        location: location.trim() || null,
+        avatar_url: avatarUrl,
+      })
       .eq('id', uid);
     setSaving(false);
     if (error) {
@@ -652,6 +660,23 @@ export function EditProfile({ back }: SettingsNavProps) {
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+          <View style={{ alignItems: 'center', marginBottom: 18 }}>
+            <Avatar initials={(displayName || 'U').slice(0, 1).toUpperCase()} size={84} img={avatarUrl ?? undefined} />
+            <TouchableOpacity
+              onPress={async () => {
+                if (!isImagePickerAvailable()) {
+                  Alert.alert('Photo library not enabled', 'Enable the photo picker to change your avatar.');
+                  return;
+                }
+                const url = await pickAndUploadImage('avatars');
+                if (url) setAvatarUrl(url);
+              }}
+              style={{ marginTop: 10 }}
+            >
+              <Text style={{ color: T.accent, fontSize: 14, fontWeight: '600' }}>Change photo</Text>
+            </TouchableOpacity>
+          </View>
+
           {field('Display name', displayName, setDisplayName, { max: 50 })}
           {field('Bio', bio, setBio, { multiline: true, max: 160 })}
           {field('Location', location, setLocation, { max: 60 })}
