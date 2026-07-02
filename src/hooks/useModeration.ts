@@ -21,19 +21,63 @@ export const REPORT_REASONS = [
 export function useModeration() {
   const { data: me } = useMeProfile();
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
+  const [restrictedIds, setRestrictedIds] = useState<Set<string>>(new Set());
 
   const loadBlocks = useCallback(async () => {
     if (!me?.id) return;
-    const { data, error } = await supabase
-      .from('blocked_users')
-      .select('blocked_id')
-      .eq('blocker_id', me.id);
-    if (!error && data) setBlockedIds(new Set(data.map((r) => r.blocked_id)));
+    const [blocks, restricts] = await Promise.all([
+      supabase.from('blocked_users').select('blocked_id').eq('blocker_id', me.id),
+      supabase.from('restricted_users').select('restricted_id').eq('restricter_id', me.id),
+    ]);
+    if (!blocks.error && blocks.data) setBlockedIds(new Set(blocks.data.map((r) => r.blocked_id)));
+    if (!restricts.error && restricts.data)
+      setRestrictedIds(new Set(restricts.data.map((r: any) => r.restricted_id)));
   }, [me?.id]);
 
   useEffect(() => {
     void loadBlocks();
   }, [loadBlocks]);
+
+  const restrictUser = useCallback(
+    async (userId: string) => {
+      if (!me?.id || userId === me.id) return;
+      setRestrictedIds((prev) => new Set(prev).add(userId)); // optimistic
+      const { error } = await supabase
+        .from('restricted_users')
+        .insert({ restricter_id: me.id, restricted_id: userId });
+      if (error && !/duplicate key/i.test(error.message)) {
+        setRestrictedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(userId);
+          return next;
+        });
+        throw error;
+      }
+    },
+    [me?.id],
+  );
+
+  const unrestrictUser = useCallback(
+    async (userId: string) => {
+      if (!me?.id) return;
+      setRestrictedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+      await supabase
+        .from('restricted_users')
+        .delete()
+        .eq('restricter_id', me.id)
+        .eq('restricted_id', userId);
+    },
+    [me?.id],
+  );
+
+  const isRestricted = useCallback(
+    (userId?: string) => !!userId && restrictedIds.has(userId),
+    [restrictedIds],
+  );
 
   const report = useCallback(
     async (targetType: ReportTarget, targetId: string, reason: string, details?: string) => {
@@ -84,5 +128,16 @@ export function useModeration() {
 
   const isBlocked = useCallback((userId?: string) => !!userId && blockedIds.has(userId), [blockedIds]);
 
-  return { blockedIds, isBlocked, report, blockUser, unblockUser, refreshBlocks: loadBlocks };
+  return {
+    blockedIds,
+    isBlocked,
+    restrictedIds,
+    isRestricted,
+    restrictUser,
+    unrestrictUser,
+    report,
+    blockUser,
+    unblockUser,
+    refreshBlocks: loadBlocks,
+  };
 }

@@ -21,7 +21,7 @@ type Props = {
  * Required for App Store UGC compliance (guideline 1.2).
  */
 export function ReportSheet({ visible, onClose, postId, authorId, authorUsername, onBlocked }: Props) {
-  const { report, blockUser } = useModeration();
+  const { report, blockUser, restrictUser } = useModeration();
   const [mode, setMode] = useState<'menu' | 'reasons'>('menu');
 
   const close = () => {
@@ -38,6 +38,29 @@ export function ReportSheet({ visible, onClose, postId, authorId, authorUsername
     } catch (e: any) {
       Alert.alert('Could not report', e?.message ?? 'Try again later.');
     }
+  };
+
+  const doRestrict = () => {
+    if (!authorId) return;
+    Alert.alert(
+      `Restrict @${authorUsername ?? 'user'}?`,
+      "Their comments on your posts will only be visible to them, and they won't know you restricted them.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Restrict',
+          onPress: async () => {
+            try {
+              await restrictUser(authorId);
+              close();
+              Alert.alert('Restricted', `@${authorUsername ?? 'user'} has been restricted.`);
+            } catch (e: any) {
+              Alert.alert('Could not restrict', e?.message ?? 'Try again later.');
+            }
+          },
+        },
+      ],
+    );
   };
 
   const doBlock = () => {
@@ -88,6 +111,7 @@ export function ReportSheet({ visible, onClose, postId, authorId, authorUsername
           {mode === 'menu' ? (
             <>
               <Row icon="flag" label="Report post" onPress={() => setMode('reasons')} />
+              {authorId ? <Row icon="eye-off" label={`Restrict @${authorUsername ?? 'user'}`} onPress={doRestrict} /> : null}
               {authorId ? <Row icon="ban" label={`Block @${authorUsername ?? 'user'}`} danger onPress={doBlock} /> : null}
               <Row icon="close" label="Cancel" onPress={close} />
             </>

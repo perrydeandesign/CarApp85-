@@ -20,6 +20,8 @@ import { T } from '../../constants/theme';
 import { supabase } from '../../lib/supabase';
 import { useSettingsPrefs } from '../../context/AppPrefsContext';
 import { signOut, deleteAccount, sendPasswordReset } from '../../auth/emailAuth';
+import { useMutedKeywords } from '../../hooks/useMutedKeywords';
+import { Icon } from '../../ui/Icon';
 
 // ---------------------------------------------------------------------------
 // Navigation contract (state-based, provided by SettingsRoot)
@@ -29,6 +31,7 @@ export type SettingsRoute =
   | 'account'
   | 'editProfile'
   | 'privacy'
+  | 'mutedKeywords'
   | 'security'
   | 'notifications'
   | 'language'
@@ -253,10 +256,90 @@ export function PrivacySafetySettings({ nav, back }: SettingsNavProps) {
           <SettingsSection title="Interactions">
             <SettingsRow icon="chatbubble-outline" label="Who can message you" value="Everyone" onPress={() => stub('Who can message you')} />
             <SettingsRow icon="at-outline" label="Who can mention you" value="Everyone" onPress={() => stub('Who can mention you')} />
+            <SettingsRow icon="text-outline" label="Muted keywords" onPress={() => nav('mutedKeywords')} />
             <SettingsRow icon="ban-outline" label="Blocked accounts" onPress={() => nav('blocked')} last />
           </SettingsSection>
         </>,
       )}
+    </SubPage>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MUTED KEYWORDS
+// ---------------------------------------------------------------------------
+export function MutedKeywords({ back }: SettingsNavProps) {
+  const { keywords, add, remove } = useMutedKeywords();
+  const [text, setText] = useState('');
+
+  const submit = () => {
+    const v = text.trim();
+    if (!v) return;
+    void add(v);
+    setText('');
+  };
+
+  return (
+    <SubPage title="Muted keywords" onBack={back}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+        <Text style={{ color: T.mu, fontSize: 13, lineHeight: 19, marginBottom: 14 }}>
+          Posts and comments containing these words are hidden from you. Case-insensitive.
+        </Text>
+
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 18 }}>
+          <TextInput
+            value={text}
+            onChangeText={setText}
+            onSubmitEditing={submit}
+            placeholder="Add a word or phrase"
+            placeholderTextColor={T.mu}
+            returnKeyType="done"
+            style={{
+              flex: 1,
+              color: T.tx,
+              backgroundColor: T.card,
+              borderWidth: 1,
+              borderColor: T.bd,
+              borderRadius: 12,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              fontSize: 15,
+            }}
+          />
+          <TouchableOpacity
+            onPress={submit}
+            style={{ backgroundColor: T.accent, borderRadius: 12, paddingHorizontal: 18, justifyContent: 'center' }}
+          >
+            <Text style={{ color: '#fff', fontWeight: '700' }}>Add</Text>
+          </TouchableOpacity>
+        </View>
+
+        {keywords.length === 0 ? (
+          <Text style={{ color: T.mu, textAlign: 'center', marginTop: 20 }}>No muted keywords yet.</Text>
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {keywords.map((k) => (
+              <TouchableOpacity
+                key={k}
+                onPress={() => remove(k)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  backgroundColor: T.card2,
+                  borderRadius: 16,
+                  paddingLeft: 12,
+                  paddingRight: 8,
+                  paddingVertical: 7,
+                }}
+              >
+                <Text style={{ color: T.tx, fontSize: 14 }}>{k}</Text>
+                <Icon name="close-circle" size="sm" color={T.mu} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
     </SubPage>
   );
 }

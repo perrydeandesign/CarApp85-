@@ -13,6 +13,7 @@ import {
   AccountSettings,
   EditProfile,
   PrivacySafetySettings,
+  MutedKeywords,
   SecuritySettings,
   NotificationsSettings,
   LanguageRegionSettings,
@@ -64,6 +65,8 @@ export function SettingsRoot({
         return <EditProfile {...props} />;
       case 'privacy':
         return <PrivacySafetySettings {...props} />;
+      case 'mutedKeywords':
+        return <MutedKeywords {...props} />;
       case 'security':
         return <SecuritySettings {...props} />;
       case 'notifications':

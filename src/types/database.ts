@@ -377,6 +377,98 @@ export type Database = {
         }
         Relationships: []
       }
+      event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          profile_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          profile_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          profile_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          attendee_count: number
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          host_id: string
+          id: string
+          lat: number | null
+          lng: number | null
+          location_text: string | null
+          starts_at: string
+          title: string
+          visibility: string
+        }
+        Insert: {
+          attendee_count?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          host_id: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_text?: string | null
+          starts_at: string
+          title: string
+          visibility?: string
+        }
+        Update: {
+          attendee_count?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          host_id?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_text?: string | null
+          starts_at?: string
+          title?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string | null
@@ -501,6 +593,32 @@ export type Database = {
             columns: ["car_id"]
             isOneToOne: false
             referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      muted_keywords: {
+        Row: {
+          created_at: string
+          keyword: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          keyword: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          keyword?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muted_keywords_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -797,6 +915,39 @@ export type Database = {
           },
         ]
       }
+      restricted_users: {
+        Row: {
+          created_at: string
+          restricted_id: string
+          restricter_id: string
+        }
+        Insert: {
+          created_at?: string
+          restricted_id: string
+          restricter_id: string
+        }
+        Update: {
+          created_at?: string
+          restricted_id?: string
+          restricter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restricted_users_restricted_id_fkey"
+            columns: ["restricted_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restricted_users_restricter_id_fkey"
+            columns: ["restricter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_posts: {
         Row: {
           post_id: string
@@ -1000,10 +1151,8 @@ export const Constants = {
 } as const
 
 // ---------------------------------------------------------------------------
-// App-level compatibility types (NOT from the DB).
-// The build Timeline UI still imports these; the live DB has no
-// timeline_entries table (it uses car-based `timelines`), so these are
-// kept as hand-written shapes for the deprecated useTimeline path.
+// App-level compatibility types (NOT from the DB) — Timeline UI still imports
+// these; the live DB has no timeline_entries table.
 // ---------------------------------------------------------------------------
 export type TimelineCategory = 'event' | 'track' | 'modification' | 'notification';
 
