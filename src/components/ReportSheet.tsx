@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Alert, Modal, Pressable, Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import { T } from '../constants/theme';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { SheetBase } from './SheetBase';
 import { REPORT_REASONS, useModeration } from '../hooks/useModeration';
 
 type Props = {
@@ -94,39 +95,24 @@ export function ReportSheet({ visible, onClose, postId, authorId, authorUsername
   );
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
-      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' }} onPress={close}>
-        <Pressable
-          onPress={() => {}}
-          style={{
-            backgroundColor: T.card,
-            borderTopLeftRadius: 18,
-            borderTopRightRadius: 18,
-            paddingTop: 10,
-            paddingBottom: 28,
-          }}
-        >
-          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: T.bd, alignSelf: 'center', marginBottom: 8 }} />
-
-          {mode === 'menu' ? (
-            <>
-              <Row icon="flag" label="Report post" onPress={() => setMode('reasons')} />
-              {authorId ? <Row icon="eye-off" label={`Restrict @${authorUsername ?? 'user'}`} onPress={doRestrict} /> : null}
-              {authorId ? <Row icon="ban" label={`Block @${authorUsername ?? 'user'}`} danger onPress={doBlock} /> : null}
-              <Row icon="close" label="Cancel" onPress={close} />
-            </>
-          ) : (
-            <>
-              <Text style={{ color: T.mu, fontSize: 12, fontWeight: '700', letterSpacing: 0.6, paddingHorizontal: 16, paddingVertical: 8 }}>
-                WHY ARE YOU REPORTING THIS?
-              </Text>
-              {REPORT_REASONS.map((r) => (
-                <Row key={r} icon="chevron-forward" label={r} onPress={() => doReport(r)} />
-              ))}
-            </>
-          )}
-        </Pressable>
-      </Pressable>
-    </Modal>
+    <SheetBase visible={visible} onClose={close}>
+      {mode === 'menu' ? (
+        <>
+          <Row icon="flag" label="Report post" onPress={() => setMode('reasons')} />
+          {authorId ? <Row icon="eye-off" label={`Restrict @${authorUsername ?? 'user'}`} onPress={doRestrict} /> : null}
+          {authorId ? <Row icon="ban" label={`Block @${authorUsername ?? 'user'}`} danger onPress={doBlock} /> : null}
+          <Row icon="close" label="Cancel" onPress={close} />
+        </>
+      ) : (
+        <>
+          <Text style={{ color: T.mu, fontSize: 12, fontWeight: '700', letterSpacing: 0.6, paddingHorizontal: 16, paddingVertical: 8 }}>
+            WHY ARE YOU REPORTING THIS?
+          </Text>
+          {REPORT_REASONS.map((r) => (
+            <Row key={r} icon="chevron-forward" label={r} onPress={() => doReport(r)} />
+          ))}
+        </>
+      )}
+    </SheetBase>
   );
 }

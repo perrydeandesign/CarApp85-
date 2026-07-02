@@ -1,7 +1,8 @@
 import React from 'react';
-import { Modal, Pressable, View, Text, Alert } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { SheetBase } from './SheetBase';
 import { T } from '../constants/theme';
 
 type Props = {
@@ -62,27 +63,12 @@ const OPTIONS: Option[] = [
 export function AddSheet(props: Props) {
   const { visible, onClose } = props;
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' }}
-        onPress={onClose}
-      >
-        <Pressable
-          onPress={() => {}}
-          style={{
-            backgroundColor: T.card,
-            borderTopLeftRadius: 18,
-            borderTopRightRadius: 18,
-            paddingTop: 10,
-            paddingBottom: 32,
-          }}
-        >
-          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: T.bd, alignSelf: 'center', marginBottom: 10 }} />
-          <Text style={{ color: T.tx, fontSize: 17, fontWeight: '800', paddingHorizontal: 16, marginBottom: 6 }}>
-            Create
-          </Text>
+    <SheetBase visible={visible} onClose={onClose}>
+      <Text style={{ color: T.tx, fontSize: 17, fontWeight: '800', paddingHorizontal: 16, marginBottom: 6 }}>
+        Create
+      </Text>
 
-          {OPTIONS.map((o) => (
+      {OPTIONS.map((o) => (
             <PressableScale
               key={o.label}
               onPress={() => o.onPress(props)}
@@ -108,11 +94,9 @@ export function AddSheet(props: Props) {
                 </Text>
                 <Text style={{ color: T.mu, fontSize: 12, marginTop: 2 }}>{o.subtitle}</Text>
               </View>
-              <Icon name="chevron-forward" size="sm" color={T.mu} />
-            </PressableScale>
-          ))}
-        </Pressable>
-      </Pressable>
-    </Modal>
+          <Icon name="chevron-forward" size="sm" color={T.mu} />
+        </PressableScale>
+      ))}
+    </SheetBase>
   );
 }

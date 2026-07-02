@@ -91,7 +91,7 @@ export const SaveToSheet: React.FC<Props> = ({
             <Ionicons
               name={isSaved ? 'bookmark' : 'bookmark-outline'}
               size={22}
-              color={isSaved ? '#00C9A7' : '#fff'}
+              color={isSaved ? '#00C9A7' : '#F0F6FC'}
             />
           </TouchableOpacity>
 
@@ -143,7 +143,7 @@ export const SaveToSheet: React.FC<Props> = ({
                     <Ionicons
                       name={inCol ? 'checkmark-circle' : 'add-circle-outline'}
                       size={22}
-                      color={inCol ? '#00C9A7' : '#fff'}
+                      color={inCol ? '#00C9A7' : '#F0F6FC'}
                     />
                   </TouchableOpacity>
                 );
@@ -158,14 +158,14 @@ export const SaveToSheet: React.FC<Props> = ({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
   },
   sheetWrap: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#0B0E14',
+    backgroundColor: '#161B22',
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
     paddingBottom: 24,
@@ -187,20 +187,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
-  title: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  title: { color: '#F0F6FC', fontSize: 17, fontWeight: '700' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#1A1F2A',
+    borderBottomColor: '#21262D',
   },
   thumb: {
     width: 44,
     height: 44,
     borderRadius: 8,
-    backgroundColor: '#1A1F2A',
+    backgroundColor: '#21262D',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   rowText: { flex: 1 },
-  rowTitle: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  rowTitle: { color: '#F0F6FC', fontWeight: '600', fontSize: 15 },
   rowSubtitle: { color: '#C9D1D9', fontSize: 12, marginTop: 2 },
   sectionHeader: {
     flexDirection: 'row',
@@ -225,8 +225,8 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 8,
   },
-  sectionTitle: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  newLink: { color: '#3897F0', fontSize: 14, fontWeight: '600' },
+  sectionTitle: { color: '#F0F6FC', fontSize: 15, fontWeight: '700' },
+  newLink: { color: '#00C9A7', fontSize: 14, fontWeight: '600' },
   createRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -235,20 +235,20 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: '#fff',
+    color: '#F0F6FC',
     borderWidth: 1,
-    borderColor: '#1A1F2A',
+    borderColor: '#21262D',
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
   createBtn: {
     marginLeft: 8,
-    backgroundColor: '#3897F0',
+    backgroundColor: '#00C9A7',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
   },
-  createBtnText: { color: '#fff', fontWeight: '700' },
+  createBtnText: { color: '#F0F6FC', fontWeight: '700' },
   list: { maxHeight: 320 },
 });
