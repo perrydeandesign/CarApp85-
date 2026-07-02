@@ -16,6 +16,7 @@ import { ViewProfileContext } from '../context/ViewProfileContext';
 import { useMeProfile } from '../hooks/useMeProfile';
 import { useCreatePost } from '../hooks/useCreatePost';
 import { useModeration } from '../hooks/useModeration';
+import { useMutedKeywords } from '../hooks/useMutedKeywords';
 import { Avatar } from '../components/Avatar';
 import { ReportSheet } from '../components/ReportSheet';
 
@@ -112,12 +113,20 @@ export function HomeTab() {
     }
   };
 
-  // UGC moderation — report/block. Blocked authors are filtered from the feed.
+  // UGC moderation — blocked & restricted authors and muted-keyword posts are
+  // filtered from the feed.
   const moderation = useModeration();
+  const muted = useMutedKeywords();
   const [reportPost, setReportPost] = useState<{ id: string; authorId?: string; username?: string } | null>(null);
   const visiblePosts = useMemo(
-    () => social.posts.filter((p) => !moderation.isBlocked(p.author.id)),
-    [social.posts, moderation],
+    () =>
+      social.posts.filter(
+        (p) =>
+          !moderation.isBlocked(p.author.id) &&
+          !moderation.isRestricted(p.author.id) &&
+          !muted.matchesMuted(p.caption),
+      ),
+    [social.posts, moderation, muted],
   );
 
   const openPost = social.posts.find((p) => p.id === openPostId);

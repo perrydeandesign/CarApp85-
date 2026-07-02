@@ -683,6 +683,25 @@ export function EditProfile({ back }: SettingsNavProps) {
 // ---------------------------------------------------------------------------
 export function PrivacyCentre({ nav, back }: SettingsNavProps) {
   const soon = (f: string) => Alert.alert(f, 'Coming soon.');
+
+  const downloadData = async () => {
+    Alert.alert('Download your information', 'We’ll gather your data — this may take a moment.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Export',
+        onPress: async () => {
+          try {
+            const { data, error } = await supabase.functions.invoke('export-data', { method: 'POST' });
+            if (error) throw error;
+            await Share.share({ message: JSON.stringify(data, null, 2) });
+          } catch (e: any) {
+            Alert.alert('Export failed', e?.message ?? String(e));
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <SubPage title="Privacy Centre" onBack={back}>
       {wrap(
@@ -690,7 +709,7 @@ export function PrivacyCentre({ nav, back }: SettingsNavProps) {
           <SettingsSection footer="Learn how MODIFIED handles your data and manage your choices.">
             <SettingsRow icon="reader-outline" label="How MODIFIED uses your data" onPress={() => nav('privacyPolicy')} />
             <SettingsRow icon="flag-outline" label="Your reports" onPress={() => nav('yourReports')} />
-            <SettingsRow icon="download-outline" label="Download your information" onPress={() => soon('Download your information')} />
+            <SettingsRow icon="download-outline" label="Download your information" onPress={downloadData} />
             <SettingsRow icon="options-outline" label="Manage your data" onPress={() => nav('privacy')} last />
           </SettingsSection>
           <SettingsSection title="Policies">
