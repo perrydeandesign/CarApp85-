@@ -1,29 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { mapNotificationRow, type Notification, type ServerRow } from './notificationMapper';
 
-export type NotifType = 'like' | 'comment' | 'follow' | 'mention' | 'competition';
-
-export type Notification = {
-  id: string;
-  type: NotifType;
-  body: string | null;
-  read: boolean;
-  /** Compat shim: `readAt` mirrors `!!read` so legacy consumers keep working. */
-  readAt: string | null;
-  /** Compat shim — v2 schema has no postId; kept null for compatibility. */
-  postId: string | null;
-  createdAt: string;
-  actor: { id: string; username: string; avatarUrl: string };
-};
-
-type ServerRow = {
-  id: string;
-  type: NotifType;
-  body: string | null;
-  read: boolean;
-  created_at: string;
-  actor: { id: string; username: string; avatar_url: string | null } | null;
-};
+// Re-exported so existing consumers can keep importing these from useNotifications.
+export type { NotifType, Notification, ServerRow } from './notificationMapper';
+export { mapNotificationRow } from './notificationMapper';
 
 const SELECT = `
   id, type, body, read, created_at,
@@ -51,20 +32,7 @@ export function useNotifications(profileId: string | null, pageSize = 30) {
       .limit(pageSize);
     if (err) { setError(err.message); setLoading(false); return; }
     const rows = (data ?? []) as unknown as ServerRow[];
-    setNotifications(rows.map((r) => ({
-      id: r.id,
-      type: r.type,
-      body: r.body,
-      read: r.read,
-      readAt: r.read ? r.created_at : null,
-      postId: null,
-      createdAt: r.created_at,
-      actor: {
-        id: r.actor?.id ?? '',
-        username: r.actor?.username ?? 'someone',
-        avatarUrl: r.actor?.avatar_url ?? '',
-      },
-    })));
+    setNotifications(rows.map(mapNotificationRow));
     setLoading(false);
   }, [profileId, pageSize]);
 
