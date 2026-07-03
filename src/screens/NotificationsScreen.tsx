@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T } from '../constants/theme';
-import { getNotifications } from '../lib/data';
-import { sb } from '../lib/data';
+import { useMeProfile } from '../hooks/useMeProfile';
+import { useNotifications, type Notification } from '../hooks/useNotifications';
 
 type Props = {
   onBack: () => void;
@@ -23,7 +23,7 @@ type Props = {
   onHashtagPress?: (tag: string) => void;
 };
 
-function actionText(n: any): string {
+function actionText(n: Notification): string {
   switch (n.type) {
     case 'like':
       return 'liked your post';
@@ -31,16 +31,16 @@ function actionText(n: any): string {
       return 'commented on your post';
     case 'follow':
       return 'started following you';
-    case 'tag':
-      return 'tagged you in a post';
     case 'mention':
       return 'mentioned you';
+    case 'competition':
+      return 'entered your competition';
     default:
-      return 'did something';
+      return n.body ?? 'did something';
   }
 }
 
-function iconFor(n: any): { name: string; color: string } {
+function iconFor(n: Notification): { name: string; color: string } {
   switch (n.type) {
     case 'like':
       return { name: 'heart', color: '#FF4D6D' };
@@ -48,10 +48,10 @@ function iconFor(n: any): { name: string; color: string } {
       return { name: 'chatbubble', color: '#3897F0' };
     case 'follow':
       return { name: 'person-add', color: '#00C9A7' };
-    case 'tag':
-      return { name: 'pricetag', color: '#FF9F1C' };
     case 'mention':
       return { name: 'at', color: '#A855F7' };
+    case 'competition':
+      return { name: 'trophy', color: '#FBBF24' };
     default:
       return { name: 'notifications', color: T.tx2 };
   }
@@ -71,69 +71,40 @@ export function NotificationsScreen({
   onProfilePress,
   onPostPress,
 }: Props) {
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: me } = useMeProfile();
+  const {
+    notifications,
+    loading,
+    unreadCount,
+    refresh: refreshNotifications,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications(me?.id ?? null);
   const [refreshing, setRefreshing] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    const profile = await sb.auth.getUser();
-    const uid = profile?.data?.user?.id;
-    if (!uid) return;
-
-    const data = await getNotifications(uid);
-    setNotifications(data);
-    setLoading(false);
-  }, []);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await refreshNotifications();
     setRefreshing(false);
-  }, [load]);
+  }, [refreshNotifications]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const markAsRead = async (id: string) => {
-    await sb.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
-    );
-  };
-
-  const markAllAsRead = async () => {
-    await sb.from('notifications').update({ read_at: new Date().toISOString() });
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, read_at: new Date().toISOString() }))
-    );
-  };
-
-  const remove = async (id: string) => {
-    await sb.from('notifications').delete().eq('id', id);
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
-
-  const handleTap = (n: any) => {
-    if (!n.read_at) void markAsRead(n.id);
+  const handleTap = (n: Notification) => {
+    if (!n.read) void markAsRead(n.id);
 
     const conn = {
-      userId: n.actor_id,
-      user: n.actor_username,
-      img: n.actor_avatar_url || '',
+      userId: n.actor.id,
+      user: n.actor.username,
+      img: n.actor.avatarUrl || '',
     };
 
     if (n.type === 'follow') {
       onProfilePress?.(conn);
-    } else if (n.post_id) {
-      onPostPress?.(n.post_id);
+    } else if (n.postId) {
+      onPostPress?.(n.postId);
     } else {
       onProfilePress?.(conn);
     }
   };
-
-  const unreadCount = notifications.filter((n) => !n.read_at).length;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -194,19 +165,18 @@ export function NotificationsScreen({
           return (
             <TouchableOpacity
               onPress={() => handleTap(item)}
-              onLongPress={() => remove(item.id)}
-              style={[styles.row, !item.read_at && styles.rowUnread]}
+              style={[styles.row, !item.read && styles.rowUnread]}
             >
               {/* Avatar */}
-              {item.actor_avatar_url ? (
+              {item.actor.avatarUrl ? (
                 <Image
-                  source={{ uri: item.actor_avatar_url }}
+                  source={{ uri: item.actor.avatarUrl }}
                   style={styles.avatar}
                 />
               ) : (
                 <View style={[styles.avatar, styles.avatarFallback]}>
                   <Text style={styles.avatarInitials}>
-                    {item.actor_username?.slice(0, 2)?.toUpperCase()}
+                    {item.actor.username?.slice(0, 2)?.toUpperCase()}
                   </Text>
                 </View>
               )}
@@ -214,12 +184,12 @@ export function NotificationsScreen({
               {/* Text */}
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={styles.line} numberOfLines={2}>
-                  <Text style={styles.actor}>{item.actor_username}</Text>{' '}
+                  <Text style={styles.actor}>{item.actor.username}</Text>{' '}
                   <Text style={styles.action}>{actionText(item)}</Text>
                 </Text>
 
                 <Text style={styles.timestamp}>
-                  {timeAgo(item.created_at)}
+                  {timeAgo(item.createdAt)}
                 </Text>
               </View>
 

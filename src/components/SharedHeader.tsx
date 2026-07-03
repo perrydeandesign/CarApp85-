@@ -5,10 +5,12 @@ import { T, IC } from '../constants/theme';
 import { getUnreadCount } from '../data/messaging';
 import { useConversations } from '../hooks/useConversations';
 import { useNotifications } from '../hooks/useNotifications';
+import { useMeProfile } from '../hooks/useMeProfile';
 
 export function TopBar({ onMenu, onNotif, onMsg }: { onMenu: () => void; onNotif: () => void; onMsg: () => void }) {
   const { conversations } = useConversations();
-  const { unreadCount: notifUnread } = useNotifications();
+  const { data: me } = useMeProfile();
+  const { unreadCount: notifUnread } = useNotifications(me?.id ?? null);
   const totalUnread = conversations.reduce((s, c) => s + getUnreadCount(c), 0);
   return (
     <View style={{ zIndex: 50 }}>
