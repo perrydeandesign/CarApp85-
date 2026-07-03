@@ -16,6 +16,7 @@ import { IGCommentInputBar } from '../ui/IGCommentInputBar';
 import { RichCaption } from '../social/components/RichCaption';
 import { TaggablePhoto } from '../social/components/TaggablePhoto';
 import { useComments } from '../hooks/useComments';
+import { useMutedKeywords } from '../hooks/useMutedKeywords';
 
 type Props = {
   post: Post;
@@ -45,6 +46,12 @@ export const PostDetailScreen: React.FC<Props> = ({
   onHashtagPress,
 }) => {
   const { comments: postComments, addComment } = useComments(post.id);
+  // Hide comments whose text contains any of the user's muted keywords.
+  const muted = useMutedKeywords();
+  const visibleComments = React.useMemo(
+    () => postComments.filter((c) => !muted.matchesMuted(c.text)),
+    [postComments, muted],
+  );
   const handleSubmitComment = async (text: string) => {
     try {
       await addComment(text);
@@ -103,7 +110,7 @@ export const PostDetailScreen: React.FC<Props> = ({
         ) : null}
 
         <View style={styles.commentsContainer}>
-          <CommentsThread comments={postComments} />
+          <CommentsThread comments={visibleComments} />
         </View>
       </ScrollView>
 
