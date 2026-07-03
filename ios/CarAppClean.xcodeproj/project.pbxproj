@@ -99,6 +99,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C2DFF54A2FEA364600DA2F10 /* Build configuration list for PBXNativeTarget "CarAppClean" */;
 			buildPhases = (
+				19F5BCA77D1C46C79C504395 /* Start Metro (auto) */,
 				B9D26CAFC37A79F32A5527C0 /* [CP] Check Pods Manifest.lock */,
 				C2DFF5332FEA364600DA2F10 /* Sources */,
 				C2DFF5342FEA364600DA2F10 /* Frameworks */,
@@ -166,6 +167,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		19F5BCA77D1C46C79C504395 /* Start Metro (auto) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Start Metro (auto)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Auto-start Metro when running from Xcode (Debug builds only).\nif [ \"$CONFIGURATION\" = \"Debug\" ]; then\n  export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\n  if nc -w 2 -z localhost \"${RCT_METRO_PORT}\" 2>/dev/null; then\n    echo \"note: Metro already running on port ${RCT_METRO_PORT}\"\n  else\n    open \"$SRCROOT/scripts/launchMetro.command\"\n  fi\nfi\n";
+		};
 		39F35E9E12BB8DD605244062 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
