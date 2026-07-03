@@ -6,6 +6,7 @@ import {
   ScrollView,
   StatusBar,
   TouchableOpacity,
+  Modal,
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -14,8 +15,22 @@ import { ModifiedGradientBg, MODIFIED_TAGLINE } from '../onboarding/components/g
 import { ModifiedLogo } from '../onboarding/components/ModifiedLogo';
 import { ModifiedTextField } from '../onboarding/components/ModifiedTextField';
 import { ModifiedPrimaryButton } from '../onboarding/components/ModifiedPrimaryButton';
+import { PolicyScreen } from '../components/settings/PolicyScreen';
+import {
+  TERMS_OF_USE,
+  PRIVACY_POLICY,
+  COMMUNITY_GUIDELINES,
+  POLICY_LAST_UPDATED,
+} from './Settings/policies';
 
 import { signUpWithEmail } from '../auth/emailAuth';
+
+type PolicyKey = 'terms' | 'privacy' | 'guidelines';
+const POLICY_DOCS: Record<PolicyKey, { title: string; body: string }> = {
+  terms: { title: 'Terms of Use', body: TERMS_OF_USE },
+  privacy: { title: 'Privacy Policy', body: PRIVACY_POLICY },
+  guidelines: { title: 'Community Guidelines', body: COMMUNITY_GUIDELINES },
+};
 
 export default function Signup() {
   const navigation = useNavigation<any>();
@@ -27,6 +42,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [policy, setPolicy] = useState<PolicyKey | null>(null);
 
   const handleSignup = async () => {
     if (!username.trim() || !email.trim() || !password) {
@@ -108,6 +124,31 @@ export default function Signup() {
             onPress={handleSignup}
           />
 
+          {/* App Review 1.2 (UGC): terms/EULA acceptance + objectionable-content policy */}
+          <Text
+            style={{
+              fontSize: 12,
+              color: '#8B949E',
+              textAlign: 'center',
+              lineHeight: 18,
+              marginTop: 16,
+            }}
+          >
+            By creating an account, you agree to our{' '}
+            <Text style={{ color: T.accent }} onPress={() => setPolicy('terms')}>
+              Terms of Use
+            </Text>{' '}
+            and{' '}
+            <Text style={{ color: T.accent }} onPress={() => setPolicy('guidelines')}>
+              Community Guidelines
+            </Text>
+            , and acknowledge our{' '}
+            <Text style={{ color: T.accent }} onPress={() => setPolicy('privacy')}>
+              Privacy Policy
+            </Text>
+            . MODIFIED has zero tolerance for objectionable content or abusive behaviour.
+          </Text>
+
           <View
             style={{
               flexDirection: 'row',
@@ -122,6 +163,21 @@ export default function Signup() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+        <Modal
+          visible={policy !== null}
+          animationType="slide"
+          onRequestClose={() => setPolicy(null)}
+        >
+          {policy !== null && (
+            <PolicyScreen
+              title={POLICY_DOCS[policy].title}
+              lastUpdated={POLICY_LAST_UPDATED}
+              body={POLICY_DOCS[policy].body}
+              onBack={() => setPolicy(null)}
+            />
+          )}
+        </Modal>
       </SafeAreaView>
     </ModifiedGradientBg>
   );
