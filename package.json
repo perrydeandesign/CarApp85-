@@ -6,8 +6,10 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "start": "react-native start",
     "test": "jest",
+    "test:unit": "jest src/",
     "seed": "node --env-file=.env supabase/seed.mjs",
     "postinstall": "patch-package"
   },

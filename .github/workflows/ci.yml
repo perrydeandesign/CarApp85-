@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    name: typecheck / lint / test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Hard gate: the unit suites must stay green. Scoped to src/ so it runs
+      # the pure-logic tests (notification policy, mappers, read-state) without
+      # the full-app render harness in __tests__/App.test.tsx.
+      - name: Unit tests
+        run: npm run test:unit
+
+      # Informational (non-blocking) until the legacy typecheck/lint debt is
+      # burned down. These surface the debt on every PR without blocking merges.
+      # Flip continue-on-error to false once the counts reach zero.
+      - name: Typecheck (informational)
+        run: npm run typecheck
+        continue-on-error: true
+
+      - name: Lint (informational)
+        run: npm run lint
+        continue-on-error: true
