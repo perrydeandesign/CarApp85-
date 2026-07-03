@@ -1,0 +1,15 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Monochrome — flat single tone on transparent. iOS tinted-icon source / stencil use. -->
+  <defs>
+    <mask id="cutM" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+        <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+              fill="none" stroke="#FFFFFF" stroke-width="56"
+              stroke-linejoin="miter" stroke-linecap="butt"/>
+        <rect x="596" y="592" width="120" height="24"
+              transform="rotate(-22 656 604)" fill="#000000"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="1024" height="1024" fill="#E6EAEE" mask="url(#cutM)"/>
+</svg>

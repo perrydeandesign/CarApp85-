@@ -1,0 +1,74 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Depth background: teal-tinted radial bloom over charcoal, with vignette -->
+    <radialGradient id="bg" cx="50%" cy="40%" r="72%">
+      <stop offset="0" stop-color="#123A39"/>
+      <stop offset="0.48" stop-color="#0C141A"/>
+      <stop offset="1" stop-color="#05070A"/>
+    </radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.10"/>
+      <stop offset="0.35" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Emblem face: top-lit glossy teal slab -->
+    <linearGradient id="face" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#7DF7E2"/>
+      <stop offset="0.45" stop-color="#12D2AF"/>
+      <stop offset="1" stop-color="#009378"/>
+    </linearGradient>
+    <!-- Gloss sweep concentrated on the upper half of the face -->
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="30" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/></feMerge>
+    </filter>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="34"/>
+    </filter>
+    <filter id="dropdepth" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#sheen)"/>
+
+  <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+    <!-- ambient glow -->
+    <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+          fill="none" stroke="#00E6C0" stroke-width="56"
+          stroke-linejoin="miter" opacity="0.28" filter="url(#glow)"/>
+
+    <!-- extruded side (3D depth) -->
+    <g filter="url(#dropdepth)">
+      <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+            fill="none" stroke="#035C4B" stroke-width="56"
+            stroke-linejoin="miter" transform="translate(0,18)"/>
+    </g>
+    <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+          fill="none" stroke="#04705C" stroke-width="56"
+          stroke-linejoin="miter" transform="translate(0,9)"/>
+
+    <!-- lit face -->
+    <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+          fill="none" stroke="url(#face)" stroke-width="56"
+          stroke-linejoin="miter"/>
+
+    <!-- glossy specular sweep on the upper half -->
+    <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+          fill="none" stroke="url(#gloss)" stroke-width="56"
+          stroke-linejoin="miter"/>
+
+    <!-- specular bloom, upper-left -->
+    <ellipse cx="430" cy="430" rx="70" ry="110" fill="#FFFFFF" opacity="0.12" filter="url(#soft)"/>
+
+    <!-- modification seam: a deep cut revealing the extrusion -->
+    <rect x="596" y="592" width="120" height="24"
+          transform="rotate(-22 656 604)" fill="#052018"/>
+  </g>
+</svg>

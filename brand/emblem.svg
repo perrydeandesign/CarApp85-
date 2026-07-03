@@ -1,0 +1,36 @@
+<svg width="512" height="512" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- MODIFIED emblem — dimensional teal, transparent ground. Avatar / sticker / watermark. -->
+  <defs>
+    <linearGradient id="face" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#7DF7E2"/>
+      <stop offset="0.45" stop-color="#12D2AF"/>
+      <stop offset="1" stop-color="#009378"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="seam" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#FFFFFF"/>
+      <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+        <rect x="596" y="592" width="120" height="24"
+              transform="rotate(-22 656 604)" fill="#000000"/>
+      </g>
+    </mask>
+  </defs>
+
+  <g mask="url(#seam)">
+    <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+      <!-- extruded depth -->
+      <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+            fill="none" stroke="#04705C" stroke-width="56"
+            stroke-linejoin="miter" transform="translate(0,10)"/>
+      <!-- lit face -->
+      <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+            fill="none" stroke="url(#face)" stroke-width="56" stroke-linejoin="miter"/>
+      <!-- gloss -->
+      <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+            fill="none" stroke="url(#gloss)" stroke-width="56" stroke-linejoin="miter"/>
+    </g>
+  </g>
+</svg>

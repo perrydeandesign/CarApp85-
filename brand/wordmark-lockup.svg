@@ -1,0 +1,71 @@
+<svg width="1600" height="1600" viewBox="0 0 1600 1600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Variation 3 — primary vertical lockup: emblem over wordmark. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0" stop-color="#123A39"/>
+      <stop offset="0.5" stop-color="#0C141A"/>
+      <stop offset="1" stop-color="#05070A"/>
+    </radialGradient>
+    <linearGradient id="face" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#7DF7E2"/>
+      <stop offset="0.45" stop-color="#12D2AF"/>
+      <stop offset="1" stop-color="#009378"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="tealbar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0E9E86"/>
+      <stop offset="0.5" stop-color="#2FE3C4"/>
+      <stop offset="1" stop-color="#0E9E86"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="34" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/></feMerge>
+    </filter>
+    <filter id="depthsh" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <mask id="seam" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#FFFFFF"/>
+      <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+        <rect x="596" y="592" width="120" height="24"
+              transform="rotate(-22 656 604)" fill="#000000"/>
+      </g>
+    </mask>
+  </defs>
+
+  <rect width="1600" height="1600" fill="url(#bg)"/>
+
+  <!-- emblem, upper -->
+  <g transform="translate(800,540) scale(0.66) translate(-512,-511)">
+    <g mask="url(#seam)">
+      <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+        <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+              fill="none" stroke="#00E6C0" stroke-width="56"
+              stroke-linejoin="miter" opacity="0.26" filter="url(#glow)"/>
+        <g filter="url(#depthsh)">
+          <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+                fill="none" stroke="#04705C" stroke-width="56"
+                stroke-linejoin="miter" transform="translate(0,12)"/>
+        </g>
+        <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+              fill="none" stroke="url(#face)" stroke-width="56" stroke-linejoin="miter"/>
+        <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+              fill="none" stroke="url(#gloss)" stroke-width="56" stroke-linejoin="miter"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- wordmark -->
+  <text x="800" y="1050" text-anchor="middle"
+        font-family="Futura, 'Avenir Next Condensed', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="700" font-size="150" letter-spacing="16"
+        fill="#F0F6FC">MODIFIED</text>
+
+  <!-- teal aero accent bar with chamfered ends -->
+  <g transform="translate(800,1120)">
+    <polygon points="-150,-6 150,-6 138,10 -162,10" fill="url(#tealbar)"/>
+  </g>
+</svg>
