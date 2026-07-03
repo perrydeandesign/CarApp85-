@@ -49,8 +49,8 @@ export function CreateGroupScreen({ onBack, onCreated }: { onBack: () => void; o
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
         {/* Banner Preview */}
         <View style={{ height: 120, backgroundColor: T.card, borderRadius: 12, overflow: 'hidden', marginBottom: 20, alignItems: 'center', justifyContent: 'center' }}>
-          <Image source={{ uri: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=400&fit=crop' }} style={{ ...StyleSheet.absoluteFillObject }} resizeMode="cover" />
-          <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' }} />
+          <Image source={{ uri: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=400&fit=crop' }} style={{ ...StyleSheet.absoluteFill }} resizeMode="cover" />
+          <View style={{ ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)' }} />
           <Ionicons name="camera-outline" size={28} color="rgba(255,255,255,0.7)" />
           <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 4 }}>Tap to change banner</Text>
         </View>

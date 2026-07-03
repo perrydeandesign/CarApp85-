@@ -17,14 +17,19 @@ const PROFILE_COLS = 'id, username, avatar_url, bio, location';
 let seededPromise: Promise<MeProfile | null> | null = null;
 function fetchSeeded(): Promise<MeProfile | null> {
   if (!seededPromise) {
-    seededPromise = supabase
-      .from(TABLES.profiles)
-      .select(PROFILE_COLS)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => (data ?? null) as MeProfile | null)
-      .catch(() => null);
+    seededPromise = (async (): Promise<MeProfile | null> => {
+      try {
+        const { data } = await supabase
+          .from(TABLES.profiles)
+          .select(PROFILE_COLS)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        return (data ?? null) as MeProfile | null;
+      } catch {
+        return null;
+      }
+    })();
   }
   return seededPromise;
 }

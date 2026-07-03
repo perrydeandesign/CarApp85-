@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import type { Comment } from '../data/posts';
 
-export const CommentsThread = ({ comments }) => {
+export const CommentsThread = ({ comments }: { comments: Comment[] }) => {
   return (
     <View style={stylesThread.container}>
       {comments.map((c) => (
         <View key={c.id} style={stylesThread.commentRow}>
-          <Text style={stylesThread.username}>{c.username}</Text>
+          <Text style={stylesThread.username}>{c.author.username}</Text>
           <Text style={stylesThread.text}>{c.text}</Text>
         </View>
       ))}

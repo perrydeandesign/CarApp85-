@@ -37,7 +37,7 @@ export function GroupDetailScreen({ group, onBack }: { group: Group; onBack: () 
         {/* Banner */}
         <View style={{ height: 160, backgroundColor: T.card }}>
           <Image source={{ uri: group.bannerUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-          <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)' }} />
+          <View style={{ ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.3)' }} />
           <TouchableOpacity onPress={onBack} style={{ position: 'absolute', top: 50, left: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="chevron-back" size={IC.back} color={T.wh} />
           </TouchableOpacity>

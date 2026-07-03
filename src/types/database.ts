@@ -803,7 +803,7 @@ export type Database = {
           type: string
         }
         Insert: {
-          body: string
+          body?: string | null
           car_id?: string | null
           comment_count?: number
           created_at?: string

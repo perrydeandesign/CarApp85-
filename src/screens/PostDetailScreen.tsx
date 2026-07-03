@@ -34,6 +34,7 @@ type Props = {
   onAddComment?: (postId: string, text: string) => void;
   onMentionPress?: (username: string) => void;
   onHashtagPress?: (tag: string) => void;
+  onProfilePress?: (conn: any) => void;
 };
 
 export const PostDetailScreen: React.FC<Props> = ({

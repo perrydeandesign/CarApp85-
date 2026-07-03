@@ -74,7 +74,7 @@ export function useCars(profileId: string | null) {
       .eq('profile_id', profileId)
       .order('created_at', { ascending: true });
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []) as CarRow[];
   }, [profileId]);
 }
 
@@ -86,7 +86,7 @@ export function useCarMods(carId: string | null) {
       .select('id, category, name, notes')
       .eq('car_id', carId);
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []) as ModRow[];
   }, [carId]);
 }
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet, Image } from 'react-native';
 
-export const GoogleButton = ({ onPress }) => {
+export const GoogleButton = ({ onPress }: { onPress: () => void }) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.inner}>

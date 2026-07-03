@@ -11,7 +11,7 @@ import { T } from '../constants/theme';
 
 type Props = {
   width?: number | `${number}%`;
-  height?: number;
+  height?: number | `${number}%`;
   borderRadius?: number;
   style?: any;
 };

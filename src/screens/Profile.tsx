@@ -699,10 +699,8 @@ export function ProfileScreen() {
               >
                 <GalleryItem
                   imageUrl={sp.mediaUrl}
-                  title={sp.caption}
-                  author={sp.author.username}
-                  likesCount={sp.likeCount}
-                  commentsCount={sp.commentCount}
+                  likeCount={sp.likeCount}
+                  commentCount={sp.commentCount}
                   onPress={() => setOpenPostId(sp.id)}
                 />
               </View>

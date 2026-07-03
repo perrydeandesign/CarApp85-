@@ -2,18 +2,25 @@ import React from 'react';
 import { TouchableOpacity, Image, View, Text, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-export const GalleryItem = ({ post, onPress }) => {
+type GalleryItemProps = {
+  imageUrl: string;
+  likeCount: number;
+  commentCount: number;
+  onPress: () => void;
+};
+
+export const GalleryItem = ({ imageUrl, likeCount, commentCount, onPress }: GalleryItemProps) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.9}>
-      <Image source={{ uri: post.imageUrl }} style={styles.image} />
+      <Image source={{ uri: imageUrl }} style={styles.image} />
 
       <View style={styles.overlay}>
         <View style={styles.row}>
           <Ionicons name="heart-outline" size={16} color="#fff" />
-          <Text style={styles.count}>{post.likeCount}</Text>
+          <Text style={styles.count}>{likeCount}</Text>
 
           <Ionicons name="chatbubble-outline" size={16} color="#fff" style={styles.iconSpacing} />
-          <Text style={styles.count}>{post.commentCount}</Text>
+          <Text style={styles.count}>{commentCount}</Text>
         </View>
       </View>
     </TouchableOpacity>

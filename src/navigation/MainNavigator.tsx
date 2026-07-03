@@ -67,7 +67,7 @@ function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
     setViewProf(conn ?? user);
   };
 
-  const content: Record<string, JSX.Element> = {
+  const content: Record<string, React.ReactElement> = {
     home: <HomeTab />,
     search: <SearchScreen />,
     camera: <CameraScreen />,

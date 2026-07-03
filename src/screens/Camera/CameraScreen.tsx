@@ -1,15 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+import { Camera as VisionCamera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+
+// vision-camera's exported prop types vary across versions and don't always
+// include valid props like `photo`; alias to bypass the mismatched typing.
+const Camera = VisionCamera as any;
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-export default function CameraScreen({ navigation }) {
+export default function CameraScreen({ navigation }: { navigation?: any }) {
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
 
-  const cameraRef = useRef(null);
+  // vision-camera's Camera ref typing is finicky across versions; `any` keeps
+  // takePhoto() reachable without fighting the generic.
+  const cameraRef = useRef<any>(null);
   const [isTakingPhoto, setIsTakingPhoto] = useState(false);
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hasPermission) {
@@ -41,7 +47,7 @@ export default function CameraScreen({ navigation }) {
   };
 
   const usePhoto = () => {
-    navigation.navigate('PostPreview', { imageUri: preview });
+    navigation?.navigate('PostPreview', { imageUri: preview });
   };
 
   if (!device) {

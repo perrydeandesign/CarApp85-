@@ -108,7 +108,7 @@ export const TaggablePhoto: React.FC<Props> = ({
 const styles = StyleSheet.create({
   image: { width: '100%', aspectRatio: 4 / 5, backgroundColor: '#11141C' },
   hintWrap: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingBottom: 14,
