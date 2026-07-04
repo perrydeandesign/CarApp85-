@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, ScrollView, Image, TouchableOpacity, TextInput, Modal } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, SCREEN_W, VENDOR_CATEGORIES, CAT_TITLE, CAT_SUBTITLE } from '../../constants/theme';
 import type { Vendor, VProduct } from '../../constants/types';
-import { VENDORS, VPRODS } from '../../data/vendors';
+import { VENDORS, VPRODS, productFitsGarage } from '../../data/vendors';
 import { VStore, VendorProductRow } from './VendorDetail';
 import { ProductDetailScreen } from './ProductDetail';
 
-/* ── Vendor Card ── */
+/* ── Vendor Card (full-width, matches existing app style) ── */
 export function VendorCard({ vendor, onPress }: { vendor: Vendor; onPress: () => void }) {
   const fits = vendor.fitsMyGarage ?? false;
   const cats = vendor.categories ?? [];
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, overflow: 'hidden' }}>
-      {/* Hero image */}
       <View style={{ height: 160, backgroundColor: 'rgba(255,255,255,0.05)' }}>
         {vendor.heroImg ? (
           <Image source={{ uri: vendor.heroImg }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
@@ -24,7 +23,6 @@ export function VendorCard({ vendor, onPress }: { vendor: Vendor; onPress: () =>
         )}
       </View>
       <View style={{ padding: 12 }}>
-        {/* Name + Fits badge */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={{ color: '#F0F6FC', fontSize: 16, fontWeight: '700', flex: 1 }}>{vendor.name}</Text>
           {fits && (
@@ -33,9 +31,7 @@ export function VendorCard({ vendor, onPress }: { vendor: Vendor; onPress: () =>
             </View>
           )}
         </View>
-        {/* Description */}
         <Text style={{ color: '#C9D1D9', fontSize: 13, lineHeight: 18, marginTop: 6 }} numberOfLines={2}>{vendor.desc}</Text>
-        {/* Category chips */}
         {cats.length > 0 && (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
             {cats.map(c => (
@@ -50,128 +46,268 @@ export function VendorCard({ vendor, onPress }: { vendor: Vendor; onPress: () =>
   );
 }
 
-/* ── Vendor Category Screen ── */
-const CAT_COUNT: Record<string, number> = Object.fromEntries(VENDOR_CATEGORIES.map(c => [c, VENDORS.filter(v => v.cat === c).length]));
+/* ── Compact horizontal shelf cards ── */
+function VendorShelfCard({ vendor, onPress }: { vendor: Vendor; onPress: () => void }) {
+  return (
+    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ width: 150, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden' }}>
+      <View style={{ height: 96, backgroundColor: 'rgba(255,255,255,0.05)' }}>
+        {vendor.heroImg ? <Image source={{ uri: vendor.heroImg }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : null}
+      </View>
+      <View style={{ padding: 10 }}>
+        <Text numberOfLines={1} style={{ color: '#F0F6FC', fontSize: 13, fontWeight: '700' }}>{vendor.name}</Text>
+        {vendor.fitsMyGarage ? <Text style={{ color: T.accent, fontSize: 11, marginTop: 2 }}>Fits your car</Text> : <Text numberOfLines={1} style={{ color: '#8B949E', fontSize: 11, marginTop: 2 }}>{(vendor.categories ?? [])[0] ?? ''}</Text>}
+      </View>
+    </TouchableOpacity>
+  );
+}
 
-const AZ_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+function ProductShelfCard({ product, onPress }: { product: VProduct; onPress: () => void }) {
+  const fits = product.fitsSelectedCar ?? productFitsGarage(product).fits;
+  return (
+    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ width: 150, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden' }}>
+      <View style={{ height: 110, backgroundColor: 'rgba(255,255,255,0.05)' }}>
+        {product.img ? <Image source={{ uri: product.img }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : null}
+        {fits ? (
+          <View style={{ position: 'absolute', top: 8, right: 8 }}>
+            <Ionicons name="checkmark-circle" size={20} color={T.accent} />
+          </View>
+        ) : null}
+      </View>
+      <View style={{ padding: 10 }}>
+        <Text numberOfLines={1} style={{ color: '#F0F6FC', fontSize: 12.5, fontWeight: '700' }}>{product.name}</Text>
+        <Text style={{ color: T.accent, fontSize: 12.5, fontWeight: '800', marginTop: 3 }}>${product.price}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
 
-export function VendorDirectoryScreen({ initialCategory, onBack, onVendor }: { initialCategory?: string; onBack: () => void; onVendor: (v: Vendor) => void }) {
+function SectionHeader({ title, onSeeAll }: { title: string; onSeeAll?: () => void }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 10 }}>
+      <Text style={{ fontSize: 12, fontWeight: '700', letterSpacing: 2, color: '#8B949E' }}>{title}</Text>
+      {onSeeAll ? <TouchableOpacity onPress={onSeeAll}><Text style={{ fontSize: 12, fontWeight: '700', color: T.accent }}>See all ›</Text></TouchableOpacity> : null}
+    </View>
+  );
+}
+
+/* ── Legacy directory export (kept for compatibility) ── */
+export function VendorDirectoryScreen({ onBack, onVendor }: { initialCategory?: string; onBack: () => void; onVendor: (v: Vendor) => void }) {
   return (
     <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Text style={{ fontSize: 28, fontWeight: '800', color: '#F0F6FC', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
-
         {VENDORS.map(vendor => (
           <View key={vendor.id} style={{ paddingHorizontal: 16, marginTop: 16 }}>
             <VendorCard vendor={vendor} onPress={() => onVendor(vendor)} />
           </View>
         ))}
-
         <View style={{ height: 32 }} />
       </ScrollView>
     </View>
   );
 }
 
-/* ── Vendor Tab (with stack: main → store → product) ── */
-export function VendorTab() {
-  const [screen, setScreen] = useState<'main' | 'store' | 'product'>('main');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [fitsOnly, setFitsOnly] = useState(false);
-  const [sel, setSel] = useState<typeof VENDORS[0] | null>(null);
-  const [selProd, setSelProd] = useState<VProduct | null>(null);
-
-  if (screen === 'product' && selProd) return <ProductDetailScreen product={selProd} onBack={() => { setSelProd(null); setScreen('main'); }} />;
-  if (screen === 'store' && sel) return <VStore vendor={sel} onBack={() => { setSel(null); setScreen('main'); }} />;
-
-  const filteredVendors = VENDORS.filter(
-    v =>
-      (!selectedCategory || (v.categories ?? []).includes(selectedCategory)) &&
-      (!fitsOnly || v.fitsMyGarage),
+/* ── Fits-your-car toggle pill ── */
+function FitsToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onToggle}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: on ? T.accent : 'rgba(255,255,255,0.15)', backgroundColor: on ? T.accent : 'transparent' }}
+    >
+      <Ionicons name="car-sport" size={15} color={on ? '#0D1117' : T.accent} />
+      <Text style={{ fontSize: 13, fontWeight: '700', color: on ? '#0D1117' : '#F0F6FC' }}>Fits your car</Text>
+    </TouchableOpacity>
   );
-  const trendingProducts = VPRODS.filter(p => p.img).slice(0, 5);
+}
+
+/* ══════════════════ VENDOR TAB — 2 screens (Hub → Results) + detail sheets ══════════════════ */
+export function VendorTab() {
+  const [view, setView] = useState<'hub' | 'results'>('hub');
+  const [resultsCat, setResultsCat] = useState<string | null>(null);
+  const [seg, setSeg] = useState<'vendors' | 'products'>('vendors');
+  const [query, setQuery] = useState('');
+  const [fitsOnly, setFitsOnly] = useState(false);
+
+  // Detail sheets (keep navigable depth at 2)
+  const [vendorSheet, setVendorSheet] = useState<Vendor | null>(null);
+  const [productSheet, setProductSheet] = useState<VProduct | null>(null);
+
   const GRID_GAP = 8;
   const TILE_W = (SCREEN_W - 32 - GRID_GAP) / 2;
 
-  return (
-    <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
-    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-      {/* Title */}
-      <Text style={{ fontSize: 28, fontWeight: '800', color: '#F0F6FC', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
+  const openResults = (cat: string | null, segment: 'vendors' | 'products') => {
+    setResultsCat(cat);
+    setSeg(segment);
+    setView('results');
+  };
+  const backToHub = () => { setView('hub'); setResultsCat(null); setQuery(''); };
 
-      {/* 2x2 Category Grid */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: GRID_GAP, paddingHorizontal: 16, marginTop: 16 }}>
-        {VENDOR_CATEGORIES.map(cat => {
-          const isSelected = selectedCategory === cat;
-          return (
-            <TouchableOpacity
-              key={cat}
-              activeOpacity={0.8}
-              onPress={() => setSelectedCategory(isSelected ? null : cat)}
-              style={{ width: TILE_W, padding: 12, backgroundColor: isSelected ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)', borderRadius: 12, borderWidth: isSelected ? 1 : 0, borderColor: isSelected ? T.accent : 'transparent' }}
-            >
-              <Text style={{ fontSize: 14, fontWeight: '700', color: '#F0F6FC' }} numberOfLines={1}>{CAT_TITLE[cat] || cat}</Text>
-              <Text style={{ fontSize: 11, color: '#C9D1D9', marginTop: 4, lineHeight: 15 }} numberOfLines={2}>{CAT_SUBTITLE[cat]}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+  // Category id → vendor ids (to filter products by their vendor's category)
+  const vendorIdsInCat = useMemo(() => {
+    if (!resultsCat) return null;
+    return new Set(VENDORS.filter(v => (v.categories ?? []).includes(resultsCat)).map(v => v.id));
+  }, [resultsCat]);
 
-      {/* Fits-your-car filter */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => setFitsOnly(v => !v)}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: fitsOnly ? T.accent : 'rgba(255,255,255,0.15)',
-            backgroundColor: fitsOnly ? T.accent : 'transparent',
-          }}
-        >
-          <Ionicons name="car-sport" size={15} color={fitsOnly ? '#0D1117' : T.accent} />
-          <Text style={{ fontSize: 13, fontWeight: '700', color: fitsOnly ? '#0D1117' : '#F0F6FC' }}>
-            Fits your car
-          </Text>
-        </TouchableOpacity>
-      </View>
+  const q = query.trim().toLowerCase();
+  const filteredVendors = useMemo(() =>
+    VENDORS
+      .filter(v => (!resultsCat || (v.categories ?? []).includes(resultsCat)))
+      .filter(v => (!fitsOnly || v.fitsMyGarage))
+      .filter(v => !q || v.name.toLowerCase().includes(q) || v.desc.toLowerCase().includes(q))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    [resultsCat, fitsOnly, q],
+  );
+  const filteredProducts = useMemo(() =>
+    VPRODS
+      .filter(p => (!vendorIdsInCat || vendorIdsInCat.has(p.vendorId)))
+      .filter(p => (!fitsOnly || (p.fitsSelectedCar ?? productFitsGarage(p).fits)))
+      .filter(p => !q || p.name.toLowerCase().includes(q) || (p.brand ?? '').toLowerCase().includes(q)),
+    [vendorIdsInCat, fitsOnly, q],
+  );
 
-      {/* Vendor List */}
-      <View style={{ marginTop: 20 }}>
-        <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', paddingHorizontal: 16, marginBottom: 12 }}>
-          {fitsOnly ? 'Vendors that fit your car' : 'Vendors'}
-        </Text>
-        {filteredVendors.length === 0 && (
-          <Text style={{ color: '#C9D1D9', fontSize: 13, paddingHorizontal: 16 }}>
-            No vendors match your car in this category yet.
-          </Text>
-        )}
-        {filteredVendors.map(vendor => (
-          <View key={vendor.id} style={{ paddingHorizontal: 16, marginBottom: 12 }}>
-            <VendorCard vendor={vendor} onPress={() => { setSel(vendor); setScreen('store'); }} />
+  const featuredVendors = useMemo(() => [...VENDORS].sort((a, b) => Number(b.fitsMyGarage ?? false) - Number(a.fitsMyGarage ?? false)).slice(0, 8), []);
+  const trendingProducts = useMemo(() => VPRODS.filter(p => p.img && (p.badge === 'pop' || p.badge === 'new')).slice(0, 10), []);
+
+  const detailSheets = (
+    <>
+      <Modal visible={!!vendorSheet} animationType="slide" onRequestClose={() => setVendorSheet(null)}>
+        {vendorSheet && <VStore vendor={vendorSheet} onBack={() => setVendorSheet(null)} />}
+      </Modal>
+      <Modal visible={!!productSheet} animationType="slide" onRequestClose={() => setProductSheet(null)}>
+        {productSheet && <ProductDetailScreen product={productSheet} onBack={() => setProductSheet(null)} />}
+      </Modal>
+    </>
+  );
+
+  /* ── SCREEN 2 — RESULTS ── */
+  if (view === 'results') {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingTop: 12 }}>
+          <TouchableOpacity onPress={backToHub} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="chevron-back" size={26} color="#F0F6FC" />
+          </TouchableOpacity>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#161B22', borderRadius: 12, borderWidth: 1, borderColor: '#1E2630', paddingHorizontal: 12, height: 40 }}>
+            <Ionicons name="search" size={16} color="#8B949E" />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder={resultsCat ? CAT_TITLE[resultsCat] || resultsCat : 'Search parts & brands'}
+              placeholderTextColor="#8B949E"
+              style={{ flex: 1, color: '#F0F6FC', fontSize: 14, paddingVertical: 0 }}
+              autoFocus={!resultsCat}
+            />
+            {query ? <TouchableOpacity onPress={() => setQuery('')}><Ionicons name="close-circle" size={16} color="#8B949E" /></TouchableOpacity> : null}
           </View>
-        ))}
-      </View>
+        </View>
 
-      {/* Trending Products */}
-      {trendingProducts.length > 0 && (
-        <View style={{ marginTop: 16 }}>
-          <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', paddingHorizontal: 16, marginBottom: 8 }}>Trending Products</Text>
-          {trendingProducts.map((p, i) => (
-            <View key={i} style={{ paddingHorizontal: 16, marginBottom: 8 }}>
-              <VendorProductRow product={p} onPress={() => { setSelProd(p); setScreen('product'); }} />
-            </View>
+        {/* Segmented */}
+        <View style={{ flexDirection: 'row', backgroundColor: '#161B22', borderRadius: 12, borderWidth: 1, borderColor: '#1E2630', marginHorizontal: 16, marginTop: 12, padding: 4 }}>
+          {(['vendors', 'products'] as const).map(s => (
+            <TouchableOpacity key={s} onPress={() => setSeg(s)} style={{ flex: 1, paddingVertical: 8, borderRadius: 9, backgroundColor: seg === s ? T.accent : 'transparent', alignItems: 'center' }}>
+              <Text style={{ fontWeight: '800', fontSize: 14, color: seg === s ? '#04110E' : '#8B949E' }}>{s === 'vendors' ? 'Vendors' : 'Products'}</Text>
+            </TouchableOpacity>
           ))}
         </View>
-      )}
 
-      <View style={{ height: 32 }} />
-    </ScrollView>
+        {/* Sub-header: title + fits toggle */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 12 }}>
+          <Text style={{ color: '#8B949E', fontSize: 13 }}>
+            {seg === 'vendors' ? `${filteredVendors.length} vendors` : `${filteredProducts.length} products`}
+            {resultsCat ? ` · ${CAT_TITLE[resultsCat] || resultsCat}` : ''}
+          </Text>
+          <FitsToggle on={fitsOnly} onToggle={() => setFitsOnly(v => !v)} />
+        </View>
+
+        <ScrollView style={{ flex: 1, marginTop: 12 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          {seg === 'vendors' ? (
+            filteredVendors.length === 0 ? (
+              <Text style={{ color: '#8B949E', fontSize: 13, paddingHorizontal: 16 }}>No vendors match.</Text>
+            ) : filteredVendors.map(vendor => (
+              <View key={vendor.id} style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+                <VendorCard vendor={vendor} onPress={() => setVendorSheet(vendor)} />
+              </View>
+            ))
+          ) : (
+            filteredProducts.length === 0 ? (
+              <Text style={{ color: '#8B949E', fontSize: 13, paddingHorizontal: 16 }}>No products match.</Text>
+            ) : filteredProducts.map((p, i) => (
+              <View key={i} style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+                <VendorProductRow product={p} onPress={() => setProductSheet(p)} />
+              </View>
+            ))
+          )}
+          <View style={{ height: 32 }} />
+        </ScrollView>
+        {detailSheets}
+      </View>
+    );
+  }
+
+  /* ── SCREEN 1 — HUB ── */
+  return (
+    <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <Text style={{ fontSize: 28, fontWeight: '800', color: '#F0F6FC', paddingHorizontal: 16, paddingTop: 12 }}>Vendors</Text>
+
+        {/* Search (opens Results) */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => openResults(null, 'products')}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#161B22', borderRadius: 12, borderWidth: 1, borderColor: '#1E2630', marginHorizontal: 16, marginTop: 14, paddingHorizontal: 12, height: 44 }}
+        >
+          <Ionicons name="search" size={16} color="#8B949E" />
+          <Text style={{ color: '#8B949E', fontSize: 14 }}>Search parts & brands</Text>
+        </TouchableOpacity>
+
+        {/* Fits toggle */}
+        <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 14 }}>
+          <FitsToggle on={fitsOnly} onToggle={() => setFitsOnly(v => !v)} />
+        </View>
+
+        {/* Category grid (hero) */}
+        <Text style={{ fontSize: 12, fontWeight: '700', letterSpacing: 2, color: '#8B949E', paddingHorizontal: 16, marginTop: 22, marginBottom: 10 }}>SHOP BY CATEGORY</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: GRID_GAP, paddingHorizontal: 16 }}>
+          {VENDOR_CATEGORIES.map(cat => {
+            const count = VENDORS.filter(v => (v.categories ?? []).includes(cat)).length;
+            return (
+              <TouchableOpacity
+                key={cat}
+                activeOpacity={0.8}
+                onPress={() => openResults(cat, 'vendors')}
+                style={{ width: TILE_W, padding: 12, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12 }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#F0F6FC' }} numberOfLines={1}>{CAT_TITLE[cat] || cat}</Text>
+                <Text style={{ fontSize: 11, color: '#C9D1D9', marginTop: 4, lineHeight: 15 }} numberOfLines={2}>{CAT_SUBTITLE[cat]}</Text>
+                <Text style={{ fontSize: 11, color: T.accent, marginTop: 6, fontWeight: '600' }}>{count} brand{count === 1 ? '' : 's'}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Featured Vendors shelf */}
+        <View style={{ marginTop: 26 }}>
+          <SectionHeader title="FEATURED VENDORS" onSeeAll={() => openResults(null, 'vendors')} />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
+            {featuredVendors.map(v => <VendorShelfCard key={v.id} vendor={v} onPress={() => setVendorSheet(v)} />)}
+          </ScrollView>
+        </View>
+
+        {/* Trending Products shelf */}
+        {trendingProducts.length > 0 && (
+          <View style={{ marginTop: 26 }}>
+            <SectionHeader title="TRENDING PRODUCTS" onSeeAll={() => openResults(null, 'products')} />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
+              {trendingProducts.map((p, i) => <ProductShelfCard key={i} product={p} onPress={() => setProductSheet(p)} />)}
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+      {detailSheets}
     </View>
   );
 }
