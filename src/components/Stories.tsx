@@ -10,6 +10,7 @@ import Animated, {
 import { Avatar } from './Avatar';
 import { T } from '../constants/theme';
 import { ME, CONNS } from '../data/users';
+import { useMeProfile } from '../hooks/useMeProfile';
 
 type Props = {
   onGoProfile?: () => void;
@@ -55,8 +56,10 @@ function GlowRing({ size }: { size: number }) {
 }
 
 export function Stories({ onGoProfile, onProfile }: Props) {
+  // Live-first avatar so the "You" story matches the composer + profile header.
+  const { data: me } = useMeProfile();
   const items = [
-    { user: 'You', av: ME.av, img: ME.img, isMe: true, hasNew: false },
+    { user: 'You', av: ME.av, img: me?.avatar_url || ME.img, isMe: true, hasNew: false },
     ...CONNS.slice(0, 5).map((c, idx) => ({
       user: c.user,
       av: c.av,

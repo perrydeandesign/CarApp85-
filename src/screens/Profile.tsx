@@ -36,6 +36,9 @@ import { SearchPrefillContext } from '../navigation/SearchPrefillContext';
 
 // Data
 import { CONNS, ME, categorizeMods } from '../data/users';
+import { DEMO_ME_CARS, DEMO_ME_MODS } from '../data/demoBuild';
+import { getAchievements, topTier, winCount, TIER_COLOR } from '../data/achievements';
+import { AchievementsModal } from '../components/AchievementsModal';
 import { useCars, useCarMods, bucketMods, usePostsByCar, useProfilePosts, useProfileIdByUsername } from '../hooks/useProfileData';
 import { useMeProfile } from '../hooks/useMeProfile';
 import { ModsList } from '../components/ModsList';
@@ -87,6 +90,13 @@ export function ProfileScreen() {
 
   const isMe = !viewedUser;
 
+  // Competition achievements → avatar champion ring + trophy pill/modal.
+  const achievements = getAchievements(isMe);
+  const ringTier = topTier(achievements);
+  const wins = winCount(achievements);
+  const ringColor = ringTier ? TIER_COLOR[ringTier] : T.bg;
+  const [achOpen, setAchOpen] = useState(false);
+
   // 1️⃣ Determine Conn (guard against null / partial objects coming from search)
   const conn = (isMe
     ? CONNS.find((c) => c.userId === ME.id) || CONNS[0]
@@ -114,7 +124,7 @@ export function ProfileScreen() {
       'Car enthusiast. Modified community member.',
     followers: conn.followers,
     following: conn.following,
-    posts: profileOverride?.posts || demoUser?.photos.length || 0,
+    posts: isMe ? ME.photoPosts.length : (profileOverride?.posts || demoUser?.photos.length || 0),
     photos: demoUser?.photos || [],
     videos: demoUser?.videos || [],
     timeline: profileOverride?.timeline || demoUser?.timeline || [],
@@ -130,14 +140,19 @@ export function ProfileScreen() {
   const { data: lookupId } = useProfileIdByUsername(isMe ? null : profileUser.username);
   const realProfileId = isMe ? me?.id ?? null : lookupId ?? null;
   const { data: supaCars } = useCars(realProfileId);
+  // Demo fallback: the signed-out "me" profile shows a sample build so the
+  // Garage tab + Build Card aren't empty in the demo.
+  const usingDemoGarage = isMe && !(supaCars && supaCars.length > 0);
+  const garageCars = usingDemoGarage ? DEMO_ME_CARS : (supaCars ?? []);
   useEffect(() => {
-    if (supaCars && supaCars.length > 0 && !selectedCarId) {
-      setSelectedCarId(supaCars[0].id);
+    if (garageCars.length > 0 && !selectedCarId) {
+      setSelectedCarId(garageCars[0].id);
     }
-  }, [supaCars, selectedCarId]);
+  }, [garageCars, selectedCarId]);
   const { data: supaMods } = useCarMods(selectedCarId);
+  const buildMods = usingDemoGarage ? DEMO_ME_MODS : (supaMods ?? []);
 
-  const selectedSupaCar = supaCars?.find((c) => c.id === selectedCarId) ?? null;
+  const selectedSupaCar = garageCars.find((c) => c.id === selectedCarId) ?? null;
   const [activeCar, setActiveCar] = useState({
     name: `${profileUser.car.year} ${profileUser.car.make} ${profileUser.car.model}`,
     image: profileUser.carImage,
@@ -399,6 +414,34 @@ export function ProfileScreen() {
             </TouchableOpacity>
           </View>
         )}
+
+        {/* Trophy pill — expands to the full achievements modal */}
+        {achievements.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setAchOpen(true)}
+            activeOpacity={0.85}
+            style={{
+              position: 'absolute',
+              bottom: 12,
+              right: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              borderRadius: 16,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderWidth: 1,
+              borderColor: ringColor,
+            }}
+          >
+            <Ionicons name="trophy" size={13} color={TIER_COLOR.gold} />
+            <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>
+              {wins > 0 ? `${wins} Won` : `${achievements.length}`}
+            </Text>
+            <Ionicons name="chevron-forward" size={12} color="#C9D1D9" />
+          </TouchableOpacity>
+        )}
       </Animated.View>
 
       {/* ════════════════════ PROFILE ROW ════════════════════ */}
@@ -410,20 +453,41 @@ export function ProfileScreen() {
           marginTop: -AVATAR_SZ / 2,
         }}
       >
-        {/* Avatar — thin dark stroke, no teal ring (IG-style restraint). */}
+        {/* Avatar — champion ring (gold/silver/teal) when the user holds a trophy. */}
+        <View style={{ position: 'relative' }}>
         <View
           style={{
-            borderRadius: AVATAR_SZ / 2 + 2,
-            borderWidth: 2,
-            borderColor: T.bg,
+            borderRadius: AVATAR_SZ / 2 + 3,
+            borderWidth: ringTier ? 3 : 2,
+            borderColor: ringColor,
             backgroundColor: T.bg,
           }}
         >
           <Avatar
             initials={profileUser.username[0]?.toUpperCase()}
             size={AVATAR_SZ}
-            img={profileUser.avatar}
+            img={isMe ? me?.avatar_url || profileUser.avatar : profileUser.avatar}
           />
+        </View>
+        {ringTier && (
+          <View
+            style={{
+              position: 'absolute',
+              right: -2,
+              bottom: -2,
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: ringColor,
+              borderWidth: 2,
+              borderColor: T.bg,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="trophy" size={13} color={ringTier === 'teal' ? '#04110E' : '#3A2A00'} />
+          </View>
+        )}
         </View>
 
         <View style={{ flex: 1, marginLeft: 12, marginBottom: 6 }}>
@@ -734,7 +798,7 @@ export function ProfileScreen() {
             ))}
           </View>
         ) : (
-          <ProfilePostsTab photos={profileUser.photos} />
+          <ProfilePostsTab photos={isMe ? ME.photoPosts : profileUser.photos} />
         )
       )}
 
@@ -746,13 +810,13 @@ export function ProfileScreen() {
       {/* ════════════════════ GARAGE TAB ════════════════════ */}
       {activeTab === 'garage' && (
         <View style={{ padding: 16, gap: 12 }}>
-          {(supaCars ?? []).length === 0 ? (
+          {garageCars.length === 0 ? (
             <View style={{ alignItems: 'center', paddingTop: 32, gap: 8 }}>
               <MaterialCommunityIcons name="garage" size={40} color={T.mu} />
               <Text style={{ color: T.mu, fontSize: 13 }}>No cars in the garage yet.</Text>
             </View>
           ) : (
-            (supaCars ?? []).map((car) => {
+            garageCars.map((car) => {
               const active = car.id === selectedCarId;
               const name = `${car.year ?? ''} ${car.make} ${car.model}`.trim();
               return (
@@ -817,7 +881,7 @@ export function ProfileScreen() {
               <View ref={buildCardRef} collapsable={false}>
                 <BuildCard
                   car={selectedSupaCar}
-                  mods={supaMods ?? []}
+                  mods={buildMods}
                   username={profileUser.username}
                 />
               </View>
@@ -836,6 +900,13 @@ export function ProfileScreen() {
           }}
         />
       )}
+
+      <AchievementsModal
+        visible={achOpen}
+        onClose={() => setAchOpen(false)}
+        username={profileUser.username}
+        achievements={achievements}
+      />
 
       {/* ════════════════════ SUBPAGES (overlay) ════════════════════ */}
       <Modal

@@ -175,6 +175,7 @@ const ME_VIDEO_POSTS: { thumbnail: string; video: string }[] = [
 const ME_DEMO = DEMO_USERS.find(u => u.username === 'jake_sti') || DEMO_USERS[0];
 
 export const ME: UserProfile & {
+  id: string;
   name: string;
   handle: string;
   location: string;
@@ -186,6 +187,7 @@ export const ME: UserProfile & {
   photoPosts: string[];
   videoPosts: { thumbnail: string; video: string }[];
 } = {
+  id: ME_DEMO.id,
   user: 'Jake_STI', // keep legacy display name
   name: 'Jake_STI',
   handle: '@jake_sti',
