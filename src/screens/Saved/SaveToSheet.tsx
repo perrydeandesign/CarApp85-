@@ -249,6 +249,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
   },
-  createBtnText: { color: '#F0F6FC', fontWeight: '700' },
+  createBtnText: { color: '#04110E', fontWeight: '700' },
   list: { maxHeight: 320 },
 });

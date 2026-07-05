@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
 import type { VProduct } from '../../constants/types';
@@ -57,6 +57,18 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
           {/* Description */}
           <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', marginTop: 16 }}>Description</Text>
           <Text style={{ fontSize: 15, color: '#C9D1D9', lineHeight: 22, marginTop: 6 }}>{product.desc}</Text>
+
+          {/* Subtle Buy now — opens the vendor's product page */}
+          {(product.productURL || vendor?.website) ? (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => Linking.openURL((product.productURL || vendor?.website) as string)}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 16, borderWidth: 1, borderColor: T.accent, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 9 }}
+            >
+              <Text style={{ color: T.accent, fontSize: 13, fontWeight: '700' }}>Buy now</Text>
+              <Ionicons name="open-outline" size={14} color={T.accent} />
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         <View style={{ height: 32 }} />

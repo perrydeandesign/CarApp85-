@@ -171,10 +171,10 @@ export function VendorTab() {
 
   const detailSheets = (
     <>
-      <Modal visible={!!vendorSheet} animationType="slide" onRequestClose={() => setVendorSheet(null)}>
+      <Modal visible={!!vendorSheet} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setVendorSheet(null)}>
         {vendorSheet && <VStore vendor={vendorSheet} onBack={() => setVendorSheet(null)} />}
       </Modal>
-      <Modal visible={!!productSheet} animationType="slide" onRequestClose={() => setProductSheet(null)}>
+      <Modal visible={!!productSheet} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setProductSheet(null)}>
         {productSheet && <ProductDetailScreen product={productSheet} onBack={() => setProductSheet(null)} />}
       </Modal>
     </>

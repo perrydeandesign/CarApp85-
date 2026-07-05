@@ -147,9 +147,7 @@ function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNa
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 20,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: T.bd,
+            paddingVertical: 15,
           }}
         >
           <View style={{ width: 32, alignItems: 'center' }}>
@@ -184,9 +182,7 @@ function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNa
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: 20,
-          paddingVertical: 16,
-          borderTopWidth: 1,
-          borderTopColor: T.bd,
+          paddingVertical: 15,
         }}
       >
         <View style={{ width: 32, alignItems: 'center' }}>

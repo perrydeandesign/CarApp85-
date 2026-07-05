@@ -322,7 +322,7 @@ export function MutedKeywords({ back }: SettingsNavProps) {
             onPress={submit}
             style={{ backgroundColor: T.accent, borderRadius: 12, paddingHorizontal: 18, justifyContent: 'center' }}
           >
-            <Text style={{ color: '#fff', fontWeight: '700' }}>Add</Text>
+            <Text style={{ color: '#04110E', fontWeight: '700' }}>Add</Text>
           </TouchableOpacity>
         </View>
 

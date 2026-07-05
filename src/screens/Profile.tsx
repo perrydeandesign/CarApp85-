@@ -367,53 +367,6 @@ export function ProfileScreen() {
         {/* Subtle bottom gradient so the avatar + name sit on darkness. */}
         <BannerFade height={100} />
 
-        {/* Edit + Share */}
-        {isMe && (
-          <View
-            style={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              flexDirection: 'row',
-              gap: 6,
-            }}
-          >
-            <TouchableOpacity
-              onPress={async () => {
-                try {
-                  await Share.share({
-                    message: `Check out my build on MODIFIED — ${activeCar.name}. Full mod list and timeline on the app!`,
-                    url: `https://modified.app/profile/${profileUser.username}`,
-                  });
-                } catch (_) {}
-              }}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 15,
-                backgroundColor: 'rgba(0,0,0,0.55)',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Ionicons name="share-outline" size={14} color={T.wh} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 15,
-                backgroundColor: 'rgba(0,0,0,0.55)',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              onPress={() => Alert.alert('Edit Profile', 'Coming soon')}
-            >
-              <Ionicons name="create-outline" size={14} color={T.wh} />
-            </TouchableOpacity>
-          </View>
-        )}
 
         {/* Trophy pill — expands to the full achievements modal */}
         {achievements.length > 0 && (
@@ -492,7 +445,7 @@ export function ProfileScreen() {
 
         <View style={{ flex: 1, marginLeft: 12, marginBottom: 6 }}>
           <Text style={{ fontSize: 22, fontWeight: '800', color: T.wh }}>
-            {profileUser.username}
+            {isMe ? me?.username || profileUser.username : profileUser.username}
           </Text>
           <Text
             style={{ fontSize: 13, fontWeight: '600', color: T.tx2, marginTop: 2 }}
@@ -548,16 +501,32 @@ export function ProfileScreen() {
       </Text>
 
       {/* ════════════════════ PRIMARY ACTION ════════════════════ */}
-      <View style={{ paddingHorizontal: 16, marginTop: 14 }}>
-        <Button
-          label={isMe ? 'Edit Profile' : 'Follow'}
-          variant={isMe ? 'secondary' : 'primary'}
-          size="md"
-          fullWidth
-          onPress={() =>
-            isMe ? Alert.alert('Edit Profile', 'Coming soon') : undefined
-          }
-        />
+      <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginTop: 14 }}>
+        <View style={{ flex: 1 }}>
+          <Button
+            label={isMe ? 'Edit Profile' : 'Follow'}
+            variant={isMe ? 'secondary' : 'primary'}
+            size="md"
+            fullWidth
+            onPress={() =>
+              isMe ? Alert.alert('Edit Profile', 'Coming soon') : undefined
+            }
+          />
+        </View>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={async () => {
+            try {
+              await Share.share({
+                message: `Check out ${isMe ? 'my' : `@${profileUser.username}'s`} build on MODIFIED — ${activeCar.name}.`,
+                url: `https://modified.app/profile/${profileUser.username}`,
+              });
+            } catch (_) {}
+          }}
+          style={{ width: 48, borderRadius: 12, borderWidth: 1, borderColor: T.bd, backgroundColor: T.card, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Ionicons name="share-outline" size={18} color={T.wh} />
+        </TouchableOpacity>
       </View>
 
       {/* ════════════════════ TAB BAR (INSTAGRAM STYLE) ════════════════════ */}
@@ -630,7 +599,7 @@ export function ProfileScreen() {
               }}
             >
               <Text style={{ fontSize: 16, fontWeight: '700', color: '#F0F6FC' }}>
-                Modifications
+                My Build
               </Text>
               {selectedYear && (
                 <View

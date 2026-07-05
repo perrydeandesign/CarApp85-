@@ -51,15 +51,6 @@ function TabIcon({
           color={active ? T.accent : T.wh}
         />
       </Animated.View>
-      <View
-        style={{
-          width: 4,
-          height: 4,
-          borderRadius: 2,
-          backgroundColor: active ? T.accent : 'transparent',
-          marginTop: 5,
-        }}
-      />
     </PressableScale>
   );
 }
