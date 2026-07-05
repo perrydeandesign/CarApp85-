@@ -257,6 +257,7 @@ export function CreateEvent({
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
+  const [notes, setNotes] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
   const [dateObj, setDateObj] = useState<Date | null>(null);
   const [hour, setHour] = useState(18);
@@ -278,7 +279,11 @@ export function CreateEvent({
     try {
       await onCreate({
         title,
-        description,
+        // Notes are optional; fold them into the description so they persist
+        // without a schema change and render on the event detail.
+        description: [description.trim(), notes.trim() ? `Notes: ${notes.trim()}` : '']
+          .filter(Boolean)
+          .join('\n\n'),
         locationText: location,
         coverUrl,
         startsAt: start.toISOString(),
@@ -380,7 +385,8 @@ export function CreateEvent({
           <Icon name="image-outline" size="sm" color={T.accent} />
           <Text style={{ color: T.accent, fontSize: 13, fontWeight: '600' }}>Choose from library</Text>
         </TouchableOpacity>
-        {field('Description', description, setDescription, 'Details, rules, what to bring…', { multiline: true })}
+        {field('Description', description, setDescription, 'What the event is about…', { multiline: true })}
+        {field('Notes (optional)', notes, setNotes, 'Requirements, entry fee, what to bring…', { multiline: true })}
 
         <PrimaryButton label="Create event" onPress={submit} loading={saving} style={{ marginTop: 6 }} />
       </ScrollView>

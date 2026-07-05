@@ -14,7 +14,7 @@ import { T, IC } from '../constants/theme';
 const TAB_ITEMS: { key: string; icon: string; label: string }[] = [
   { key: 'home', icon: 'home-outline', label: 'Home' },
   { key: 'search', icon: 'search-outline', label: 'Search' },
-  { key: 'camera', icon: 'camera-outline', label: 'Camera' },
+  { key: 'camera', icon: 'add', label: 'Create' },
   { key: 'groups', icon: 'people-outline', label: 'Groups' },
   { key: 'vendor', icon: 'storefront-outline', label: 'Vendors' },
   { key: 'profile', icon: 'person-outline', label: 'Profile' },
@@ -41,6 +41,33 @@ function TabIcon({
       );
     }
   }, [active, scale]);
+
+  // Center "create" action — an emphasized + in a filled teal square. It opens
+  // the create hub (post / build / competition / event), so it reads as the
+  // primary CTA rather than a literal camera.
+  if (item.key === 'camera') {
+    return (
+      <PressableScale onPress={onPress} style={{ flex: 1, alignItems: 'center' }} activeScale={0.9}>
+        <View
+          style={{
+            width: 48,
+            height: 38,
+            borderRadius: 13,
+            backgroundColor: T.accent,
+            alignItems: 'center',
+            justifyContent: 'center',
+            transform: [{ translateY: -6 }],
+            shadowColor: T.accent,
+            shadowOpacity: 0.4,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
+          }}
+        >
+          <Ionicons name="add" size={26} color={T.onAccent} />
+        </View>
+      </PressableScale>
+    );
+  }
 
   return (
     <PressableScale onPress={onPress} style={{ flex: 1, alignItems: 'center' }} activeScale={0.9}>
