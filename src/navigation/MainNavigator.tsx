@@ -77,7 +77,7 @@ function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
   };
 
   return (
-    <ViewProfileContext.Provider value={{ openProfile, viewedUser: viewProf }}>
+    <ViewProfileContext.Provider value={{ openProfile, viewedUser: viewProf, onEditProfile: () => onNavigate('editProfile') }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: T.bg }}>
         <TopBar
           onMenu={() => navigation.dispatch(DrawerActions.openDrawer())}

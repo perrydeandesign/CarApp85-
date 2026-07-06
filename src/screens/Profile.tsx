@@ -19,6 +19,7 @@ import { PressableScale } from '../ui/PressableScale';
 import { Button } from '../ui/Button';
 import { BuildCard, buildUrl } from '../components/BuildCard';
 import { BannerFade } from '../components/BannerFade';
+import { ShareSheet } from '../components/ShareSheet';
 import { captureRef } from 'react-native-view-shot';
 import Animated, {
   useSharedValue,
@@ -84,8 +85,9 @@ const BANNER_H = 165; // 25% shorter than the 220 redesign height
 
 export function ProfileScreen() {
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
-  
-  const { openProfile, viewedUser } = useContext(ViewProfileContext);
+  const [showShare, setShowShare] = useState(false);
+
+  const { openProfile, viewedUser, onEditProfile } = useContext(ViewProfileContext);
   const { goToSearch } = useContext(SearchPrefillContext);
 
   const isMe = !viewedUser;
@@ -509,25 +511,28 @@ export function ProfileScreen() {
             size="md"
             fullWidth
             onPress={() =>
-              isMe ? Alert.alert('Edit Profile', 'Coming soon') : undefined
+              isMe ? onEditProfile?.() : undefined
             }
           />
         </View>
         <TouchableOpacity
           activeOpacity={0.85}
-          onPress={async () => {
-            try {
-              await Share.share({
-                message: `Check out ${isMe ? 'my' : `@${profileUser.username}'s`} build on MODIFIED — ${activeCar.name}.`,
-                url: `https://modified.app/profile/${profileUser.username}`,
-              });
-            } catch (_) {}
-          }}
+          onPress={() => setShowShare(true)}
           style={{ width: 48, borderRadius: 12, borderWidth: 1, borderColor: T.bd, backgroundColor: T.card, alignItems: 'center', justifyContent: 'center' }}
         >
           <Ionicons name="share-outline" size={18} color={T.wh} />
         </TouchableOpacity>
       </View>
+
+      <ShareSheet
+        visible={showShare}
+        onClose={() => setShowShare(false)}
+        content={{
+          title: `${isMe ? 'My' : `@${profileUser.username}'s`} build on MODIFIED`,
+          message: `Check out ${isMe ? 'my' : `@${profileUser.username}'s`} build on MODIFIED — ${activeCar.name}.`,
+          url: `https://modified.app/profile/${profileUser.username}`,
+        }}
+      />
 
       {/* ════════════════════ TAB BAR (INSTAGRAM STYLE) ════════════════════ */}
       <View
