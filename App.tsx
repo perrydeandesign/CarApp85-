@@ -4,6 +4,7 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/auth/useAuth';
 import { ConversationsProvider } from './src/hooks/useConversations';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { ShareProvider } from './src/components/ShareProvider';
 import { initObservability } from './src/lib/observability';
 import { linking } from './src/navigation/linking';
 import { AppPrefsProvider } from './src/context/AppPrefsContext';
@@ -17,9 +18,11 @@ export default function App() {
       <AppPrefsProvider>
         <AuthProvider>
           <ConversationsProvider>
-            <NavigationContainer linking={linking}>
-              <AppNavigator />
-            </NavigationContainer>
+            <ShareProvider>
+              <NavigationContainer linking={linking}>
+                <AppNavigator />
+              </NavigationContainer>
+            </ShareProvider>
           </ConversationsProvider>
         </AuthProvider>
       </AppPrefsProvider>

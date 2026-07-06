@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Share, Linking } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
 import type { Vendor, VProduct } from '../../constants/types';
 import { VPRODS, productFitsGarage } from '../../data/vendors';
+import { useShare } from '../../components/ShareProvider';
 import { ProductDetailScreen } from './ProductDetail';
 
 export function VendorProductRow({ product, onPress }: { product: VProduct; onPress: () => void }) {
@@ -39,6 +40,7 @@ export function VStore({ vendor, onBack }: { vendor: Vendor; onBack?: () => void
   const [selectedProduct, setSelectedProduct] = useState<VProduct | null>(null);
   const [following, setFollowing] = useState(false);
   const [contacted, setContacted] = useState(false);
+  const { share } = useShare();
   const vendorProds = VPRODS.filter(p => p.vendorId === vendor.id)
     .sort((a, b) => {
       const aFits = a.fitsSelectedCar ?? productFitsGarage(a).fits;
@@ -95,7 +97,7 @@ export function VStore({ vendor, onBack }: { vendor: Vendor; onBack?: () => void
             <Text style={{ fontSize: 12, fontWeight: '700', color: '#F0F6FC' }}>Website</Text>
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
-          <TouchableOpacity onPress={async () => { try { await Share.share({ message: `Check out ${vendor.name} on MODIFIED` }); } catch (_) {} }} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' }}>
+          <TouchableOpacity onPress={() => share({ title: vendor.name, message: `Check out ${vendor.name} on MODIFIED`, url: vendor.website })} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="share-outline" size={16} color="white" />
           </TouchableOpacity>
         </View>

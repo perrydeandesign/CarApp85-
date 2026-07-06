@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { CAT, T, TL_ICONS } from '../../constants/theme';
+import { useShare } from '../ShareProvider';
 import { TimelineCategoryPill } from './TimelineCategoryPill';
 import { TimelineImage } from './TimelineImage';
 import type { TimelineEntry } from '../../hooks/useTimeline';
@@ -42,6 +43,7 @@ export function TimelineItem({ entry, isFirst, isLast, canDelete, onLongPress }:
   const [likeCount, setLikeCount] = useState(entry.likeCount);
   const [commentCount, setCommentCount] = useState(entry.commentCount);
   const [composerOpen, setComposerOpen] = useState(false);
+  const { share } = useShare();
 
   const { toggleLike: persistLike } = useLikePost();
   const { data: me } = useMeProfile();
@@ -75,13 +77,13 @@ export function TimelineItem({ entry, isFirst, isLast, canDelete, onLongPress }:
 
   const onComment = () => setComposerOpen(true);
 
-  const onShare = async () => {
-    try {
-      await Share.share({
-        message: `${entry.title}${entry.description ? ` — ${entry.description}` : ''}`,
-        url: entry.imageUrl ?? undefined,
-      });
-    } catch (_) {}
+  const onShare = () => {
+    share({
+      title: entry.title,
+      message: `${entry.title}${entry.description ? ` — ${entry.description}` : ''}`,
+      url: entry.imageUrl ?? undefined,
+      imageUri: entry.imageUrl ?? undefined,
+    });
   };
 
   const hasImage = !!entry.imageUrl;

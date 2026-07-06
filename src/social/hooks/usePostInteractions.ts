@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Share } from 'react-native';
+import { Alert } from 'react-native';
+import { useShare } from '../../components/ShareProvider';
 import { useLikePost } from '../../hooks/useLikePost';
 import { checkText } from '../../lib/moderation';
 import type { Comment, Post, ReactionType, UserPreview } from '../data/posts';
@@ -21,6 +22,7 @@ export function usePostInteractions(initialPosts: Post[], _currentUser: UserPrev
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [comments, setComments] = useState<Comment[]>([]);
   const { toggleLike } = useLikePost();
+  const { share } = useShare();
 
   // Re-sync when the upstream source changes (e.g. server feed loads after mount).
   // Preserves in-memory like/comment counts for posts that already existed.
@@ -108,19 +110,17 @@ export function usePostInteractions(initialPosts: Post[], _currentUser: UserPrev
   );
 
   const sharePost = useCallback(
-    async (postId: string) => {
+    (postId: string) => {
       const post = posts.find((p) => p.id === postId);
       if (!post) return;
-      try {
-        await Share.share({
-          message: `${post.author.username} on Modified: ${post.caption}`,
-          url: post.mediaUrl,
-        });
-      } catch {
-        // user cancelled or share unavailable — nothing to do
-      }
+      share({
+        title: `${post.author.username} on MODIFIED`,
+        message: `${post.author.username} on MODIFIED: ${post.caption}`,
+        url: `https://modified.app/p/${post.id}`,
+        imageUri: post.mediaUrl,
+      });
     },
-    [posts],
+    [posts, share],
   );
 
   const setSavedFlag = useCallback((postId: string, isSaved: boolean) => {
