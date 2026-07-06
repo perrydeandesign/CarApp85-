@@ -8,9 +8,9 @@ import {
   TextInput,
   Alert,
   Image,
-  Share,
 } from 'react-native';
 import { SubPage } from '../../components/SubPage';
+import { ShareSheet } from '../../components/ShareSheet';
 import { Icon } from '../../ui/Icon';
 import { MonthCalendar } from '../../components/MonthCalendar';
 import { PrimaryButton } from '../../components/PrimaryButton';
@@ -154,6 +154,7 @@ export function EventDetail({
   onBack: () => void;
 }) {
   const [status, setStatus] = useState<EventRSVP | null>(event.myStatus);
+  const [showShare, setShowShare] = useState(false);
   const set = (s: EventRSVP) => {
     const next = status === s ? null : s;
     setStatus(next);
@@ -220,20 +221,29 @@ export function EventDetail({
 
         <TouchableOpacity
           activeOpacity={0.85}
-          onPress={async () => {
-            try {
-              await Share.share({
-                message: `${event.title} on MODIFIED — ${fmtDate(event.startsAt)} · ${fmtTime(event.startsAt)}${event.locationText ? ` · ${event.locationText}` : ''}`,
-                url: `https://modified.app/events/${event.id}`,
-              });
-            } catch (_) {}
-          }}
+          onPress={() => setShowShare(true)}
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 12, paddingVertical: 13, borderRadius: 12, borderWidth: 1, borderColor: T.bd }}
         >
           <Icon name="share-outline" size="sm" color={T.tx} />
           <Text style={{ color: T.tx, fontWeight: '700', fontSize: 14 }}>Share event</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <ShareSheet
+        visible={showShare}
+        onClose={() => setShowShare(false)}
+        content={{
+          title: event.title,
+          message: `${event.title} on MODIFIED — ${fmtDate(event.startsAt)} · ${fmtTime(event.startsAt)}${event.locationText ? ` · ${event.locationText}` : ''}`,
+          url: `https://modified.app/events/${event.id}`,
+          event: {
+            title: event.title,
+            startsAt: event.startsAt,
+            location: event.locationText ?? undefined,
+            description: event.description ?? undefined,
+          },
+        }}
+      />
     </SubPage>
   );
 }

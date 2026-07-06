@@ -99,8 +99,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C2DFF54A2FEA364600DA2F10 /* Build configuration list for PBXNativeTarget "CarAppClean" */;
 			buildPhases = (
-				19F5BCA77D1C46C79C504395 /* Start Metro (auto) */,
 				B9D26CAFC37A79F32A5527C0 /* [CP] Check Pods Manifest.lock */,
+				19F5BCA77D1C46C79C504395 /* Start Metro (auto) */,
 				C2DFF5332FEA364600DA2F10 /* Sources */,
 				C2DFF5342FEA364600DA2F10 /* Frameworks */,
 				C2DFF5352FEA364600DA2F10 /* Resources */,
