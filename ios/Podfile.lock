@@ -2244,6 +2244,30 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - RNSentry (8.17.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Sentry (= 9.19.1)
+    - Yoga
   - RNVectorIcons (10.3.0):
     - hermes-engine
     - RCTRequired
@@ -2337,6 +2361,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - Sentry (9.19.1):
+    - Sentry/Core (= 9.19.1)
+  - Sentry/Core (9.19.1)
   - VisionCamera (5.0.11):
     - hermes-engine
     - NitroImage
@@ -2454,6 +2481,7 @@ DEPENDENCIES:
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
@@ -2470,6 +2498,7 @@ SPEC REPOS:
     - PromisesObjC
     - PromisesSwift
     - RecaptchaInterop
+    - Sentry
 
 EXTERNAL SOURCES:
   AsyncStorage:
@@ -2643,6 +2672,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSentry:
+    :path: "../node_modules/@sentry/react-native"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
   RNWorklets:
@@ -2747,8 +2778,10 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: e619815ed88b0443b83d0ce7204c7c890a42f754
   RNReanimated: 56d68c745cfbb80187b7d78caa72a738901294ee
   RNScreens: 991cc417cd396602a6cf59a42139e5a9d91462a9
+  RNSentry: 049ea299a7e08ba7d752e24854b9ab9b59f9dbe8
   RNVectorIcons: 97f26211c07d69e45b189f9dd0dbbe5e2d2b0b92
   RNWorklets: a6ebd7b1ae53f150d747986d70bfc34932d7ffb4
+  Sentry: e4588d62ac3fd3c82652bb7c8a215ec8c3de776b
   VisionCamera: 204d37d39a6a59b31bc48c777094be3096594810
   Yoga: 77dfa8673de2874e1855002ae59c68b8be9b007b
 

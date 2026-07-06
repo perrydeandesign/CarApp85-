@@ -1,6 +1,14 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { setUserContext } from '../lib/observability';
+
+/** Map a Supabase session to the minimal identity Sentry reports are tagged with. */
+function sentryUser(s: Session | null) {
+  const u = s?.user;
+  if (!u) return null;
+  return { id: u.id, username: (u.user_metadata as any)?.username as string | undefined };
+}
 
 type AuthState = {
   session: Session | null;
@@ -24,11 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setSession(data.session ?? null);
+      setUserContext(sentryUser(data.session ?? null));
       setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s ?? null);
+      setUserContext(sentryUser(s ?? null));
     });
 
     return () => {
