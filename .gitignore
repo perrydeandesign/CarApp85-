@@ -78,3 +78,6 @@ yarn-error.log
 .env
 .env.*
 !.env.example
+# Sentry auth token (source-map upload) — contains a secret
+sentry.properties
+**/sentry.properties
