@@ -43,7 +43,8 @@ import { AchievementsModal } from '../components/AchievementsModal';
 import { useCars, useCarMods, bucketMods, usePostsByCar, useProfilePosts, useProfileIdByUsername } from '../hooks/useProfileData';
 import { useMeProfile } from '../hooks/useMeProfile';
 import { ModsList } from '../components/ModsList';
-import type { TimelineEntry, TimelineCategory } from '../types/database';
+import type { TimelineCategory } from '../types/database';
+import type { TimelineEntry } from '../hooks/useTimeline';
 
 // Map Supabase post.type → UI TimelineCategory (the existing TimelineItem only knows
 // these 4 buckets — media/milestone fold into notification).
@@ -173,7 +174,7 @@ export function ProfileScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSupaCar, supaMods]);
 
-  const switchCar = (car) => {
+  const switchCar = (car: any) => {
     setActiveCar({
       name: `${car.year} ${car.make} ${car.model}`,
       image: car.image,

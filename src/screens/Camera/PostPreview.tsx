@@ -21,7 +21,7 @@ import { Button } from '../../ui/Button';
 // ❌ Removed broken import
 // import { CONNS, ME } from '../../../App';
 
-export default function PostPreview({ route, navigation }) {
+export default function PostPreview({ route, navigation }: any) {
   const { imageUri } = route.params;
   const { state: uploadState, upload } = useUploadPost();
 

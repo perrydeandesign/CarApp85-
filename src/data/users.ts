@@ -116,12 +116,13 @@ export const USERS = CONNS.map(c => getFullUser(c));
  *    legacy modules. Maps short character keys to existing Conn records so the
  *    bundle resolves; exact identity does not need to match historic data. ── */
 const U_KEYS = ['jake', 'boost', 'skyline', 'turbo', 'drift', 'evo'] as const;
-export const U: Record<string, { user: string; av: string; img: string }> =
+type ULegacy = { user: string; av: string; img: string; car: string; color: string; carImg: string };
+export const U: Record<string, ULegacy> =
   U_KEYS.reduce((acc, key, i) => {
     const c = CONNS[i] || CONNS[0];
-    acc[key] = { user: c.user, av: c.av, img: c.img || '' };
+    acc[key] = { user: c.user, av: c.av, img: c.img || '', car: c.car, color: c.color, carImg: c.carImg || '' };
     return acc;
-  }, {} as Record<string, { user: string; av: string; img: string }>);
+  }, {} as Record<string, ULegacy>);
 
 /* ── Re-exports so legacy callers importing from `data/users` keep working. ── */
 export { DEMO_USERS } from './demoUsers';
@@ -186,6 +187,9 @@ export const ME: UserProfile & {
   banner?: string;
   photoPosts: string[];
   videoPosts: { thumbnail: string; video: string }[];
+  gallery: GalleryPhoto[];
+  mods?: any;
+  timeline?: any;
 } = {
   id: ME_DEMO.id,
   user: 'Jake_STI', // keep legacy display name
