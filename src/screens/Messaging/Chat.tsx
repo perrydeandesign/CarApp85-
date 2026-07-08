@@ -201,8 +201,10 @@ export function ChatScreen({ route, navigation }: any) {
 
         {showReactions === item.id && (
           <ReactionPicker
-            onSelect={(emoji) => toggleReaction(item.id, emoji)}
-            onClose={() => setShowReactions(null)}
+            onPick={(emoji) => {
+              toggleReaction(item.id, emoji);
+              setShowReactions(null);
+            }}
           />
         )}
       </TouchableOpacity>

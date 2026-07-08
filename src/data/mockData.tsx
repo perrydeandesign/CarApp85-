@@ -141,61 +141,6 @@ export const NOTIFS: Notif[] = [
   { id: 4, user: U.turbo.user, action: 'liked your post', time: '3h', av: U.turbo.av, img: U.turbo.img, unread: false },
   { id: 5, user: U.drift.user, action: 'started following you', time: '5h', av: U.drift.av, img: U.drift.img, unread: false },
 ];
-export const CONNS: Conn[] = [
-  { id: 1, userId: 'user_01', user: U.skyline.user, car: U.skyline.car, av: U.skyline.av, img: U.skyline.img, carImg: U.skyline.carImg, followers: 1240, following: true, color: U.skyline.color },
-  { id: 2, userId: 'user_02', user: U.boost.user, car: U.boost.car, av: U.boost.av, img: U.boost.img, carImg: U.boost.carImg, followers: 876, following: true, color: U.boost.color },
-  { id: 3, userId: 'user_03', user: U.turbo.user, car: U.turbo.car, av: U.turbo.av, img: U.turbo.img, carImg: U.turbo.carImg, followers: 2100, following: false, color: U.turbo.color },
-  { id: 4, userId: 'user_04', user: U.drift.user, car: U.drift.car, av: U.drift.av, img: U.drift.img, carImg: U.drift.carImg, followers: 543, following: false, color: U.drift.color },
-  { id: 5, userId: 'user_05', user: U.evo.user, car: U.evo.car, av: U.evo.av, img: U.evo.img, carImg: U.evo.carImg, followers: 312, following: true, color: U.evo.color },
-  { id: 6, userId: 'user_06', user: U.ben.user, car: U.ben.car, av: U.ben.av, img: U.ben.img, carImg: U.ben.carImg, followers: 980, following: false, color: U.ben.color },
-  { id: 7, userId: 'user_07', user: U.amy.user, car: U.amy.car, av: U.amy.av, img: U.amy.img, carImg: U.amy.carImg, followers: 1450, following: true, color: U.amy.color },
-  { id: 8, userId: 'user_08', user: U.luke.user, car: U.luke.car, av: U.luke.av, img: U.luke.img, carImg: U.luke.carImg, followers: 620, following: false, color: U.luke.color },
-  { id: 9, userId: 'user_09', user: U.sarah.user, car: U.sarah.car, av: U.sarah.av, img: U.sarah.img, carImg: U.sarah.carImg, followers: 2340, following: true, color: U.sarah.color },
-  { id: 10, userId: 'user_10', user: U.joel.user, car: U.joel.car, av: U.joel.av, img: U.joel.img, carImg: U.joel.carImg, followers: 1120, following: false, color: U.joel.color },
-  { id: 11, userId: 'user_11', user: U.ella.user, car: U.ella.car, av: U.ella.av, img: U.ella.img, carImg: U.ella.carImg, followers: 780, following: true, color: U.ella.color },
-  { id: 12, userId: 'user_12', user: U.tom.user, car: U.tom.car, av: U.tom.av, img: U.tom.img, carImg: U.tom.carImg, followers: 560, following: false, color: U.tom.color },
-  { id: 13, userId: 'user_13', user: U.mia.user, car: U.mia.car, av: U.mia.av, img: U.mia.img, carImg: U.mia.carImg, followers: 890, following: true, color: U.mia.color },
-  { id: 14, userId: 'user_14', user: U.vince.user, car: U.vince.car, av: U.vince.av, img: U.vince.img, carImg: U.vince.carImg, followers: 1670, following: false, color: U.vince.color },
-  { id: 15, userId: 'user_15', user: U.kat.user, car: U.kat.car, av: U.kat.av, img: U.kat.img, carImg: U.kat.carImg, followers: 430, following: true, color: U.kat.color },
-  { id: 16, userId: 'user_16', user: U.dan.user, car: U.dan.car, av: U.dan.av, img: U.dan.img, carImg: U.dan.carImg, followers: 340, following: false, color: U.dan.color },
-  { id: 17, userId: 'user_17', user: U.holly.user, car: U.holly.car, av: U.holly.av, img: U.holly.img, carImg: U.holly.carImg, followers: 210, following: false, color: U.holly.color },
-  { id: 18, userId: 'user_18', user: U.sam.user, car: U.sam.car, av: U.sam.av, img: U.sam.img, carImg: U.sam.carImg, followers: 760, following: true, color: U.sam.color },
-  { id: 19, userId: 'user_19', user: U.eric.user, car: U.eric.car, av: U.eric.av, img: U.eric.img, carImg: U.eric.carImg, followers: 1890, following: false, color: U.eric.color },
-  { id: 20, userId: 'user_20', user: U.ruby.user, car: U.ruby.car, av: U.ruby.av, img: U.ruby.img, carImg: U.ruby.carImg, followers: 520, following: true, color: U.ruby.color },
-  { id: 21, userId: 'user_21', user: U.ollie.user, car: U.ollie.car, av: U.ollie.av, img: U.ollie.img, carImg: U.ollie.carImg, followers: 680, following: false, color: U.ollie.color },
-  { id: 22, userId: 'user_22', user: U.sienna.user, car: U.sienna.car, av: U.sienna.av, img: U.sienna.img, carImg: U.sienna.carImg, followers: 290, following: true, color: U.sienna.color },
-  { id: 23, userId: 'user_23', user: U.gary.user, car: U.gary.car, av: U.gary.av, img: U.gary.img, carImg: U.gary.carImg, followers: 1560, following: false, color: U.gary.color },
-  { id: 24, userId: 'user_24', user: U.maya.user, car: U.maya.car, av: U.maya.av, img: U.maya.img, carImg: U.maya.carImg, followers: 410, following: true, color: U.maya.color },
-  { id: 25, userId: 'user_25', user: U.carter.user, car: U.carter.car, av: U.carter.av, img: U.carter.img, carImg: U.carter.carImg, followers: 950, following: false, color: U.carter.color },
-];
-
-/* ── Lookup user by userId ── */
-export function findUserById(userId: string): Conn | undefined {
-  return CONNS.find(c => c.userId === userId);
-}
-
-/* ── Get full user object: merges Conn (profile image, car image) with USER_PROFILES (bio, gallery, mods, timeline) ── */
-export function getFullUser(conn: Conn) {
-  const profile = USER_PROFILES[conn.user];
-  return {
-    id: conn.userId,
-    username: conn.user,
-    profileImage: conn.img,   // user's face/avatar photo
-    car: conn.car,
-    carImage: conn.carImg,    // user's car photo
-    av: conn.av,
-    color: conn.color,
-    followers: conn.followers,
-    following: conn.following,
-    bio: profile?.bio || 'Car enthusiast. Modified community member.',
-    gallery: profile?.gallery || [],
-    posts: profile?.posts || 0,
-    connected: profile?.connected || 0,
-    connections: profile?.connections || conn.followers || 0,
-    mods: profile?.mods || { engine: [], wheels: [], interior: [], exterior: [] },
-    timeline: profile?.timeline || [],
-  };
-}
 
 /* ── Profile View Context (allows any component to open a full-screen profile) ── */
 export const ViewProfileContext = createContext<{ openProfile: (user: any) => void }>({ openProfile: () => {} });

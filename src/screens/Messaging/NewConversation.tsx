@@ -50,7 +50,7 @@ export function NewConversationScreen({ navigation }: any) {
       .eq('profile_id', uid);
 
     if (existing && existing.length > 0) {
-      const convoIds = existing.map((e) => e.conversation_id);
+      const convoIds = existing.map((e: { conversation_id: string }) => e.conversation_id);
 
       const { data: shared } = await sb
         .from(TABLES.conversationMembers)
@@ -146,9 +146,8 @@ export function NewConversationScreen({ navigation }: any) {
             }}
           >
             <Avatar
-              name={item.username}
+              initials={item.username?.[0]?.toUpperCase()}
               size={44}
-              online={false}
               img={item.avatar_url}
             />
 

@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { T } from '../constants/theme';
 
 /** Three-dot "typing…" indicator for the chat screen. */
-export function TypingIndicator() {
+export function TypingIndicator({ name }: { name?: string } = {}) {
   return (
     <View
       style={{
@@ -16,7 +16,7 @@ export function TypingIndicator() {
         marginLeft: 12,
       }}
     >
-      <Text style={{ color: T.mu, fontSize: 13 }}>typing…</Text>
+      <Text style={{ color: T.mu, fontSize: 13 }}>{name ? `${name} is typing…` : 'typing…'}</Text>
     </View>
   );
 }
