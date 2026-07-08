@@ -65,10 +65,10 @@ export function NewConversationScreen({ navigation }: any) {
       }
     }
 
-    // 2. Create new conversation
+    // 2. Create new conversation (the table has no `title` column).
     const { data: convo, error: convoErr } = await sb
       .from('conversations')
-      .insert({ title: null })
+      .insert({})
       .select()
       .single();
 

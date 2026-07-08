@@ -29,6 +29,8 @@ const ROWS: Row[] = [
 ];
 
 function Glyph({ row }: { row: Row }) {
+  // Modern X mark — Ionicons only ships the old Twitter bird (logo-twitter).
+  if (row.target === 'x') return <Text style={{ fontSize: 22, fontWeight: '900', color: row.color }}>𝕏</Text>;
   if (row.fam === 'mci') return <MaterialCommunityIcons name={row.icon} size={24} color={row.color} />;
   return <Ionicons name={row.icon} size={24} color={row.color} />;
 }

@@ -64,9 +64,6 @@ export function GroupDetailScreen({ group, onBack, meId, onJoin, onLeave }: Prop
           <TouchableOpacity onPress={onBack} style={{ position: 'absolute', top: 50, left: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="chevron-back" size={IC.back} color={T.wh} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={shareGroup} style={{ position: 'absolute', top: 50, right: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="share-outline" size={18} color={T.wh} />
-          </TouchableOpacity>
         </View>
 
         {/* Group Info */}
@@ -79,14 +76,27 @@ export function GroupDetailScreen({ group, onBack, meId, onJoin, onLeave }: Prop
             </View>
           </View>
           <Text style={{ color: T.tx2, fontSize: 13, marginTop: 10, lineHeight: 19 }}>{group.description}</Text>
-          <Button
-            label={joined ? 'Joined' : 'Join Group'}
-            variant={joined ? 'secondary' : 'primary'}
-            size="md"
-            fullWidth
-            onPress={toggleJoin}
-            style={{ marginTop: 12 }}
-          />
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Button
+                label={joined ? 'Joined' : 'Join'}
+                variant={joined ? 'secondary' : 'primary'}
+                size="md"
+                fullWidth
+                onPress={toggleJoin}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                label="Share"
+                icon="share-social-outline"
+                variant="secondary"
+                size="md"
+                fullWidth
+                onPress={shareGroup}
+              />
+            </View>
+          </View>
         </View>
 
         {/* Section Tabs */}

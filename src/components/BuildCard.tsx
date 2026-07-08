@@ -55,8 +55,9 @@ export function BuildCard({ car, mods, username }: Props) {
       <View style={styles.heroFade} />
 
       <View style={styles.body}>
-        <Text style={styles.name} numberOfLines={1}>{name}</Text>
-        <Text style={styles.sub}>{year ? `${year} · ` : ''}@{username}</Text>
+        {/* Hierarchy matches the profile: username first, then the car. */}
+        <Text style={styles.name} numberOfLines={1}>@{username}</Text>
+        <Text style={styles.sub} numberOfLines={1}>{year ? `${year} ` : ''}{name}</Text>
 
         <View style={styles.divider} />
 

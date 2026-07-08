@@ -40,6 +40,10 @@ const ENCODED: Record<string, string[]> = {
   ],
 };
 
+// Escape regex metacharacters so building a RegExp from any dynamic string can
+// never throw "Invalid RegExp" (e.g. a term/keyword containing * + ? etc.).
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 function decode(b64: string): string {
   // RN ships atob in modern runtimes; fall back to Buffer for Node tests.
   if (typeof atob === 'function') return atob(b64);
@@ -98,7 +102,7 @@ export function checkText(text: string): ModerationResult {
   for (const { category, root } of BANNED) {
     if (root.length < 3) continue;
     // Whole-word on the raw text, substring on the collapsed form.
-    const wordRe = new RegExp(`(^|\\s)${root}(\\s|$)`);
+    const wordRe = new RegExp(`(^|\\s)${escapeRegExp(root)}(\\s|$)`);
     if (wordRe.test(tokenised) || collapsed.includes(root)) {
       return {
         ok: false,
@@ -118,7 +122,7 @@ export function sanitize(text: string): string {
   for (const { root } of BANNED) {
     if (root.length < 3) continue;
     if (collapsed.includes(root)) {
-      const re = new RegExp(root, 'gi');
+      const re = new RegExp(escapeRegExp(root), 'gi');
       out = out.replace(re, '*'.repeat(root.length));
     }
   }

@@ -23,6 +23,9 @@ import {
   daysLeft,
   type Competition,
 } from '../hooks/useCompetitions';
+import { supabase } from '../lib/supabase';
+import { useMeProfile } from '../hooks/useMeProfile';
+import { useCars } from '../hooks/useProfileData';
 
 // LoremFlickr searches Flickr by tag — accurate to category.
 // Format: loremflickr.com/<w>/<h>/<tags>?lock=<N>  (lock makes the photo deterministic per id)
@@ -333,6 +336,48 @@ function ChallengeDetail({
   const urgent = challenge.daysLeft <= 3;
   const openEntry = entries.find((e) => e.id === openEntryId) ?? null;
 
+  // ── Submit an entry: enters the user's car (+ its photo) into the comp ──
+  const { data: me } = useMeProfile();
+  const { data: myCars } = useCars(me?.id ?? null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!isSupabase) {
+      Alert.alert('Not open yet', 'This challenge isn’t accepting entries yet.');
+      return;
+    }
+    if (!me?.id) {
+      Alert.alert('Sign in required', 'Log in to enter competitions.');
+      return;
+    }
+    const car = (myCars ?? []).find((c) => c.primary_image_url) ?? (myCars ?? [])[0];
+    if (!car) {
+      Alert.alert('Add a car first', 'Add a car with a photo to your garage, then enter the competition.');
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const { data: entry, error } = await supabase
+        .from('competition_entries')
+        .insert({ competition_id: challenge.id, profile_id: me.id, car_id: car.id })
+        .select('id')
+        .single();
+      if (error) throw error;
+      if (car.primary_image_url) {
+        await supabase.from('competition_media').insert({ entry_id: entry.id, media_url: car.primary_image_url });
+      }
+      setEntries((prev) => [
+        { id: entry.id, author: me.username ?? 'you', avatar: me.avatar_url ?? '', imageUrl: car.primary_image_url ?? '', caption: '', likes: 0 },
+        ...prev,
+      ].filter((e) => !!e.imageUrl));
+      Alert.alert('Entry submitted', 'Your build is now in the competition. Good luck!');
+    } catch (e: any) {
+      Alert.alert('Could not submit', e?.message ?? 'Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: T.bg }}>
       <View
@@ -405,12 +450,13 @@ function ChallengeDetail({
         </Text>
 
         <Button
-          label="Submit Your Entry"
+          label={submitting ? 'Submitting…' : 'Submit Your Entry'}
           icon="camera"
           variant="ghost"
           size="md"
           fullWidth
-          onPress={() => Alert.alert('Submit entry', 'Photo upload coming soon.')}
+          loading={submitting}
+          onPress={handleSubmit}
           style={{ marginBottom: 18 }}
         />
 

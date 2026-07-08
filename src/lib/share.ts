@@ -95,9 +95,14 @@ export async function shareTo(target: ShareTarget, c: ShareContent): Promise<voi
   const enc = encodeURIComponent(text);
 
   switch (target) {
-    case 'email':
-      await openFirst([`mailto:?subject=${encodeURIComponent(c.title ?? c.message)}&body=${enc}`]);
+    case 'email': {
+      const opened = await openFirst([`mailto:?subject=${encodeURIComponent(c.title ?? c.message)}&body=${enc}`]);
+      // No mail client (e.g. Simulator) → fall back to the system share sheet.
+      if (!opened) {
+        try { await Share.share({ message: text, url: c.url }); } catch { /* cancelled */ }
+      }
       return;
+    }
 
     case 'text':
       // iOS SMS body form.

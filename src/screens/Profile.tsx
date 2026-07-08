@@ -515,19 +515,22 @@ export function ProfileScreen() {
             }
           />
         </View>
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() =>
-            share({
-              title: `${isMe ? 'My' : `@${profileUser.username}'s`} build on MODIFIED`,
-              message: `Check out ${isMe ? 'my' : `@${profileUser.username}'s`} build on MODIFIED — ${activeCar.name}.`,
-              url: `https://modified.app/profile/${profileUser.username}`,
-            })
-          }
-          style={{ width: 48, borderRadius: 12, borderWidth: 1, borderColor: T.bd, backgroundColor: T.card, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Ionicons name="share-outline" size={18} color={T.wh} />
-        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Button
+            label="Share"
+            icon="share-social-outline"
+            variant="secondary"
+            size="md"
+            fullWidth
+            onPress={() =>
+              share({
+                title: `${isMe ? 'My' : `@${profileUser.username}'s`} build on MODIFIED`,
+                message: `Check out ${isMe ? 'my' : `@${profileUser.username}'s`} build on MODIFIED — ${activeCar.name}.`,
+                url: `https://modified.app/profile/${profileUser.username}`,
+              })
+            }
+          />
+        </View>
       </View>
 
       {/* ════════════════════ TAB BAR (INSTAGRAM STYLE) ════════════════════ */}
