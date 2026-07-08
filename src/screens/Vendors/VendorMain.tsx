@@ -5,6 +5,8 @@ import { T, SCREEN_W, VENDOR_CATEGORIES, CAT_TITLE, CAT_SUBTITLE } from '../../c
 import type { Vendor, VProduct } from '../../constants/types';
 import { VENDORS, VPRODS, productFitsGarage } from '../../data/vendors';
 import { VStore, VendorProductRow } from './VendorDetail';
+import { useSavedProducts } from '../../hooks/useSavedProducts';
+import { productKey, isOnSale } from '../../data/productKey';
 import { ProductDetailScreen } from './ProductDetail';
 
 /* ── Vendor Card (full-width, matches existing app style) ── */
@@ -154,10 +156,18 @@ export function VendorTab() {
   const [seg, setSeg] = useState<'vendors' | 'products'>('vendors');
   const [query, setQuery] = useState('');
   const [fitsOnly, setFitsOnly] = useState(false);
+  const [savedSaleOnly, setSavedSaleOnly] = useState(false);
+  const savedProducts = useSavedProducts();
 
   // Detail sheets (keep navigable depth at 2)
   const [vendorSheet, setVendorSheet] = useState<Vendor | null>(null);
   const [productSheet, setProductSheet] = useState<VProduct | null>(null);
+
+  // Saved products that are currently on sale → the subtle "sale alert".
+  const savedOnSale = useMemo(
+    () => VPRODS.filter((p) => isOnSale(p) && savedProducts.savedKeys.has(productKey(p))),
+    [savedProducts.savedKeys],
+  );
 
   const GRID_GAP = 8;
   const TILE_W = (SCREEN_W - 32 - GRID_GAP) / 2;
@@ -167,7 +177,7 @@ export function VendorTab() {
     setSeg(segment);
     setView('results');
   };
-  const backToHub = () => { setView('hub'); setResultsCat(null); setQuery(''); };
+  const backToHub = () => { setView('hub'); setResultsCat(null); setQuery(''); setSavedSaleOnly(false); };
 
   // Category id → vendor ids (to filter products by their vendor's category)
   const vendorIdsInCat = useMemo(() => {
@@ -188,8 +198,9 @@ export function VendorTab() {
     VPRODS
       .filter(p => (!vendorIdsInCat || vendorIdsInCat.has(p.vendorId)))
       .filter(p => (!fitsOnly || (p.fitsSelectedCar ?? productFitsGarage(p).fits)))
+      .filter(p => (!savedSaleOnly || (isOnSale(p) && savedProducts.savedKeys.has(productKey(p)))))
       .filter(p => !q || p.name.toLowerCase().includes(q) || (p.brand ?? '').toLowerCase().includes(q)),
-    [vendorIdsInCat, fitsOnly, q],
+    [vendorIdsInCat, fitsOnly, savedSaleOnly, savedProducts.savedKeys, q],
   );
 
   const featuredVendors = useMemo(() => [...VENDORS].sort((a, b) => Number(b.fitsMyGarage ?? false) - Number(a.fitsMyGarage ?? false)).slice(0, 8), []);
@@ -197,11 +208,14 @@ export function VendorTab() {
 
   const detailSheets = (
     <>
-      <Modal visible={!!vendorSheet} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setVendorSheet(null)}>
+      {/* Full-screen modals (NOT pageSheet — pageSheet freezes on iOS/New Arch
+          when the sheet hosts scroll content). Both screens are full layouts
+          with their own back button. */}
+      <Modal visible={!!vendorSheet} animationType="slide" onRequestClose={() => setVendorSheet(null)}>
         {vendorSheet && <VStore vendor={vendorSheet} onBack={() => setVendorSheet(null)} />}
       </Modal>
-      <Modal visible={!!productSheet} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setProductSheet(null)}>
-        {productSheet && <ProductDetailScreen product={productSheet} onBack={() => setProductSheet(null)} />}
+      <Modal visible={!!productSheet} animationType="slide" onRequestClose={() => { setProductSheet(null); savedProducts.refresh(); }}>
+        {productSheet && <ProductDetailScreen product={productSheet} onBack={() => { setProductSheet(null); savedProducts.refresh(); }} />}
       </Modal>
     </>
   );
@@ -287,6 +301,21 @@ export function VendorTab() {
           <Ionicons name="search" size={16} color="#8B949E" />
           <Text style={{ color: '#8B949E', fontSize: 14 }}>Search parts & brands</Text>
         </TouchableOpacity>
+
+        {/* Subtle sale alert for saved products (echoes the profile trophy ring). */}
+        {savedOnSale.length > 0 ? (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => { setSavedSaleOnly(true); openResults(null, 'products'); }}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginTop: 12, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(251,191,36,0.55)', backgroundColor: 'rgba(251,191,36,0.08)' }}
+          >
+            <Ionicons name="pricetag" size={15} color="#FBBF24" />
+            <Text style={{ color: '#FBBF24', fontSize: 13, fontWeight: '700', flex: 1 }}>
+              {savedOnSale.length} saved item{savedOnSale.length === 1 ? '' : 's'} on sale
+            </Text>
+            <Ionicons name="chevron-forward" size={14} color="#FBBF24" />
+          </TouchableOpacity>
+        ) : null}
 
         {/* Fits toggle */}
         <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 14 }}>

@@ -4,12 +4,17 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
 import type { VProduct } from '../../constants/types';
 import { VENDORS, productFitsGarage } from '../../data/vendors';
+import { productKey } from '../../data/productKey';
+import { useSavedProducts } from '../../hooks/useSavedProducts';
 import { useShare } from '../../components/ShareProvider';
 
 export function ProductDetailScreen({ product, onBack }: { product: VProduct; onBack: () => void }) {
   const fits = product.fitsSelectedCar ?? productFitsGarage(product).fits;
   const vendor = VENDORS.find(v => v.id === product.vendorId);
   const { share } = useShare();
+  const { isSaved, toggle } = useSavedProducts();
+  const key = productKey(product);
+  const saved = isSaved(key);
   return (
     <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -24,6 +29,12 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
           )}
           <TouchableOpacity onPress={onBack} style={{ position: 'absolute', top: 12, left: 12, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="chevron-back" size={IC.back} color={T.wh} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => toggle(key)}
+            style={{ position: 'absolute', top: 12, right: 58, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={18} color={saved ? T.accent : T.wh} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => share({

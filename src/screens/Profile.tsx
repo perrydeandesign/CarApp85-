@@ -61,6 +61,7 @@ import { USER_PROFILES } from '../data/userProfiles';
 
 // Components
 import { Avatar } from '../components/Avatar';
+import { RimIcon } from '../components/RimIcon';
 import { FloatingYearPicker } from '../components/FloatingYearPicker';
 import { ModsCollapsible } from '../components/ModsCollapsible';
 import { TimelineList } from '../components/Timeline/TimelineList';
@@ -626,7 +627,7 @@ export function ProfileScreen() {
                 const icon = (
                   {
                     engine: 'engine-outline',
-                    wheels: 'car-wheel',
+                    wheels: 'tire', // unused for wheels (custom RimIcon below)
                     interior: 'car-seat',
                     exterior: 'car-side',
                   } as Record<string, string>
@@ -647,11 +648,15 @@ export function ProfileScreen() {
                       borderColor: active ? T.accent : 'rgba(0,201,167,0.3)',
                     }}
                   >
-                    <MaterialCommunityIcons
-                      name={icon}
-                      size={20}
-                      color={active ? T.accent : T.wh}
-                    />
+                    {k === 'wheels' ? (
+                      <RimIcon size={20} color={active ? T.accent : T.wh} />
+                    ) : (
+                      <MaterialCommunityIcons
+                        name={icon}
+                        size={20}
+                        color={active ? T.accent : T.wh}
+                      />
+                    )}
                     <Text
                       style={{
                         fontSize: 11,

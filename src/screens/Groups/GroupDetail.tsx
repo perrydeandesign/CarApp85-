@@ -5,6 +5,7 @@ import { T, IC, SCREEN_W } from '../../constants/theme';
 import { Button } from '../../ui/Button';
 import type { Group } from '../../constants/types';
 import { ViewProfileContext } from '../../context/ViewProfileContext';
+import { useShare } from '../../components/ShareProvider';
 
 type Props = {
   group: Group;
@@ -18,6 +19,14 @@ export function GroupDetailScreen({ group, onBack, meId, onJoin, onLeave }: Prop
   const [activeSection, setActiveSection] = useState<'posts' | 'events' | 'gallery' | 'members'>('posts');
   const [joined, setJoined] = useState(!!meId && group.members.some(m => m.id === meId));
   const { openProfile } = useContext(ViewProfileContext);
+  const { share } = useShare();
+
+  const shareGroup = () =>
+    share({
+      title: group.name,
+      message: `Join ${group.name} on MODIFIED — ${group.description}`,
+      url: `https://modified.app/groups/${group.id}`,
+    });
 
   const openUserProfile = (username: string) => {
     // Profile resolves the rest live by username.
@@ -54,6 +63,9 @@ export function GroupDetailScreen({ group, onBack, meId, onJoin, onLeave }: Prop
           <View style={{ ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.3)' }} />
           <TouchableOpacity onPress={onBack} style={{ position: 'absolute', top: 50, left: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="chevron-back" size={IC.back} color={T.wh} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={shareGroup} style={{ position: 'absolute', top: 50, right: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="share-outline" size={18} color={T.wh} />
           </TouchableOpacity>
         </View>
 
