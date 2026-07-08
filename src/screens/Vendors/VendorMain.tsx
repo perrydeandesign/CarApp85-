@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { View, Text, ScrollView, FlatList, Image, TouchableOpacity, TextInput } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, SCREEN_W, VENDOR_CATEGORIES, CAT_TITLE, CAT_SUBTITLE } from '../../constants/theme';
 import type { Vendor, VProduct } from '../../constants/types';
@@ -206,19 +206,15 @@ export function VendorTab() {
   const featuredVendors = useMemo(() => [...VENDORS].sort((a, b) => Number(b.fitsMyGarage ?? false) - Number(a.fitsMyGarage ?? false)).slice(0, 8), []);
   const trendingProducts = useMemo(() => VPRODS.filter(p => p.img && (p.badge === 'pop' || p.badge === 'new')).slice(0, 10), []);
 
-  const detailSheets = (
-    <>
-      {/* Full-screen modals (NOT pageSheet — pageSheet freezes on iOS/New Arch
-          when the sheet hosts scroll content). Both screens are full layouts
-          with their own back button. */}
-      <Modal visible={!!vendorSheet} animationType="slide" onRequestClose={() => setVendorSheet(null)}>
-        {vendorSheet && <VStore vendor={vendorSheet} onBack={() => setVendorSheet(null)} />}
-      </Modal>
-      <Modal visible={!!productSheet} animationType="slide" onRequestClose={() => { setProductSheet(null); savedProducts.refresh(); }}>
-        {productSheet && <ProductDetailScreen product={productSheet} onBack={() => { setProductSheet(null); savedProducts.refresh(); }} />}
-      </Modal>
-    </>
-  );
+  // Detail screens render INLINE full-screen (no RN Modal — Modal on the New
+  // Architecture can hard-freeze the app; these screens have their own back
+  // buttons, so an inline swap is seamless and reliable).
+  if (productSheet) {
+    return <ProductDetailScreen product={productSheet} onBack={() => { setProductSheet(null); savedProducts.refresh(); }} />;
+  }
+  if (vendorSheet) {
+    return <VStore vendor={vendorSheet} onBack={() => setVendorSheet(null)} />;
+  }
 
   /* ── SCREEN 2 — RESULTS ── */
   if (view === 'results') {
@@ -261,27 +257,36 @@ export function VendorTab() {
           <FitsToggle on={fitsOnly} onToggle={() => setFitsOnly(v => !v)} />
         </View>
 
-        <ScrollView style={{ flex: 1, marginTop: 12 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          {seg === 'vendors' ? (
-            filteredVendors.length === 0 ? (
-              <Text style={{ color: '#8B949E', fontSize: 13, paddingHorizontal: 16 }}>No vendors match.</Text>
-            ) : filteredVendors.map(vendor => (
-              <View key={vendor.id} style={{ paddingHorizontal: 16, marginBottom: 12 }}>
-                <VendorCard vendor={vendor} onPress={() => setVendorSheet(vendor)} />
+        {/* Virtualized so the full products list (up to ~90 items with remote
+            images) never blocks the UI thread. */}
+        <FlatList
+          style={{ flex: 1, marginTop: 12 }}
+          data={(seg === 'vendors' ? filteredVendors : filteredProducts) as any[]}
+          keyExtractor={(item: any, i) => (seg === 'vendors' ? String(item.id) : `${item.vendorId}-${i}`)}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={7}
+          removeClippedSubviews
+          renderItem={({ item }: any) =>
+            seg === 'vendors' ? (
+              <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+                <VendorCard vendor={item} onPress={() => setVendorSheet(item)} />
               </View>
-            ))
-          ) : (
-            filteredProducts.length === 0 ? (
-              <Text style={{ color: '#8B949E', fontSize: 13, paddingHorizontal: 16 }}>No products match.</Text>
-            ) : filteredProducts.map((p, i) => (
-              <View key={i} style={{ paddingHorizontal: 16, marginBottom: 8 }}>
-                <VendorProductRow product={p} onPress={() => setProductSheet(p)} />
+            ) : (
+              <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+                <VendorProductRow product={item} onPress={() => setProductSheet(item)} />
               </View>
-            ))
-          )}
-          <View style={{ height: 32 }} />
-        </ScrollView>
-        {detailSheets}
+            )
+          }
+          ListEmptyComponent={
+            <Text style={{ color: '#8B949E', fontSize: 13, paddingHorizontal: 16 }}>
+              No {seg === 'vendors' ? 'vendors' : 'products'} match.
+            </Text>
+          }
+          ListFooterComponent={<View style={{ height: 32 }} />}
+        />
       </View>
     );
   }
@@ -362,7 +367,6 @@ export function VendorTab() {
 
         <View style={{ height: 32 }} />
       </ScrollView>
-      {detailSheets}
     </View>
   );
 }
