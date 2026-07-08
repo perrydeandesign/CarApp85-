@@ -13,7 +13,8 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useCollections } from '../../social/hooks/useCollections';
 import { SAVED_DEFAULT_COLLECTION_ID } from '../../social/hooks/useCollections';
-import { MOCK_POSTS_V2, type Post } from '../../social/data/posts';
+import { usePostsByIds } from '../../social/hooks/usePostsByIds';
+import { type Post } from '../../social/data/posts';
 import { CollectionDetailScreen } from './CollectionDetailScreen';
 
 type Props = {
@@ -34,11 +35,15 @@ export const SavedCollectionsScreen: React.FC<Props> = ({ onBack }) => {
   const [newName, setNewName] = useState('');
   const [openCollectionId, setOpenCollectionId] = useState<string | null>(null);
 
-  const postsById = useMemo(() => {
-    const m: Record<string, Post> = {};
-    for (const p of MOCK_POSTS_V2) m[p.id] = p;
-    return m;
-  }, []);
+  // Every post id referenced by the Saved tray or any collection, resolved
+  // live from Supabase (no mock fallback).
+  const allPostIds = useMemo(() => {
+    const ids = new Set<string>(savedPostIds);
+    for (const c of collections) for (const id of c.postIds) ids.add(id);
+    return Array.from(ids);
+  }, [savedPostIds, collections]);
+
+  const { postsById } = usePostsByIds(allPostIds);
 
   const savedPosts = useMemo(
     () => savedPostIds.map((id) => postsById[id]).filter(Boolean) as Post[],

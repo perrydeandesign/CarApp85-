@@ -17,7 +17,7 @@ import { NotifDrop } from '../components/NotifDrop';
 import { AddSheet } from '../components/AddSheet';
 import { GoHomeContext } from '../context/GoHomeContext';
 import { ViewProfileContext } from '../context/ViewProfileContext';
-import { ME, CONNS, findUserById, getFullUser } from '../data/users';
+import { ME, findUserById } from '../data/users';
 
 import { TopBar } from '../components/SharedHeader';
 import { BottomTabBar } from '../components/SharedButton';
@@ -57,13 +57,11 @@ function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
 
   const openProfile = (user: any) => {
     const uid = user.userId || user.id;
-    const conn: Conn | undefined = uid
-      ? (findUserById(uid) || (CONNS.find(c => c.user === (user.user || user.username))))
-      : CONNS.find(c => c.user === (user.user || user.username));
-
-    // Profile.tsx expects a Conn-shaped object (conn.userId, conn.user, conn.img,
-    // conn.carImg, conn.color, conn.followers, conn.following). Passing a FullUser
-    // shape (from getFullUser) crashes because the keys differ.
+    // Live screens pass a real profile object ({ userId, username, img, … });
+    // Profile.tsx resolves the rest live by username. Only fall back to a demo
+    // Conn when the id actually matches one — never match by username, which
+    // would let a real user collide onto demo chrome (wrong id/counts).
+    const conn: Conn | undefined = uid ? findUserById(uid) : undefined;
     setViewProf(conn ?? user);
   };
 

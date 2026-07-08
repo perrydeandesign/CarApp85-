@@ -9,8 +9,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Avatar } from './Avatar';
 import { T } from '../constants/theme';
-import { ME, CONNS } from '../data/users';
+import { ME } from '../data/users';
 import { useMeProfile } from '../hooks/useMeProfile';
+import { useStoryPeople } from '../hooks/useStoryPeople';
 
 type Props = {
   onGoProfile?: () => void;
@@ -58,15 +59,23 @@ function GlowRing({ size }: { size: number }) {
 export function Stories({ onGoProfile, onProfile }: Props) {
   // Live-first avatar so the "You" story matches the composer + profile header.
   const { data: me } = useMeProfile();
+  // Recent distinct post authors, read live from Supabase.
+  const people = useStoryPeople(5);
   const items = [
     { user: 'You', av: ME.av, img: me?.avatar_url || ME.img, isMe: true, hasNew: false },
-    ...CONNS.slice(0, 5).map((c, idx) => ({
-      user: c.user,
-      av: c.av,
-      img: c.img,
-      conn: c,
+    ...people.map((p, idx) => ({
+      user: p.username,
+      av: p.username?.[0]?.toUpperCase() ?? '?',
+      img: p.avatarUrl || undefined,
+      conn: {
+        userId: p.id,
+        id: p.id,
+        user: p.username,
+        username: p.username,
+        img: p.avatarUrl || undefined,
+      },
       isMe: false,
-      // First few connections have a fresh post → glowing ring.
+      // Most-recent few posters get the fresh-post glow ring.
       hasNew: idx < 3,
     })),
   ];

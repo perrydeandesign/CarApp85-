@@ -25,11 +25,7 @@ import { Stories } from '../components/Stories';
 import { DiscoverSection } from '../components/DiscoverSection';
 import { ChallengesSection } from '../components/ChallengesSection';
 
-import {
-  MOCK_POSTS_V2,
-  type UserPreview,
-  type Post as SocialPost,
-} from '../social/data/posts';
+import { type UserPreview } from '../social/data/posts';
 
 import { useFeed } from '../hooks/useFeed';
 import { usePostInteractions } from '../social/hooks/usePostInteractions';
@@ -44,10 +40,6 @@ import { supabase } from '../lib/supabase';
 import { SearchPrefillContext } from '../navigation/SearchPrefillContext';
 
 export function HomeTab() {
-
-  // ⭐ QUICK TEST — CONFIRM THIS SCREEN IS ACTUALLY RENDERING
-  console.log("HOME TAB RENDERED");
-
   const { openProfile } = useContext(ViewProfileContext);
 
   const searchCtx = useContext(SearchPrefillContext);
@@ -64,12 +56,9 @@ export function HomeTab() {
 
   const feed = useFeed();
 
-  const seedPosts = useMemo<SocialPost[]>(() => {
-    const safePosts = Array.isArray(feed.posts) ? feed.posts : [];
-    return [...safePosts, ...MOCK_POSTS_V2];
-  }, [feed.posts]);
-
-  const social = usePostInteractions(seedPosts ?? [], currentUser);
+  // Feed is read straight from Supabase — no mock fallback. New posts a user
+  // creates flow in via feed.refresh() after a successful insert.
+  const social = usePostInteractions(feed.posts, currentUser);
 
   const collections = useCollections();
 

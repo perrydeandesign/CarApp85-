@@ -42,6 +42,7 @@ import { getAchievements, topTier, winCount, TIER_COLOR } from '../data/achievem
 import { AchievementsModal } from '../components/AchievementsModal';
 import { useCars, useCarMods, bucketMods, usePostsByCar, useProfilePosts, useProfileIdByUsername } from '../hooks/useProfileData';
 import { useMeProfile } from '../hooks/useMeProfile';
+import { useProfileHeader } from '../hooks/useProfileHeader';
 import { ModsList } from '../components/ModsList';
 import type { TimelineCategory } from '../types/database';
 import type { TimelineEntry } from '../hooks/useTimeline';
@@ -57,7 +58,6 @@ const POST_TYPE_TO_CATEGORY: Record<string, TimelineCategory> = {
 };
 import { DEMO_USERS } from '../data/demoUsers';
 import { USER_PROFILES } from '../data/userProfiles';
-import { GCARS } from '../data/mockData';
 
 // Components
 import { Avatar } from '../components/Avatar';
@@ -108,26 +108,33 @@ export function ProfileScreen() {
   // Resolve a username from whichever field the caller supplied.
   const connUsername = conn.user || conn.username || 'user';
 
-  // 2️⃣ DEMO USER
+  // Demo fallbacks — used only until live data resolves (and for the demo "me").
   const demoUser = DEMO_USERS.find((u) => u.id === conn.userId);
-
-  // 3️⃣ Optional override
   const profileOverride = USER_PROFILES[connUsername];
 
-  // 4️⃣ Unified profile object
+  // 2️⃣ Resolve the REAL Supabase profile.id, then its live header.
+  //    isMe → the signed-in profile; viewing someone → lookup by username.
+  const { data: me } = useMeProfile();
+  const { data: lookupId } = useProfileIdByUsername(isMe ? null : connUsername);
+  const realProfileId = isMe ? me?.id ?? null : lookupId ?? null;
+  const header = useProfileHeader(realProfileId);
+
+  // 3️⃣ Unified profile object — live header wins; demo is last-resort fallback
+  //    so nothing renders empty before live data loads.
   const profileUser = {
-    id: conn.userId,
-    username: connUsername,
-    avatar: conn.img || demoUser?.avatar || '',
+    id: realProfileId ?? conn.userId,
+    username: header?.username || (isMe ? me?.username : undefined) || connUsername,
+    avatar: header?.avatarUrl || (isMe ? me?.avatar_url : undefined) || conn.img || demoUser?.avatar || '',
     car: demoUser?.car || { make: '', model: '', year: '', image: '' },
     carImage: demoUser?.car.image || conn.carImg || '',
     bio:
+      header?.bio ||
       profileOverride?.bio ||
       demoUser?.bio ||
       'Car enthusiast. Modified community member.',
-    followers: conn.followers,
-    following: conn.following,
-    posts: isMe ? ME.photoPosts.length : (profileOverride?.posts || demoUser?.photos.length || 0),
+    followers: header?.followers ?? conn.followers ?? 0,
+    following: header?.following ?? conn.following ?? 0,
+    posts: header?.posts ?? (isMe ? ME.photoPosts.length : (profileOverride?.posts || demoUser?.photos.length || 0)),
     photos: demoUser?.photos || [],
     videos: demoUser?.videos || [],
     timeline: profileOverride?.timeline || demoUser?.timeline || [],
@@ -136,12 +143,7 @@ export function ProfileScreen() {
     color: conn.color || '#1a1a1a',
   };
 
-  // 5️⃣ Active car — resolve the REAL Supabase profile.id.
-  //    isMe → use the first seeded profile (no auth-yet)
-  //    viewing someone → lookup by username
-  const { data: me } = useMeProfile();
-  const { data: lookupId } = useProfileIdByUsername(isMe ? null : profileUser.username);
-  const realProfileId = isMe ? me?.id ?? null : lookupId ?? null;
+  // 4️⃣ Active car — Supabase cars for the resolved profile.
   const { data: supaCars } = useCars(realProfileId);
   // Demo fallback: the signed-out "me" profile shows a sample build so the
   // Garage tab + Build Card aren't empty in the demo.

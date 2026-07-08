@@ -1,17 +1,69 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Avatar } from './Avatar';
 import { T } from '../constants/theme';
-import { CONNS, ME } from '../data/users';
+import { supabase } from '../lib/supabase';
+import { useMeProfile } from '../hooks/useMeProfile';
 
 type Props = {
   onProfile?: (c: any) => void;
 };
 
+type SuggestedProfile = {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+};
+
 export function DiscoverSection({ onProfile }: Props) {
+  const { data: me } = useMeProfile();
+  const [cards, setCards] = useState<SuggestedProfile[]>([]);
   const [followed, setFollowed] = useState<Record<string, boolean>>({});
-  // Don't suggest the current user to themselves.
-  const cards = CONNS.filter((c) => c.user !== ME.user && c.userId !== ME.id).slice(0, 6);
+
+  // Live suggestions: real profiles (excluding the current user) plus the set
+  // this user already follows, so the button reflects real state.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [profilesRes, followsRes] = await Promise.all([
+        supabase.from('profiles').select('id, username, avatar_url').order('username').limit(12),
+        me?.id
+          ? supabase.from('follows').select('following_id').eq('follower_id', me.id)
+          : Promise.resolve({ data: [] as { following_id: string }[] } as any),
+      ]);
+      if (cancelled) return;
+      const list = ((profilesRes.data ?? []) as SuggestedProfile[])
+        .filter((p) => p.id !== me?.id)
+        .slice(0, 6);
+      setCards(list);
+      const initial: Record<string, boolean> = {};
+      for (const row of (followsRes.data ?? []) as { following_id: string }[]) {
+        initial[row.following_id] = true;
+      }
+      setFollowed(initial);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [me?.id]);
+
+  const toggleFollow = async (p: SuggestedProfile) => {
+    const uid = me?.id;
+    if (!uid || uid === p.id) return;
+    const next = !followed[p.id];
+    setFollowed((prev) => ({ ...prev, [p.id]: next })); // optimistic
+    if (next) {
+      const { error } = await supabase.from('follows').insert({ follower_id: uid, following_id: p.id });
+      if (error && !/duplicate key/i.test(error.message)) {
+        setFollowed((prev) => ({ ...prev, [p.id]: false })); // rollback
+      }
+    } else {
+      const { error } = await supabase.from('follows').delete().eq('follower_id', uid).eq('following_id', p.id);
+      if (error) setFollowed((prev) => ({ ...prev, [p.id]: true })); // rollback
+    }
+  };
+
+  if (cards.length === 0) return null;
 
   return (
     <View style={{ paddingTop: 6, paddingBottom: 12 }}>
@@ -33,12 +85,14 @@ export function DiscoverSection({ onProfile }: Props) {
         contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}
       >
         {cards.map((c) => {
-          const isFollowing = !!followed[c.user];
+          const isFollowing = !!followed[c.id];
           return (
             <TouchableOpacity
-              key={c.user}
+              key={c.id}
               activeOpacity={0.85}
-              onPress={() => onProfile?.(c)}
+              onPress={() =>
+                onProfile?.({ userId: c.id, id: c.id, user: c.username, username: c.username, img: c.avatar_url })
+              }
               style={{
                 width: 120,
                 backgroundColor: T.card,
@@ -50,7 +104,7 @@ export function DiscoverSection({ onProfile }: Props) {
                 alignItems: 'center',
               }}
             >
-              <Avatar initials={c.av} img={c.img} size={44} ring />
+              <Avatar initials={c.username?.[0]?.toUpperCase()} img={c.avatar_url || undefined} size={44} ring />
               <Text
                 numberOfLines={1}
                 style={{
@@ -62,12 +116,12 @@ export function DiscoverSection({ onProfile }: Props) {
                   maxWidth: '100%',
                 }}
               >
-                {c.user}
+                {c.username}
               </Text>
               <TouchableOpacity
                 onPress={(e) => {
                   e.stopPropagation();
-                  setFollowed((p) => ({ ...p, [c.user]: !p[c.user] }));
+                  void toggleFollow(c);
                 }}
                 style={{
                   width: '100%',

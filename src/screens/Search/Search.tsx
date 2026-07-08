@@ -15,12 +15,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { T } from '../../constants/theme';
 import { FadeInImage } from '../../ui/FadeInImage';
-import { GCARS } from '../../data/mockData';
-import { MOCK_POSTS_V2 } from '../../social/data/posts';
-import { extractHashtags } from '../../social/components/RichCaption';
-
-import { DEMO_USERS } from '../../data/demoUsers';
-import { CONNS } from '../../data/users';
 import { ViewProfileContext } from '../../context/ViewProfileContext';
 
 import type { SearchPrefill } from '../../navigation/SearchPrefillContext';
@@ -38,119 +32,13 @@ const SEARCH_TABS: { key: SearchTab; label: string }[] = [
 ];
 
 // ─────────────────────────────────────────────
-// ⭐ Build ALL_CARS from DEMO_USERS + GCARS
+// ⭐ Search Logic — all tabs read live from Supabase
 // ─────────────────────────────────────────────
 
-type CarEntry = {
-  name: string;
-  year: string;
-  img: string;
-  users: {
-    userId: string;
-    username: string;
-    avatar?: string;
-  }[];
+type SearchScreenProps = {
+  prefill?: SearchPrefill | null;
+  onPrefillConsumed?: () => void;
 };
-
-const ALL_CARS: CarEntry[] = (() => {
-  const map: Record<string, CarEntry> = {};
-
-  // 1️⃣ Cars from DEMO_USERS
-  DEMO_USERS.forEach((u) => {
-    const { make, model, year, image } = u.car;
-    const key = `${make} ${model}`;
-
-    if (!map[key]) {
-      map[key] = {
-        name: `${make} ${model}`,
-        year: String(year),
-        img: image || '',
-        users: [],
-      };
-    }
-
-    map[key].users.push({
-      userId: u.id,
-      username: u.username,
-      avatar: u.avatar,
-    });
-  });
-
-  // 2️⃣ Cars from GCARS (garage)
-  GCARS.forEach((gc) => {
-    const key = gc.name;
-
-    if (!map[key]) {
-      map[key] = {
-        name: gc.name,
-        year: String(gc.year || ''),
-        img: gc.heroImg || '',
-        users: [],
-      };
-    }
-  });
-
-  return Object.values(map);
-})();
-// ─────────────────────────────────────────────
-// ⭐ Build FOR_YOU_POOL (V2 posts + DEMO_USERS photos + GCARS)
-// ─────────────────────────────────────────────
-
-type GridItem = {
-  key: string;
-  uri: string;
-  hashtags: string[];
-  userHandle?: string;
-};
-
-const FOR_YOU_POOL: GridItem[] = (() => {
-  const items: GridItem[] = [];
-
-  // 1️⃣ V2 social posts
-  MOCK_POSTS_V2.forEach((p) => {
-    items.push({
-      key: `v2-${p.id}`,
-      uri: p.mediaUrl,
-      hashtags: extractHashtags(p.caption),
-      userHandle: p.author.username,
-    });
-  });
-
-  // 2️⃣ DEMO_USERS photos
-  DEMO_USERS.forEach((u) => {
-    u.photos.forEach((url, idx) => {
-      items.push({
-        key: `userphoto-${u.id}-${idx}`,
-        uri: url,
-        hashtags: [
-          u.car.make.toLowerCase(),
-          u.car.model.toLowerCase(),
-          `${u.car.make}${u.car.model}`.toLowerCase(),
-        ],
-        userHandle: u.username,
-      });
-    });
-  });
-
-  // 3️⃣ GCARS hero images
-  GCARS.forEach((gc) => {
-    if (!gc.heroImg) return;
-    items.push({
-      key: `gcars-${gc.name}`,
-      uri: gc.heroImg,
-      hashtags: [
-        gc.name.toLowerCase().replace(/\s+/g, ''),
-        gc.make?.toLowerCase() || '',
-        gc.model?.toLowerCase() || '',
-      ].filter(Boolean),
-    });
-  });
-
-  return items;
-})();
-// ─────────────────────────────────────────────
-// ⭐ Search Logic (Phase‑2.7)
-// ─────────────────────────────────────────────
 
 export function SearchScreen({ prefill, onPrefillConsumed }: SearchScreenProps = {}) {
   const [query, setQuery] = useState('');
@@ -167,53 +55,7 @@ export function SearchScreen({ prefill, onPrefillConsumed }: SearchScreenProps =
 
   // Normalize query
   const q = query.toLowerCase().trim();
-  const hashtagQuery = q.startsWith('#') ? q.slice(1) : null;
 
-  // ─────────────────────────────────────────────
-  // ⭐ USER SEARCH (uses CONNS → navigation object)
-  // ─────────────────────────────────────────────
-  const userResults = useMemo(() => {
-    if (!q) return CONNS;
-
-    return CONNS.filter((c) => {
-      const username = c.user.toLowerCase();
-      const car = c.car.toLowerCase();
-      return username.includes(q) || car.includes(q);
-    });
-  }, [q]);
-
-  // ─────────────────────────────────────────────
-  // ⭐ CAR SEARCH (uses ALL_CARS)
-  // ─────────────────────────────────────────────
-  const carResults = useMemo(() => {
-    if (!q) return ALL_CARS;
-
-    return ALL_CARS.filter((c) => {
-      const name = c.name.toLowerCase();
-      const year = c.year.toLowerCase();
-      return name.includes(q) || year.includes(q);
-    });
-  }, [q]);
-
-  // ─────────────────────────────────────────────
-  // ⭐ FOR YOU SEARCH (hashtags + usernames)
-  // ─────────────────────────────────────────────
-  const forYouResults = useMemo(() => {
-    if (!q) return FOR_YOU_POOL;
-
-    return FOR_YOU_POOL.filter((it) => {
-      // Hashtag-only search (#wrx)
-      if (hashtagQuery) {
-        return it.hashtags.some((h) => h.toLowerCase().includes(hashtagQuery));
-      }
-
-      // General search
-      return (
-        it.hashtags.some((h) => h.toLowerCase().includes(q)) ||
-        (it.userHandle && it.userHandle.toLowerCase().includes(q))
-      );
-    });
-  }, [q, hashtagQuery]);
   // ─────────────────────────────────────────────
   // ⭐ UI Rendering
   // ─────────────────────────────────────────────
@@ -312,178 +154,8 @@ export function SearchScreen({ prefill, onPrefillConsumed }: SearchScreenProps =
       {/* Other tabs scroll inside a ScrollView. */}
       {tab !== 'foryou' ? (
       <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-        {/* ───────────────────────────────────────────── */}
-        {/* ⭐ CARS TAB */}
-        {/* ───────────────────────────────────────────── */}
-        {tab === 'cars' ? (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            {carResults.length === 0 ? (
-              <EmptyState icon="car-sport-outline" label="No cars found" />
-            ) : (
-              carResults.map((c) => (
-                <TouchableOpacity
-                  key={c.name}
-                  style={{ width: '33.333%', aspectRatio: 1, padding: 1 }}
-                  onPress={() => {
-                    // Open profile of the first user who owns this car.
-                    const owner = c.users[0];
-                    if (!owner) return;
-                    const conn = CONNS.find((cc) => cc.userId === owner.userId);
-                    // Fall back to a username-shaped object so navigation always
-                    // works even when the owner isn't in the demo CONNS list.
-                    openProfile(
-                      conn || {
-                        userId: owner.userId,
-                        id: owner.userId,
-                        user: owner.username,
-                        username: owner.username,
-                        img: owner.avatar,
-                      },
-                    );
-                  }}
-                >
-                  {c.img ? (
-                    <Image
-                      source={{ uri: c.img }}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: '#11141C',
-                      }}
-                    />
-                  ) : (
-                    <View
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: '#1A1F2A',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Ionicons
-                        name="car-sport-outline"
-                        size={32}
-                        color={T.mu}
-                      />
-                    </View>
-                  )}
-
-                  {/* Car label overlay */}
-                  <View
-                    style={{
-                      position: 'absolute',
-                      bottom: 1,
-                      left: 1,
-                      right: 1,
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      paddingHorizontal: 6,
-                      paddingVertical: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: '#fff',
-                        fontSize: 11,
-                        fontWeight: '600',
-                      }}
-                      numberOfLines={1}
-                    >
-                      {c.name}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))
-            )}
-          </View>
-        ) : null}
-
-        {/* ───────────────────────────────────────────── */}
-        {/* ⭐ USERS TAB */}
-        {/* ───────────────────────────────────────────── */}
-        {tab === 'users' ? (
-          <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
-            {userResults.length === 0 ? (
-              <EmptyState icon="person-outline" label="No users found" />
-            ) : (
-              userResults.map((c) => (
-                <TouchableOpacity
-                  key={c.userId}
-                  onPress={() => openProfile(c)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 12,
-                    paddingVertical: 10,
-                    borderBottomWidth: 1,
-                    borderBottomColor: T.bd,
-                  }}
-                >
-                  {/* Avatar */}
-                  {c.img ? (
-                    <Image
-                      source={{ uri: c.img }}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
-                      }}
-                    />
-                  ) : (
-                    <View
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
-                        backgroundColor: T.card2,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: T.mu,
-                          fontWeight: '700',
-                          fontSize: 14,
-                        }}
-                      >
-                        {c.av}
-                      </Text>
-                    </View>
-                  )}
-
-                  {/* Username + Car */}
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        color: T.tx,
-                        fontSize: 14,
-                        fontWeight: '600',
-                      }}
-                    >
-                      {c.user}
-                    </Text>
-                    <Text style={{ color: T.mu, fontSize: 12 }}>
-                      {c.car}
-                    </Text>
-                  </View>
-
-                  {/* Followers */}
-                  <Text style={{ color: T.mu, fontSize: 11 }}>
-                    {c.followers.toLocaleString()}
-                  </Text>
-
-                  <Ionicons
-                    name="chevron-forward"
-                    size={14}
-                    color={T.mu}
-                  />
-                </TouchableOpacity>
-              ))
-            )}
-          </View>
-        ) : null}
-
+        {tab === 'cars'  ? <CarsTab  query={q} onProfile={openProfile} /> : null}
+        {tab === 'users' ? <UsersTab query={q} onProfile={openProfile} /> : null}
         {tab === 'builds'       ? <BuildsTab onProfile={openProfile} /> : null}
         {tab === 'competitions' ? <CompetitionsTab />                   : null}
 
@@ -509,6 +181,149 @@ const EmptyState: React.FC<{ icon: string; label: string }> = ({
     </Text>
   </View>
 );
+
+// ─────────────────────────────────────────────
+// ⭐ USERS TAB — Supabase profiles
+// ─────────────────────────────────────────────
+
+type ProfileRow = {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  bio: string | null;
+};
+
+const UsersTab: React.FC<{ query: string; onProfile: (c: any) => void }> = ({ query, onProfile }) => {
+  const [rows, setRows] = useState<ProfileRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    let qb = supabase
+      .from('profiles')
+      .select('id, username, avatar_url, bio')
+      .order('username', { ascending: true })
+      .limit(40);
+    if (query) qb = qb.ilike('username', `%${query}%`);
+    qb.then(({ data }) => {
+      if (cancelled) return;
+      setRows((data ?? []) as any);
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [query]);
+
+  if (loading) return <View style={{ padding: 24 }}><Text style={{ color: T.mu }}>Loading users…</Text></View>;
+  if (rows.length === 0) return <EmptyState icon="person-outline" label="No users found" />;
+
+  return (
+    <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
+      {rows.map((p) => (
+        <TouchableOpacity
+          key={p.id}
+          onPress={() => onProfile({ userId: p.id, id: p.id, user: p.username, username: p.username, img: p.avatar_url })}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            paddingVertical: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: T.bd,
+          }}
+        >
+          {p.avatar_url ? (
+            <Image source={{ uri: p.avatar_url }} style={{ width: 44, height: 44, borderRadius: 22 }} />
+          ) : (
+            <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: T.card2, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: T.mu, fontWeight: '700', fontSize: 14 }}>
+                {p.username?.[0]?.toUpperCase() ?? '?'}
+              </Text>
+            </View>
+          )}
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: T.tx, fontSize: 14, fontWeight: '600' }}>{p.username}</Text>
+            {p.bio ? (
+              <Text numberOfLines={1} style={{ color: T.mu, fontSize: 12 }}>{p.bio}</Text>
+            ) : null}
+          </View>
+          <Ionicons name="chevron-forward" size={14} color={T.mu} />
+        </TouchableOpacity>
+      ))}
+      <View style={{ height: 20 }} />
+    </View>
+  );
+};
+
+// ─────────────────────────────────────────────
+// ⭐ CARS TAB — Supabase cars
+// ─────────────────────────────────────────────
+
+type CarRow = {
+  id: string;
+  make: string;
+  model: string;
+  year: number | null;
+  primary_image_url: string | null;
+  profile: { id: string; username: string; avatar_url: string | null } | null;
+};
+
+const CarsTab: React.FC<{ query: string; onProfile: (c: any) => void }> = ({ query, onProfile }) => {
+  const [rows, setRows] = useState<CarRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    let qb = supabase
+      .from('cars')
+      .select('id, make, model, year, primary_image_url, profile:profiles(id, username, avatar_url)')
+      .order('created_at', { ascending: false })
+      .limit(60);
+    if (query) qb = qb.or(`make.ilike.%${query}%,model.ilike.%${query}%`);
+    qb.then(({ data }) => {
+      if (cancelled) return;
+      setRows((data ?? []) as any);
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [query]);
+
+  if (loading) return <View style={{ padding: 24 }}><Text style={{ color: T.mu }}>Loading cars…</Text></View>;
+  if (rows.length === 0) return <EmptyState icon="car-sport-outline" label="No cars found" />;
+
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+      {rows.map((c) => {
+        const name = `${c.make} ${c.model}`.trim();
+        return (
+          <TouchableOpacity
+            key={c.id}
+            style={{ width: '33.333%', aspectRatio: 1, padding: 1 }}
+            onPress={() => {
+              const owner = c.profile;
+              if (!owner) return;
+              onProfile({ userId: owner.id, id: owner.id, user: owner.username, username: owner.username, img: owner.avatar_url });
+            }}
+          >
+            {c.primary_image_url ? (
+              <Image source={{ uri: c.primary_image_url }} style={{ width: '100%', height: '100%', backgroundColor: '#11141C' }} />
+            ) : (
+              <View style={{ width: '100%', height: '100%', backgroundColor: '#1A1F2A', alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="car-sport-outline" size={32} color={T.mu} />
+              </View>
+            )}
+            <View style={{ position: 'absolute', bottom: 1, left: 1, right: 1, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 6, paddingVertical: 4 }}>
+              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }} numberOfLines={1}>
+                {c.year ? `${c.year} ` : ''}{name}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
 
 // ─────────────────────────────────────────────
 // ⭐ BUILDS TAB — Supabase cars
