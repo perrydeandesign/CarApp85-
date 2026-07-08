@@ -18,7 +18,7 @@ import { ModifiedPrimaryButton } from '../onboarding/components/ModifiedPrimaryB
 import { ModifiedAppleButton } from '../onboarding/components/ModifiedAppleButton';
 import { Button } from '../ui/Button';
 
-import { configureGoogle, signInWithGoogle } from '../auth/googleAuth';
+import { configureGoogle, signInWithGoogle, isGoogleConfigured } from '../auth/googleAuth';
 import { signInWithEmail, sendPasswordReset } from '../auth/emailAuth';
 
 // ⭐ Navigation
@@ -146,16 +146,19 @@ export default function Login() {
             <ModifiedAppleButton onPress={handleAppleLogin} />
           </View>
 
-          {/* Google login */}
-          <Button
-            label="Continue with Google"
-            icon="logo-google"
-            variant="secondary"
-            size="lg"
-            fullWidth
-            onPress={handleGoogle}
-            style={{ marginTop: 12 }}
-          />
+          {/* Google login — hidden until real OAuth client IDs are configured
+              (never ship a dead button; App Review 2.1). */}
+          {isGoogleConfigured() && (
+            <Button
+              label="Continue with Google"
+              icon="logo-google"
+              variant="secondary"
+              size="lg"
+              fullWidth
+              onPress={handleGoogle}
+              style={{ marginTop: 12 }}
+            />
+          )}
 
           {/* Signup link */}
           <View
