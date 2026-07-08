@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   TextInput,
@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-  ActivityIndicator,
+  Image,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useUploadPost } from '../../hooks/useUploadPost';
@@ -17,6 +17,7 @@ import { TaggablePhoto } from '../../social/components/TaggablePhoto';
 import type { PhotoTag } from '../../social/data/posts';
 import { checkText } from '../../lib/moderation';
 import { Button } from '../../ui/Button';
+import { searchTaggables, persistPostTags, type Taggable } from '../../social/tagging';
 
 // ❌ Removed broken import
 // import { CONNS, ME } from '../../../App';
@@ -33,6 +34,41 @@ export default function PostPreview({ route, navigation }: any) {
   const [pendingTagPoint, setPendingTagPoint] = useState<{ x: number; y: number } | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const isUploading = uploadState.status === 'uploading';
+
+  // Inline @-mention autocomplete (people + vendors) for the caption.
+  const [selectionStart, setSelectionStart] = useState(0);
+  const [suggestions, setSuggestions] = useState<Taggable[]>([]);
+
+  // The @token immediately left of the caret, if any.
+  const activeMention = useMemo(() => {
+    const before = caption.slice(0, selectionStart);
+    const m = before.match(/@([\w._]*)$/);
+    return m ? m[1] : null;
+  }, [caption, selectionStart]);
+
+  useEffect(() => {
+    if (activeMention === null || activeMention.length < 1) {
+      setSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    searchTaggables(activeMention).then((r) => {
+      if (!cancelled) setSuggestions(r);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMention]);
+
+  const applyMention = (t: Taggable) => {
+    const before = caption.slice(0, selectionStart);
+    const after = caption.slice(selectionStart);
+    const newBefore = before.replace(/@[\w._]*$/, `@${t.handle} `);
+    setCaption(newBefore + after);
+    setSuggestions([]);
+    const pos = newBefore.length;
+    setSelectionStart(pos);
+  };
 
   // ✔ Temporary empty list until real data is wired in
   const pickableUsers = useMemo<PickableUser[]>(() => [], []);
@@ -60,12 +96,19 @@ export default function PostPreview({ route, navigation }: any) {
       return;
     }
     try {
-      await upload({
+      const postId = await upload({
         imageUri,
         caption,
         taggedUsernames,
         photoTags,
       });
+      if (postId) {
+        // Persist every tagged entity (caption @mentions + picker + photo tags).
+        const handles = Array.from(
+          new Set([...extractMentions(caption), ...taggedUsernames, ...photoTags.map((p) => p.username)]),
+        );
+        await persistPostTags(postId, handles);
+      }
       navigation.goBack();
     } catch (err: any) {
       Alert.alert('Could not publish', err?.message ?? 'Unknown error');
@@ -95,12 +138,36 @@ export default function PostPreview({ route, navigation }: any) {
           style={styles.input}
           value={caption}
           onChangeText={setCaption}
+          onSelectionChange={(e) => setSelectionStart(e.nativeEvent.selection.start)}
           placeholder="Say something. Use #hashtags and @mentions"
           placeholderTextColor="#666"
           multiline
           autoCapitalize="none"
           autoCorrect={false}
         />
+
+        {suggestions.length > 0 ? (
+          <View style={styles.suggestBox}>
+            {suggestions.map((s) => (
+              <TouchableOpacity key={`${s.type}-${s.id}`} style={styles.suggestRow} onPress={() => applyMention(s)}>
+                {s.avatarUrl ? (
+                  <Image source={{ uri: s.avatarUrl }} style={styles.suggestAvatar} />
+                ) : (
+                  <View style={[styles.suggestAvatar, styles.suggestAvatarFallback]}>
+                    <Ionicons name={s.type === 'vendor' ? 'storefront' : 'person'} size={14} color="#C9D1D9" />
+                  </View>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.suggestName}>@{s.handle}</Text>
+                  <Text style={styles.suggestSub} numberOfLines={1}>{s.name}</Text>
+                </View>
+                <View style={[styles.suggestTag, s.type === 'vendor' ? styles.suggestTagVendor : styles.suggestTagPerson]}>
+                  <Text style={styles.suggestTagText}>{s.type === 'vendor' ? 'Vendor' : 'Person'}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
 
         {caption.length > 0 ? (
           <View style={styles.previewBox}>
@@ -230,6 +297,31 @@ const styles = StyleSheet.create({
     minHeight: 44,
     textAlignVertical: 'top',
   },
+  suggestBox: {
+    backgroundColor: '#11141C',
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 8,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  suggestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#222',
+  },
+  suggestAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#1A1F2A' },
+  suggestAvatarFallback: { alignItems: 'center', justifyContent: 'center' },
+  suggestName: { color: '#F0F6FC', fontSize: 13, fontWeight: '700' },
+  suggestSub: { color: '#8B949E', fontSize: 11, marginTop: 1 },
+  suggestTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  suggestTagPerson: { backgroundColor: '#0E5C4F' },
+  suggestTagVendor: { backgroundColor: '#3a2a10' },
+  suggestTagText: { color: '#F0F6FC', fontSize: 10, fontWeight: '700' },
   previewBox: {
     borderRadius: 10,
     backgroundColor: '#11141C',
