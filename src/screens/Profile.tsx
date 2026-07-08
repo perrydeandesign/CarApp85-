@@ -373,31 +373,27 @@ export function ProfileScreen() {
         <BannerFade height={100} />
 
 
-        {/* Trophy pill — expands to the full achievements modal */}
+        {/* Trophy button — icon only; opens the full achievements modal */}
         {achievements.length > 0 && (
           <TouchableOpacity
             onPress={() => setAchOpen(true)}
             activeOpacity={0.85}
+            accessibilityLabel="View won competitions"
             style={{
               position: 'absolute',
               bottom: 12,
               right: 12,
-              flexDirection: 'row',
+              width: 34,
+              height: 34,
+              borderRadius: 17,
               alignItems: 'center',
-              gap: 6,
+              justifyContent: 'center',
               backgroundColor: 'rgba(0,0,0,0.6)',
-              borderRadius: 16,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
               borderWidth: 1,
               borderColor: ringColor,
             }}
           >
-            <Ionicons name="trophy" size={13} color={TIER_COLOR.gold} />
-            <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>
-              {wins > 0 ? `${wins} Won` : `${achievements.length}`}
-            </Text>
-            <Ionicons name="chevron-forward" size={12} color="#C9D1D9" />
+            <Ionicons name="trophy" size={16} color={TIER_COLOR.gold} />
           </TouchableOpacity>
         )}
       </Animated.View>
@@ -630,7 +626,7 @@ export function ProfileScreen() {
                 const icon = (
                   {
                     engine: 'engine-outline',
-                    wheels: 'tire',
+                    wheels: 'car-wheel',
                     interior: 'car-seat',
                     exterior: 'car-side',
                   } as Record<string, string>

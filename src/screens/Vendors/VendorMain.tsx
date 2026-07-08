@@ -47,15 +47,41 @@ export function VendorCard({ vendor, onPress }: { vendor: Vendor; onPress: () =>
 }
 
 /* ── Compact horizontal shelf cards ── */
-function VendorShelfCard({ vendor, onPress }: { vendor: Vendor; onPress: () => void }) {
+// SALE_ACCENT mirrors the profile trophy treatment — a subtle warm ring + badge.
+const SALE_ACCENT = '#FBBF24';
+
+function VendorShelfCard({ vendor, onPress, sale }: { vendor: Vendor; onPress: () => void; sale?: boolean }) {
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ width: 150, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden' }}>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        width: 150,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: 14,
+        overflow: 'hidden',
+        borderWidth: sale ? 1.5 : 0,
+        borderColor: sale ? 'rgba(251,191,36,0.55)' : 'transparent',
+      }}
+    >
       <View style={{ height: 96, backgroundColor: 'rgba(255,255,255,0.05)' }}>
         {vendor.heroImg ? <Image source={{ uri: vendor.heroImg }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : null}
+        {sale ? (
+          <View style={{ position: 'absolute', top: 8, left: 8, flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(0,0,0,0.6)', borderWidth: 1, borderColor: SALE_ACCENT, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3 }}>
+            <Ionicons name="pricetag" size={10} color={SALE_ACCENT} />
+            <Text style={{ color: SALE_ACCENT, fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>SALE</Text>
+          </View>
+        ) : null}
       </View>
       <View style={{ padding: 10 }}>
         <Text numberOfLines={1} style={{ color: '#F0F6FC', fontSize: 13, fontWeight: '700' }}>{vendor.name}</Text>
-        {vendor.fitsMyGarage ? <Text style={{ color: T.accent, fontSize: 11, marginTop: 2 }}>Fits your car</Text> : <Text numberOfLines={1} style={{ color: '#8B949E', fontSize: 11, marginTop: 2 }}>{(vendor.categories ?? [])[0] ?? ''}</Text>}
+        {sale ? (
+          <Text style={{ color: SALE_ACCENT, fontSize: 11, marginTop: 2, fontWeight: '700' }}>Sale on now</Text>
+        ) : vendor.fitsMyGarage ? (
+          <Text style={{ color: T.accent, fontSize: 11, marginTop: 2 }}>Fits your car</Text>
+        ) : (
+          <Text numberOfLines={1} style={{ color: '#8B949E', fontSize: 11, marginTop: 2 }}>{(vendor.categories ?? [])[0] ?? ''}</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -291,7 +317,7 @@ export function VendorTab() {
         <View style={{ marginTop: 26 }}>
           <SectionHeader title="FEATURED VENDORS" onSeeAll={() => openResults(null, 'vendors')} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
-            {featuredVendors.map(v => <VendorShelfCard key={v.id} vendor={v} onPress={() => setVendorSheet(v)} />)}
+            {featuredVendors.map((v, i) => <VendorShelfCard key={v.id} vendor={v} sale={i === 0} onPress={() => setVendorSheet(v)} />)}
           </ScrollView>
         </View>
 

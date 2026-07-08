@@ -403,7 +403,7 @@ const CompetitionsTab: React.FC = () => {
       {data.map((c) => {
         const d = daysLeft(c.ends_at);
         // Blue accent >3 days, yellow ≤3 days (per the brief).
-        const accent = d <= 3 ? '#FBBF24' : '#3B82F6';
+        const accent = d <= 3 ? '#8B5CF6' : '#3B82F6'; // purple ≤3 days, blue otherwise
         return (
           <View key={c.id} style={{ width: '50%', padding: 4 }}>
             <View style={{ backgroundColor: T.card, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: T.bd, minHeight: 110 }}>

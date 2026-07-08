@@ -179,9 +179,9 @@ export function ChallengesSection() {
         contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}
       >
         {challenges.map((c) => {
-          // Yellow when ≤3 days left, blue otherwise — matches the brand spec screenshot.
+          // Purple when ≤3 days left, blue otherwise.
           const urgent = c.daysLeft <= 3;
-          const accent = urgent ? '#FBBF24' : '#3B82F6';
+          const accent = urgent ? '#8B5CF6' : '#3B82F6';
           return (
             <PressableScale
               key={c.id}
