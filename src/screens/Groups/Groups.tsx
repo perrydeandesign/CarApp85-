@@ -3,14 +3,14 @@ import { View, Text, ScrollView, Image, TouchableOpacity, TextInput } from 'reac
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
 import type { Group } from '../../constants/types';
-import { GROUPS } from '../../data/groups';
+import { useGroups } from '../../hooks/useGroups';
 import { CreateGroupScreen } from './CreateGroup';
 import { GroupDetailScreen } from './GroupDetail';
 
 type GroupsSection = 'mygroups' | 'activity';
 
 export function GroupsTab() {
-  const [groups, setGroups] = useState<Group[]>(GROUPS);
+  const { groups, meId, createGroup, joinGroup, leaveGroup } = useGroups();
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState('');
@@ -22,25 +22,29 @@ export function GroupsTab() {
     return (
       <CreateGroupScreen
         onBack={() => setShowCreate(false)}
-        onCreated={(g) => {
-          setGroups(prev => [g, ...prev]);
-          setShowCreate(false);
-          setSelectedGroup(g);
-        }}
+        onCreate={createGroup}
       />
     );
   }
 
   if (selectedGroup) {
-    return <GroupDetailScreen group={selectedGroup} onBack={() => setSelectedGroup(null)} />;
+    return (
+      <GroupDetailScreen
+        group={selectedGroup}
+        meId={meId}
+        onJoin={joinGroup}
+        onLeave={leaveGroup}
+        onBack={() => setSelectedGroup(null)}
+      />
+    );
   }
 
   const filtered = search
     ? groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()))
     : groups;
 
-  const myGroups = filtered.filter(g => g.members.some(m => m.id === 'jake'));
-  const discoverGroups = filtered.filter(g => !g.members.some(m => m.id === 'jake'));
+  const myGroups = filtered.filter(g => !!meId && g.members.some(m => m.id === meId));
+  const discoverGroups = filtered.filter(g => !meId || !g.members.some(m => m.id === meId));
 
   // Sort: pinned first
   const sortedMyGroups = [...myGroups].sort((a, b) => {

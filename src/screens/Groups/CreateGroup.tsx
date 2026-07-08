@@ -3,10 +3,14 @@ import { View, Text, ScrollView, Image, TouchableOpacity, TextInput, StyleSheet 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
 import { Button } from '../../ui/Button';
-import type { Group, GroupPrivacy } from '../../constants/types';
-import { U } from '../../data/users';
+import type { GroupPrivacy } from '../../constants/types';
 
-export function CreateGroupScreen({ onBack, onCreated }: { onBack: () => void; onCreated: (g: Group) => void }) {
+type Props = {
+  onBack: () => void;
+  onCreate: (name: string, description: string, privacy: GroupPrivacy) => Promise<string | null>;
+};
+
+export function CreateGroupScreen({ onBack, onCreate }: Props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [privacy, setPrivacy] = useState<GroupPrivacy>('public');
@@ -14,26 +18,12 @@ export function CreateGroupScreen({ onBack, onCreated }: { onBack: () => void; o
 
   const canCreate = name.trim().length >= 3;
 
-  const handleCreate = () => {
-    if (!canCreate) return;
+  const handleCreate = async () => {
+    if (!canCreate || creating) return;
     setCreating(true);
-    setTimeout(() => {
-      const newGroup: Group = {
-        id: `g_${Date.now()}`,
-        name: name.trim(),
-        bannerUrl: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=400&fit=crop',
-        iconUrl: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=120&h=120&fit=crop',
-        description: description.trim() || 'A new car community group.',
-        privacy,
-        members: [{ id: 'jake', username: U.jake.user, avatar: U.jake.img || '', carModel: 'Subaru WRX STI', role: 'admin' as const }],
-        posts: [],
-        events: [],
-        gallery: [],
-        createdAt: Date.now(),
-      };
-      setCreating(false);
-      onCreated(newGroup);
-    }, 600);
+    const id = await onCreate(name.trim(), description.trim() || 'A new car community group.', privacy);
+    setCreating(false);
+    if (id) onBack(); // new group now appears live in the list
   };
 
   return (

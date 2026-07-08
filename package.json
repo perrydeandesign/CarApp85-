@@ -12,6 +12,7 @@
     "test:unit": "jest src/",
     "seed": "node --env-file=.env supabase/seed.mjs",
     "seed:follows": "node --env-file=.env supabase/seed_follows.mjs",
+    "seed:groups": "node --env-file=.env supabase/seed_groups.mjs",
     "sentry:sourcemaps": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output /tmp/main.jsbundle --sourcemap-output /tmp/main.jsbundle.map && SENTRY_PROPERTIES=ios/sentry.properties npx sentry-cli sourcemaps upload --strip-common-prefix /tmp/main.jsbundle /tmp/main.jsbundle.map",
     "postinstall": "patch-package"
   },

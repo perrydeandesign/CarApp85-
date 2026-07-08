@@ -4,17 +4,31 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC, SCREEN_W } from '../../constants/theme';
 import { Button } from '../../ui/Button';
 import type { Group } from '../../constants/types';
-import { CONNS } from '../../data/users';
 import { ViewProfileContext } from '../../context/ViewProfileContext';
 
-export function GroupDetailScreen({ group, onBack }: { group: Group; onBack: () => void }) {
+type Props = {
+  group: Group;
+  onBack: () => void;
+  meId?: string | null;
+  onJoin?: (groupId: string) => void;
+  onLeave?: (groupId: string) => void;
+};
+
+export function GroupDetailScreen({ group, onBack, meId, onJoin, onLeave }: Props) {
   const [activeSection, setActiveSection] = useState<'posts' | 'events' | 'gallery' | 'members'>('posts');
-  const [joined, setJoined] = useState(group.members.some(m => m.id === 'jake'));
+  const [joined, setJoined] = useState(!!meId && group.members.some(m => m.id === meId));
   const { openProfile } = useContext(ViewProfileContext);
 
   const openUserProfile = (username: string) => {
-    const conn = CONNS.find(c => c.user === username);
-    if (conn) openProfile(conn);
+    // Profile resolves the rest live by username.
+    openProfile({ user: username, username });
+  };
+
+  const toggleJoin = () => {
+    const next = !joined;
+    setJoined(next);
+    if (next) onJoin?.(group.id);
+    else onLeave?.(group.id);
   };
 
   const sections: { key: typeof activeSection; label: string }[] = [
@@ -58,7 +72,7 @@ export function GroupDetailScreen({ group, onBack }: { group: Group; onBack: () 
             variant={joined ? 'secondary' : 'primary'}
             size="md"
             fullWidth
-            onPress={() => setJoined(j => !j)}
+            onPress={toggleJoin}
             style={{ marginTop: 12 }}
           />
         </View>
