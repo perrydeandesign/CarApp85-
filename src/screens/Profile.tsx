@@ -137,7 +137,7 @@ export function ProfileScreen() {
     posts: header?.posts ?? (isMe ? ME.photoPosts.length : (profileOverride?.posts || demoUser?.photos.length || 0)),
     photos: demoUser?.photos || [],
     videos: demoUser?.videos || [],
-    timeline: profileOverride?.timeline || demoUser?.timeline || [],
+    timeline: ((profileOverride?.timeline || demoUser?.timeline || []) as any[]),
     mods: profileOverride?.mods || categorizeMods(demoUser?.car?.mods),
     gallery: profileOverride?.gallery || [],
     color: conn.color || '#1a1a1a',
@@ -191,8 +191,8 @@ export function ProfileScreen() {
   );
 
   // ⭐ Mod tab
-  const modKeys = ['engine', 'wheels', 'interior', 'exterior'];
-  const [modTab, setModTab] = useState('engine');
+  const modKeys = ['engine', 'wheels', 'interior', 'exterior'] as const;
+  const [modTab, setModTab] = useState<'engine' | 'wheels' | 'interior' | 'exterior'>('engine');
 
   // ⭐ Timeline year
   const allYears = useMemo(() => {
@@ -292,7 +292,7 @@ export function ProfileScreen() {
     try {
       setCapturing(true);
       // Give remote hero + QR a tick to be fully painted before snapshot.
-      await new Promise((r) => setTimeout(r, 350));
+      await new Promise<void>((r) => setTimeout(() => r(), 350));
       const uri = await captureRef(buildCardRef, { format: 'png', quality: 1 });
       await Share.share({ url: uri, message });
     } catch (_) {

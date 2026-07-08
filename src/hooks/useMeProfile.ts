@@ -12,6 +12,12 @@ export type MeProfile = {
 
 const PROFILE_COLS = 'id, username, avatar_url, bio, location';
 
+// The demo persona shown as "me" when there's no auth session. jake_sti is a
+// content-rich seeded profile (car + mods + posts + timeline), so the demo
+// renders a fully-populated profile instead of whichever profile happens to be
+// oldest (which may have no content).
+const DEMO_ME_USERNAME = 'jake_sti';
+
 // Cache the seeded-fallback profile (demo mode) so the many components that
 // need "me" share one round-trip. The authed path is keyed per-user.
 let seededPromise: Promise<MeProfile | null> | null = null;
@@ -19,6 +25,14 @@ function fetchSeeded(): Promise<MeProfile | null> {
   if (!seededPromise) {
     seededPromise = (async (): Promise<MeProfile | null> => {
       try {
+        // Prefer the demo persona; fall back to the oldest profile if absent.
+        const { data: persona } = await supabase
+          .from(TABLES.profiles)
+          .select(PROFILE_COLS)
+          .ilike('username', DEMO_ME_USERNAME)
+          .maybeSingle();
+        if (persona) return persona as MeProfile;
+
         const { data } = await supabase
           .from(TABLES.profiles)
           .select(PROFILE_COLS)
