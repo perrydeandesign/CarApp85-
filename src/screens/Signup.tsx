@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T } from '../constants/theme';
 import { ModifiedGradientBg, MODIFIED_TAGLINE } from '../onboarding/components/gradients';
 import { ModifiedLogo } from '../onboarding/components/ModifiedLogo';
@@ -43,6 +44,7 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [policy, setPolicy] = useState<PolicyKey | null>(null);
+  const [agreed, setAgreed] = useState(false);
 
   const handleSignup = async () => {
     if (!username.trim() || !email.trim() || !password) {
@@ -55,6 +57,13 @@ export default function Signup() {
     }
     if (password.length < 6) {
       Alert.alert('Password too short', 'Use at least 6 characters.');
+      return;
+    }
+    if (!agreed) {
+      Alert.alert(
+        'Please agree to continue',
+        'You must accept the Terms of Use and Community Guidelines, and our zero-tolerance policy, to create an account.',
+      );
       return;
     }
 
@@ -119,35 +128,33 @@ export default function Signup() {
             onToggle={() => setShowConfirmPassword(p => !p)}
           />
 
+          {/* App Review 1.2 (UGC): REQUIRED acceptance of terms + zero-tolerance policy. */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setAgreed(a => !a)}
+            style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 8, marginBottom: 16 }}
+          >
+            <Ionicons
+              name={agreed ? 'checkbox' : 'square-outline'}
+              size={22}
+              color={agreed ? T.accent : '#8B949E'}
+              style={{ marginTop: 1 }}
+            />
+            <Text style={{ flex: 1, fontSize: 12, color: '#8B949E', lineHeight: 18 }}>
+              I agree to the{' '}
+              <Text style={{ color: T.accent }} onPress={() => setPolicy('terms')}>Terms of Use</Text>{' '}
+              and{' '}
+              <Text style={{ color: T.accent }} onPress={() => setPolicy('guidelines')}>Community Guidelines</Text>
+              , acknowledge the{' '}
+              <Text style={{ color: T.accent }} onPress={() => setPolicy('privacy')}>Privacy Policy</Text>
+              , and understand MODIFIED has zero tolerance for objectionable content or abusive behaviour.
+            </Text>
+          </TouchableOpacity>
+
           <ModifiedPrimaryButton
             title={submitting ? 'Creating account…' : 'Create Account'}
             onPress={handleSignup}
           />
-
-          {/* App Review 1.2 (UGC): terms/EULA acceptance + objectionable-content policy */}
-          <Text
-            style={{
-              fontSize: 12,
-              color: '#8B949E',
-              textAlign: 'center',
-              lineHeight: 18,
-              marginTop: 16,
-            }}
-          >
-            By creating an account, you agree to our{' '}
-            <Text style={{ color: T.accent }} onPress={() => setPolicy('terms')}>
-              Terms of Use
-            </Text>{' '}
-            and{' '}
-            <Text style={{ color: T.accent }} onPress={() => setPolicy('guidelines')}>
-              Community Guidelines
-            </Text>
-            , and acknowledge our{' '}
-            <Text style={{ color: T.accent }} onPress={() => setPolicy('privacy')}>
-              Privacy Policy
-            </Text>
-            . MODIFIED has zero tolerance for objectionable content or abusive behaviour.
-          </Text>
 
           <View
             style={{
