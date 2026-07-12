@@ -58,6 +58,8 @@
 	<string>MODIFIED needs camera access to take photos of your car.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>MODIFIED needs photo library access to upload car photos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>MODIFIED needs microphone access to record audio when you capture a video of your car.</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>UIAppFonts</key>
