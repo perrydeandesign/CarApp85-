@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useMeProfile } from './useMeProfile';
+import { extractMentions } from '../social/components/RichCaption';
+import { persistPostTags } from '../social/tagging';
 
 /**
  * Persists a text-only status post (no car, no media). `posts.car_id` is
@@ -36,7 +38,17 @@ export function useCreatePost() {
         .select('id')
         .single();
       if (error) throw error;
-      return data.id as string;
+
+      const postId = data.id as string;
+
+      // Persist @-mentions as post_tags so the DB trigger fires a 'mention'
+      // notification (mirrors the camera path in PostPreview). persistPostTags
+      // resolves handles → profiles/vendors and swallows its own errors, so a
+      // tagging hiccup never fails an otherwise-successful post.
+      const mentions = extractMentions(body);
+      if (mentions.length) await persistPostTags(postId, mentions);
+
+      return postId;
     },
     [me?.id],
   );

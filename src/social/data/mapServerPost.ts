@@ -46,6 +46,7 @@ export function mapServerPost(row: ServerPostRow, flags?: EngagementFlags): Post
     id: row.id,
     author,
     mediaUrl: firstMedia?.media_url ?? '',
+    mediaType: firstMedia?.media_type ?? 'image',
     caption,
     likeCount: row.like_count,
     commentCount: row.comment_count,

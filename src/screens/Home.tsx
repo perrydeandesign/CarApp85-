@@ -21,6 +21,8 @@ import { Avatar } from '../components/Avatar';
 import { ReportSheet } from '../components/ReportSheet';
 
 import { CreatePostBar } from '../components/CreatePostBar';
+import { useNavigation } from '@react-navigation/native';
+import { choosePhotoOrVideo } from '../lib/imagePicker';
 import { Stories } from '../components/Stories';
 import { DiscoverSection } from '../components/DiscoverSection';
 import { ChallengesSection } from '../components/ChallengesSection';
@@ -41,6 +43,14 @@ import { SearchPrefillContext } from '../navigation/SearchPrefillContext';
 
 export function HomeTab() {
   const { openProfile } = useContext(ViewProfileContext);
+  const navigation = useNavigation<any>();
+
+  // "Share an update" → attach a photo → open the full composer (caption + tags),
+  // which uploads it as a media post. Photo works on the simulator (library).
+  const handlePickMedia = async () => {
+    const picked = await choosePhotoOrVideo();
+    if (picked) navigation.navigate('PostPreview', { imageUri: picked.uri, mediaType: picked.type });
+  };
 
   const searchCtx = useContext(SearchPrefillContext);
   const goToSearch = searchCtx?.goToSearch ?? (() => {});
@@ -160,7 +170,7 @@ export function HomeTab() {
         </View>
       ) : null}
 
-      <CreatePostBar onPost={handleCompose} />
+      <CreatePostBar onPost={handleCompose} onPickMedia={handlePickMedia} />
 
       {composed.map((c) => (
         <TouchableOpacity
@@ -213,6 +223,7 @@ export function HomeTab() {
           post={{
             id: sp.id,
             imageUrl: sp.mediaUrl,
+            mediaType: sp.mediaType,
             caption: sp.caption,
             username: sp.author.username,
             avatarUrl: sp.author.avatarUrl,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { TABLES } from '../data/tables';
+import { query } from '../lib/queryCache';
 
 export type MeProfile = {
   id: string;
@@ -18,34 +19,26 @@ const PROFILE_COLS = 'id, username, avatar_url, bio, location';
 // oldest (which may have no content).
 const DEMO_ME_USERNAME = 'jake_sti';
 
-// Cache the seeded-fallback profile (demo mode) so the many components that
-// need "me" share one round-trip. The authed path is keyed per-user.
-let seededPromise: Promise<MeProfile | null> | null = null;
-function fetchSeeded(): Promise<MeProfile | null> {
-  if (!seededPromise) {
-    seededPromise = (async (): Promise<MeProfile | null> => {
-      try {
-        // Prefer the demo persona; fall back to the oldest profile if absent.
-        const { data: persona } = await supabase
-          .from(TABLES.profiles)
-          .select(PROFILE_COLS)
-          .ilike('username', DEMO_ME_USERNAME)
-          .maybeSingle();
-        if (persona) return persona as MeProfile;
+async function fetchSeeded(): Promise<MeProfile | null> {
+  try {
+    // Prefer the demo persona; fall back to the oldest profile if absent.
+    const { data: persona } = await supabase
+      .from(TABLES.profiles)
+      .select(PROFILE_COLS)
+      .ilike('username', DEMO_ME_USERNAME)
+      .maybeSingle();
+    if (persona) return persona as MeProfile;
 
-        const { data } = await supabase
-          .from(TABLES.profiles)
-          .select(PROFILE_COLS)
-          .order('created_at', { ascending: true })
-          .limit(1)
-          .maybeSingle();
-        return (data ?? null) as MeProfile | null;
-      } catch {
-        return null;
-      }
-    })();
+    const { data } = await supabase
+      .from(TABLES.profiles)
+      .select(PROFILE_COLS)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    return (data ?? null) as MeProfile | null;
+  } catch {
+    return null;
   }
-  return seededPromise;
 }
 
 /** Resolve (and self-heal) the profile row for an authenticated user. */
@@ -91,7 +84,9 @@ export function useMeProfile() {
     const resolve = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const uid = sessionData.session?.user.id;
-      const row = uid ? await fetchForUser(uid) : await fetchSeeded();
+      // Cache "me" so the many components that read it share one round-trip.
+      const key = uid ? `meProfile:${uid}` : 'meProfile:seeded';
+      const row = await query(key, () => (uid ? fetchForUser(uid) : fetchSeeded()), { ttlMs: 60_000 });
       if (!cancelled) {
         setData(row);
         setLoading(false);

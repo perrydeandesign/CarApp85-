@@ -5,6 +5,7 @@ import { T, IC } from '../../constants/theme';
 import type { VProduct } from '../../constants/types';
 import { VENDORS, productFitsGarage } from '../../data/vendors';
 import { productKey } from '../../data/productKey';
+import { resolveBuyUrl } from '../../lib/affiliate';
 import { useSavedProducts } from '../../hooks/useSavedProducts';
 import { useShare } from '../../components/ShareProvider';
 
@@ -15,6 +16,10 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
   const { isSaved, toggle } = useSavedProducts();
   const key = productKey(product);
   const saved = isSaved(key);
+  // Every outbound tap resolves to a working product page (or a live product
+  // search) and is decorated with affiliate/attribution params.
+  const buyUrl = resolveBuyUrl(product);
+  const shareUrl = resolveBuyUrl(product, 'share');
   return (
     <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -40,7 +45,7 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
             onPress={() => share({
               title: product.name,
               message: `Check out the ${product.name}${product.brand ? ` by ${product.brand}` : ''} on MODIFIED`,
-              url: product.productURL || vendor?.website,
+              url: shareUrl ?? undefined,
               imageUri: product.img,
             })}
             style={{ position: 'absolute', top: 12, right: 12, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
@@ -82,11 +87,11 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
           <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', marginTop: 16 }}>Description</Text>
           <Text style={{ fontSize: 15, color: '#C9D1D9', lineHeight: 22, marginTop: 6 }}>{product.desc}</Text>
 
-          {/* Subtle Buy now — opens the vendor's product page */}
-          {(product.productURL || vendor?.website) ? (
+          {/* Subtle Buy now — opens the vendor's product page (affiliate-decorated) */}
+          {buyUrl ? (
             <TouchableOpacity
               activeOpacity={0.85}
-              onPress={() => Linking.openURL((product.productURL || vendor?.website) as string)}
+              onPress={() => Linking.openURL(buyUrl)}
               style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 16, borderWidth: 1, borderColor: T.accent, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 9 }}
             >
               <Text style={{ color: T.accent, fontSize: 13, fontWeight: '700' }}>Buy now</Text>

@@ -184,7 +184,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Auto-start Metro when running from Xcode (Debug builds only).\nif [ \"$CONFIGURATION\" = \"Debug\" ]; then\n  export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\n  if nc -w 2 -z localhost \"${RCT_METRO_PORT}\" 2>/dev/null; then\n    echo \"note: Metro already running on port ${RCT_METRO_PORT}\"\n  else\n    open \"$SRCROOT/scripts/launchMetro.command\"\n  fi\nfi\n";
+			shellScript = "# Auto-start Metro when running from Xcode (Debug builds only).\nif [ \"$CONFIGURATION\" = \"Debug\" ]; then\n  export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\n  \"$SRCROOT/scripts/startMetroHeadless.sh\" || true\nfi\n";
 		};
 		39F35E9E12BB8DD605244062 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

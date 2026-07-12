@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useUploadPost } from '../../hooks/useUploadPost';
+import { VideoView } from '../../ui/VideoView';
 import { RichCaption, extractHashtags, extractMentions } from '../../social/components/RichCaption';
 import { UserPickerModal, type PickableUser } from '../../social/components/UserPickerModal';
 import { TaggablePhoto } from '../../social/components/TaggablePhoto';
@@ -23,7 +24,8 @@ import { searchTaggables, persistPostTags, type Taggable } from '../../social/ta
 // import { CONNS, ME } from '../../../App';
 
 export default function PostPreview({ route, navigation }: any) {
-  const { imageUri } = route.params;
+  const { imageUri, mediaType = 'image' } = route.params;
+  const isVideo = mediaType === 'video';
   const { state: uploadState, upload } = useUploadPost();
 
   const [caption, setCaption] = useState('');
@@ -98,6 +100,7 @@ export default function PostPreview({ route, navigation }: any) {
     try {
       const postId = await upload({
         imageUri,
+        mediaType,
         caption,
         taggedUsernames,
         photoTags,
@@ -117,20 +120,24 @@ export default function PostPreview({ route, navigation }: any) {
 
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-      <TaggablePhoto
-        uri={imageUri}
-        tags={photoTags}
-        mode="compose"
-        emptyHint="Tap photo to tag people"
-        imageStyle={styles.image}
-        onPlaceTag={(point) => {
-          setPendingTagPoint(point);
-          setPickerOpen(true);
-        }}
-        onRemoveTag={(username) =>
-          setPhotoTags((prev) => prev.filter((t) => t.username !== username))
-        }
-      />
+      {isVideo ? (
+        <VideoView uri={imageUri} style={styles.image} controls muted={false} repeat={false} />
+      ) : (
+        <TaggablePhoto
+          uri={imageUri}
+          tags={photoTags}
+          mode="compose"
+          emptyHint="Tap photo to tag people"
+          imageStyle={styles.image}
+          onPlaceTag={(point) => {
+            setPendingTagPoint(point);
+            setPickerOpen(true);
+          }}
+          onRemoveTag={(username) =>
+            setPhotoTags((prev) => prev.filter((t) => t.username !== username))
+          }
+        />
+      )}
 
       <View style={styles.form}>
         <Text style={styles.label}>Caption</Text>

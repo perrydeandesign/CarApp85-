@@ -4,4 +4,6 @@ declare module '@env' {
   export const GOOGLE_WEB_CLIENT_ID: string;
   export const GOOGLE_IOS_CLIENT_ID: string;
   export const SENTRY_DSN: string;
+  /** Facebook App ID — enables true one-tap "Share to Instagram Story". */
+  export const FACEBOOK_APP_ID: string;
 }

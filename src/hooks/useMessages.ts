@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { captureError } from '../lib/observability';
+import { getLastReadMap } from '../lib/readState';
 
 export type ConversationRow = {
   id: string;
@@ -93,6 +94,57 @@ export function useConversations(meId: string | null) {
   }, [meId]);
 
   return { data, loading, error };
+}
+
+/**
+ * Total unread messages across all of the user's conversations, for the header
+ * badge. Unread = messages from someone else, newer than the last time this
+ * device opened that conversation (read-state is client-side; see lib/readState).
+ * Same derivation ConversationList uses, collapsed to a single count.
+ */
+export function useUnreadMessageCount(meId: string | null) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!meId) { setCount(0); return; }
+    let cancelled = false;
+    (async () => {
+      const { data: memberships } = await supabase
+        .from('conversation_members')
+        .select('conversation_id')
+        .eq('profile_id', meId);
+      const convIds = (memberships ?? []).map((m) => m.conversation_id);
+      if (convIds.length === 0) { if (!cancelled) setCount(0); return; }
+
+      const [{ data: msgs }, lastRead] = await Promise.all([
+        supabase
+          .from('messages')
+          .select('conversation_id, sender_id, created_at')
+          .in('conversation_id', convIds)
+          .order('created_at', { ascending: false })
+          .limit(convIds.length * 20),
+        getLastReadMap(),
+      ]);
+
+      let total = 0;
+      for (const cid of convIds) {
+        const seenAt = lastRead[cid];
+        total += (msgs ?? []).filter(
+          (m) =>
+            m.conversation_id === cid &&
+            m.sender_id !== meId &&
+            (!seenAt || m.created_at > seenAt),
+        ).length;
+      }
+      if (!cancelled) setCount(total);
+    })().catch((e) => {
+      if (!cancelled) setCount(0);
+      captureError(e, { hook: 'useUnreadMessageCount', meId });
+    });
+    return () => { cancelled = true; };
+  }, [meId]);
+
+  return count;
 }
 
 /** Full message list for a conversation, ordered oldest → newest. */

@@ -25,6 +25,8 @@ type NewEvent = {
   endsAt?: string;
 };
 
+type EventPatch = Partial<NewEvent>;
+
 /** Upcoming events + RSVP. Backed by events / event_attendees (RLS). */
 export function useEvents() {
   const [events, setEvents] = useState<CarEvent[]>([]);
@@ -128,5 +130,51 @@ export function useEvents() {
     [uid, load],
   );
 
-  return { events, loading, error, rsvp, createEvent, refresh: () => load(new Date().toISOString()) };
+  // Host-only edit. RLS (events_update: host_id = auth.uid()) enforces ownership.
+  const updateEvent = useCallback(
+    async (id: string, patch: EventPatch): Promise<void> => {
+      if (!uid) return;
+      const row: {
+        title?: string;
+        description?: string | null;
+        location_text?: string | null;
+        cover_url?: string | null;
+        starts_at?: string;
+        ends_at?: string | null;
+      } = {};
+      if (patch.title !== undefined) row.title = patch.title.trim();
+      if (patch.description !== undefined) row.description = patch.description?.trim() || null;
+      if (patch.locationText !== undefined) row.location_text = patch.locationText?.trim() || null;
+      if (patch.coverUrl !== undefined) row.cover_url = patch.coverUrl?.trim() || null;
+      if (patch.startsAt !== undefined) row.starts_at = patch.startsAt;
+      if (patch.endsAt !== undefined) row.ends_at = patch.endsAt ?? null;
+      const { error: err } = await supabase.from('events').update(row).eq('id', id);
+      if (err) throw err;
+      await load(new Date().toISOString());
+    },
+    [uid, load],
+  );
+
+  // Host-only delete. RLS (events_delete: host_id = auth.uid()) enforces ownership.
+  const deleteEvent = useCallback(
+    async (id: string): Promise<void> => {
+      if (!uid) return;
+      const { error: err } = await supabase.from('events').delete().eq('id', id);
+      if (err) throw err;
+      setEvents((prev) => prev.filter((e) => e.id !== id));
+    },
+    [uid],
+  );
+
+  return {
+    events,
+    loading,
+    error,
+    uid,
+    rsvp,
+    createEvent,
+    updateEvent,
+    deleteEvent,
+    refresh: () => load(new Date().toISOString()),
+  };
 }

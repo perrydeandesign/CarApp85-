@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -15,6 +15,8 @@ import { YourActivity } from '../screens/Activity/YourActivity';
 import { Avatar } from '../components/Avatar';
 import { NotifDrop } from '../components/NotifDrop';
 import { AddSheet } from '../components/AddSheet';
+import { choosePhotoOrVideo } from '../lib/imagePicker';
+import { ReelsFeed } from '../screens/Reels/ReelsFeed';
 import { GoHomeContext } from '../context/GoHomeContext';
 import { ViewProfileContext } from '../context/ViewProfileContext';
 import { ME, findUserById } from '../data/users';
@@ -48,8 +50,13 @@ export function MessagesStack() {
   );
 }
 
+// Lets a screen that unmounts the tabs (e.g. Edit Profile) request which tab to
+// land on when the tabs remount. Consumed once, then cleared.
+let pendingInitialTab: string | null = null;
+
 function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: (s: string) => void }) {
-  const [tab, setTab] = useState('home');
+  const [tab, setTab] = useState<string>(pendingInitialTab ?? 'home');
+  useEffect(() => { pendingInitialTab = null; }, []);
   const [notifOpen, setNotifOpen] = useState(false);
   const [viewProf, setViewProf] = useState<any>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -69,6 +76,7 @@ function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
     home: <HomeTab />,
     search: <SearchScreen />,
     camera: <CameraScreen />,
+    reels: <ReelsFeed />,
     groups: <GroupsTab />,
     vendor: <VendorTab />,
     profile: <ProfileScreen />,
@@ -103,11 +111,19 @@ function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
         <AddSheet
           visible={addOpen}
           onClose={() => setAddOpen(false)}
-          onCreatePost={() => {
-            setViewProf(null);
-            setTab('camera');
+          onCreatePost={async () => {
+            // Take a photo/video or pick from the library, then go straight to
+            // the composer. Works on the simulator (library) as well as on device.
+            const picked = await choosePhotoOrVideo();
+            if (picked) navigation.navigate('PostPreview', { imageUri: picked.uri, mediaType: picked.type });
           }}
           onCreateEvent={() => onNavigate('createEvent')}
+          onEnterCompetition={() => {
+            // Challenges live on Home (Photo Challenges section) where the user
+            // opens a competition and taps "Submit Your Entry".
+            setViewProf(null);
+            setTab('home');
+          }}
         />
 
         <NotifDrop visible={notifOpen} onClose={() => setNotifOpen(false)} />
@@ -306,7 +322,16 @@ export function MainNavigator() {
   }
 
   if (screen === 'settings') {
-    return <SettingsRoot onClose={goHome} initial={settingsInitial as any} />;
+    return (
+      <SettingsRoot
+        onClose={() => {
+          // Edit Profile should return you to your profile, not the home feed.
+          if (settingsInitial === 'editProfile') pendingInitialTab = 'profile';
+          goHome();
+        }}
+        initial={settingsInitial as any}
+      />
+    );
   }
 
   if (screen === 'events') {

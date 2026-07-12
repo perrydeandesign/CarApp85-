@@ -2,16 +2,14 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../constants/theme';
-import { getUnreadCount } from '../data/messaging';
-import { useConversations } from '../hooks/useConversations';
+import { useUnreadMessageCount } from '../hooks/useMessages';
 import { useNotifications } from '../hooks/useNotifications';
 import { useMeProfile } from '../hooks/useMeProfile';
 
 export function TopBar({ onMenu, onNotif, onMsg }: { onMenu: () => void; onNotif: () => void; onMsg: () => void }) {
-  const { conversations } = useConversations();
   const { data: me } = useMeProfile();
   const { unreadCount: notifUnread } = useNotifications(me?.id ?? null);
-  const totalUnread = conversations.reduce((s, c) => s + getUnreadCount(c), 0);
+  const totalUnread = useUnreadMessageCount(me?.id ?? null);
   return (
     <View style={{ zIndex: 50 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.bd, backgroundColor: T.bg }}>

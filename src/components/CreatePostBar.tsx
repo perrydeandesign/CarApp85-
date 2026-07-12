@@ -6,9 +6,11 @@ import { checkText } from '../lib/moderation';
 
 type Props = {
   onPost: (text: string, imageUri?: string) => void;
+  /** Attach a photo → opens the full composer. */
+  onPickMedia?: () => void;
 };
 
-export function CreatePostBar({ onPost }: Props) {
+export function CreatePostBar({ onPost, onPickMedia }: Props) {
   const [text, setText] = useState('');
 
   const submit = () => {
@@ -25,6 +27,11 @@ export function CreatePostBar({ onPost }: Props) {
 
   return (
     <View style={{ flexDirection: 'row', padding: 12, alignItems: 'center', gap: 8 }}>
+      {onPickMedia ? (
+        <TouchableOpacity onPress={onPickMedia} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name="image-outline" size={22} color={T.mu} />
+        </TouchableOpacity>
+      ) : null}
       <TextInput
         value={text}
         onChangeText={setText}

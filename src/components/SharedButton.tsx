@@ -14,6 +14,7 @@ import { T, IC } from '../constants/theme';
 const TAB_ITEMS: { key: string; icon: string; label: string }[] = [
   { key: 'home', icon: 'home-outline', label: 'Home' },
   { key: 'search', icon: 'search-outline', label: 'Search' },
+  { key: 'reels', icon: 'film-outline', label: 'Reels' },
   { key: 'camera', icon: 'add', label: 'Create' },
   { key: 'groups', icon: 'people-outline', label: 'Groups' },
   { key: 'vendor', icon: 'storefront-outline', label: 'Vendors' },

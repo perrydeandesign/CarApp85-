@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T, IC } from '../../constants/theme';
 import type { Vendor, VProduct } from '../../constants/types';
 import { VPRODS, productFitsGarage } from '../../data/vendors';
+import { decorateUrl } from '../../lib/affiliate';
 import { useShare } from '../../components/ShareProvider';
 import { ProductDetailScreen } from './ProductDetail';
 
@@ -93,11 +94,11 @@ export function VStore({ vendor, onBack }: { vendor: Vendor; onBack?: () => void
           <TouchableOpacity onPress={() => setFollowing(f => !f)} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: following ? 'rgba(0,201,167,0.15)' : T.accent, borderRadius: 12 }}>
             <Text style={{ fontSize: 12, fontWeight: '700', color: following ? T.accent : '#000' }}>{following ? 'Following' : 'Follow'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { if (vendor.website) Linking.openURL(vendor.website); }} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(96,165,250,0.8)', borderRadius: 12 }}>
+          <TouchableOpacity onPress={() => { const u = decorateUrl(vendor.website, vendor.id, 'visit'); if (u) Linking.openURL(u); }} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(96,165,250,0.8)', borderRadius: 12 }}>
             <Text style={{ fontSize: 12, fontWeight: '700', color: '#F0F6FC' }}>Website</Text>
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
-          <TouchableOpacity onPress={() => share({ title: vendor.name, message: `Check out ${vendor.name} on MODIFIED`, url: vendor.website })} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' }}>
+          <TouchableOpacity onPress={() => share({ title: vendor.name, message: `Check out ${vendor.name} on MODIFIED`, url: decorateUrl(vendor.website, vendor.id, 'share') ?? undefined })} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="share-outline" size={16} color="white" />
           </TouchableOpacity>
         </View>

@@ -1,4 +1,12 @@
 -- =====================================================================
+-- ⚠️ STALE / NOT DEPLOYED — DO NOT TRUST THIS FILE FOR THE LIVE SCHEMA.
+-- The live `notifications` table is a different ("v2") shape
+-- (profile_id, actor_id, type, body, read, created_at) and the live
+-- engagement tables are post_likes / post_comments / post_tags — NOT the
+-- likes / comments / photo_tags this file targets. The working triggers live
+-- in supabase/snippets/notification_triggers_2026-07-09.sql (apply via the SQL
+-- editor). Kept only for history. See memory: live-schema-ground-truth.
+-- =====================================================================
 -- MODIFIED — Phase 2.7: notifications.
 -- =====================================================================
 -- Adds:

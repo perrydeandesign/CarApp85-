@@ -32,6 +32,8 @@ export type Post = {
   id: string;
   author: UserPreview;
   mediaUrl: string;
+  /** 'video' when the first media item is a video. Defaults to 'image'. */
+  mediaType?: 'image' | 'video';
   caption: string;
   likeCount: number;
   commentCount: number;

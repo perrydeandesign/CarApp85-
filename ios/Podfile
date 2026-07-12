@@ -55,6 +55,25 @@ target 'CarAppClean' do
       end
     end
 
+    # Silence "SentryCrashExceptionApplication.o has no symbols" — the whole file is
+    # wrapped in `#if TARGET_OS_OSX`, so on iOS it compiles to an empty .o.
+    sentry_pod_dir = installer.sandbox.pod_dir('Sentry')
+    if sentry_pod_dir
+      sentry_osx_only = File.join(
+        sentry_pod_dir,
+        'Sources/Sentry/SentryCrashExceptionApplication.m'
+      )
+      if File.exist?(sentry_osx_only)
+        contents = File.read(sentry_osx_only)
+        unless contents.include?('SentryCrashExceptionApplicationPlaceholder')
+          File.write(
+            sentry_osx_only,
+            contents + "\nvoid SentryCrashExceptionApplicationPlaceholder(void) {}\n"
+          )
+        end
+      end
+    end
+
     # Fix Folly coroutine issues + enforce minimum iOS deployment target
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|

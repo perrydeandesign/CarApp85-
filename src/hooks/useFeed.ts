@@ -3,11 +3,10 @@ import { supabase } from '../lib/supabase';
 import {
   mapServerPost,
   SERVER_POST_SELECT,
-  type EngagementFlags,
   type ServerPostRow,
 } from '../social/data/mapServerPost';
 import type { Post } from '../social/data/posts';
-import { TABLES } from '../data/tables';
+import { fetchEngagementFlags } from '../lib/engagement';
 
 export type FeedState = {
   posts: Post[];
@@ -16,45 +15,6 @@ export type FeedState = {
 };
 
 const PAGE_SIZE = 20;
-
-async function fetchEngagementFlags(
-  postIds: string[],
-  authorIds: string[],
-): Promise<EngagementFlags> {
-  const empty: EngagementFlags = {
-    likedPostIds: new Set(),
-    savedPostIds: new Set(),
-    followedAuthorIds: new Set(),
-  };
-  if (postIds.length === 0 && authorIds.length === 0) return empty;
-
-  const { data: session } = await supabase.auth.getSession();
-  const uid = session.session?.user.id;
-  if (!uid) return empty;
-
-  const [likes, saves, follows] = await Promise.all([
-    postIds.length > 0
-      ? supabase.from(TABLES.postLikes).select('post_id').eq('user_id', uid).in('post_id', postIds)
-      : Promise.resolve({ data: [] as { post_id: string }[], error: null } as any),
-    // saved_posts table doesn't exist yet — guard so this never rejects the feed.
-    postIds.length > 0
-      ? supabase.from(TABLES.savedPosts).select('post_id').eq('user_id', uid).in('post_id', postIds).then((r) => r, () => ({ data: [], error: null }))
-      : Promise.resolve({ data: [] as { post_id: string }[], error: null } as any),
-    authorIds.length > 0
-      ? supabase
-          .from('follows')
-          .select('following_id')
-          .eq('follower_id', uid)
-          .in('following_id', authorIds)
-      : Promise.resolve({ data: [] as { following_id: string }[], error: null } as any),
-  ]);
-
-  return {
-    likedPostIds: new Set((likes.data ?? []).map((r: any) => r.post_id)),
-    savedPostIds: new Set((saves.data ?? []).map((r: any) => r.post_id)),
-    followedAuthorIds: new Set((follows.data ?? []).map((r: any) => r.following_id)),
-  };
-}
 
 /**
  * Reads the public feed of published posts, newest first.

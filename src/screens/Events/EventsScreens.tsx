@@ -146,15 +146,38 @@ export function EventsList({
 // ---------------------------------------------------------------------------
 export function EventDetail({
   event,
+  isHost,
   onRSVP,
+  onEdit,
+  onDelete,
   onBack,
 }: {
   event: CarEvent;
+  isHost?: boolean;
   onRSVP: (id: string, status: EventRSVP | null) => void;
+  onEdit?: () => void;
+  onDelete?: () => Promise<void>;
   onBack: () => void;
 }) {
   const [status, setStatus] = useState<EventRSVP | null>(event.myStatus);
   const { share } = useShare();
+
+  const confirmDelete = () => {
+    Alert.alert('Delete event?', 'This permanently removes the event for everyone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await onDelete?.();
+          } catch (e: any) {
+            Alert.alert('Could not delete event', e?.message ?? String(e));
+          }
+        },
+      },
+    ]);
+  };
   const set = (s: EventRSVP) => {
     const next = status === s ? null : s;
     setStatus(next);
@@ -219,6 +242,25 @@ export function EventDetail({
           <Btn s="interested" label="Interested" icon="star-outline" />
         </View>
 
+        {isHost ? (
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+            <TouchableOpacity
+              onPress={onEdit}
+              style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: T.bd }}
+            >
+              <Icon name="create-outline" size="sm" color={T.tx} />
+              <Text style={{ color: T.tx, fontWeight: '700' }}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={confirmDelete}
+              style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: T.danger }}
+            >
+              <Icon name="trash-outline" size="sm" color={T.danger} />
+              <Text style={{ color: T.danger, fontWeight: '700' }}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() =>
@@ -248,9 +290,12 @@ export function EventDetail({
 // CREATE
 // ---------------------------------------------------------------------------
 export function CreateEvent({
+  initial,
   onCreate,
   onBack,
 }: {
+  // When present, the form edits an existing event (prefilled) instead of creating.
+  initial?: CarEvent;
   onCreate: (input: {
     title: string;
     description?: string;
@@ -260,14 +305,16 @@ export function CreateEvent({
   }) => Promise<void>;
   onBack: () => void;
 }) {
-  const [title, setTitle] = useState('');
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
+  const isEdit = !!initial;
+  const initialStart = initial ? new Date(initial.startsAt) : null;
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [location, setLocation] = useState(initial?.locationText ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
   const [notes, setNotes] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
-  const [dateObj, setDateObj] = useState<Date | null>(null);
-  const [hour, setHour] = useState(18);
-  const [minute, setMinute] = useState(0);
+  const [coverUrl, setCoverUrl] = useState(initial?.coverUrl ?? '');
+  const [dateObj, setDateObj] = useState<Date | null>(initialStart);
+  const [hour, setHour] = useState(initialStart ? initialStart.getHours() : 18);
+  const [minute, setMinute] = useState(initialStart ? initialStart.getMinutes() : 0);
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
@@ -296,7 +343,7 @@ export function CreateEvent({
       });
       onBack();
     } catch (e: any) {
-      Alert.alert('Could not create event', e?.message ?? String(e));
+      Alert.alert(isEdit ? 'Could not save changes' : 'Could not create event', e?.message ?? String(e));
     } finally {
       setSaving(false);
     }
@@ -343,7 +390,7 @@ export function CreateEvent({
   );
 
   return (
-    <SubPage title="Host an event" onBack={onBack}>
+    <SubPage title={isEdit ? 'Edit event' : 'Host an event'} onBack={onBack}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {field('Title', title, setTitle, 'Sunday Cars & Coffee')}
 
@@ -392,9 +439,9 @@ export function CreateEvent({
           <Text style={{ color: T.accent, fontSize: 13, fontWeight: '600' }}>Choose from library</Text>
         </TouchableOpacity>
         {field('Description', description, setDescription, 'What the event is about…', { multiline: true })}
-        {field('Notes (optional)', notes, setNotes, 'Requirements, entry fee, what to bring…', { multiline: true })}
+        {isEdit ? null : field('Notes (optional)', notes, setNotes, 'Requirements, entry fee, what to bring…', { multiline: true })}
 
-        <PrimaryButton label="Create event" onPress={submit} loading={saving} style={{ marginTop: 6 }} />
+        <PrimaryButton label={isEdit ? 'Save changes' : 'Create event'} onPress={submit} loading={saving} style={{ marginTop: 6 }} />
       </ScrollView>
     </SubPage>
   );

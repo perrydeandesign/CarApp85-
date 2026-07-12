@@ -1,0 +1,36 @@
+diff --git a/node_modules/react-native-screens/.DS_Store b/node_modules/react-native-screens/.DS_Store
+new file mode 100644
+index 0000000..7fe5ed8
+Binary files /dev/null and b/node_modules/react-native-screens/.DS_Store differ
+diff --git a/node_modules/react-native-screens/ios/conversion/RNSConversions-ScrollViewMarker.mm b/node_modules/react-native-screens/ios/conversion/RNSConversions-ScrollViewMarker.mm
+index ac8e5f5..bbca345 100644
+--- a/node_modules/react-native-screens/ios/conversion/RNSConversions-ScrollViewMarker.mm
++++ b/node_modules/react-native-screens/ios/conversion/RNSConversions-ScrollViewMarker.mm
+@@ -42,3 +42,11 @@
+ #undef SWITCH_EDGE_EFFECT
+ 
+ #endif // RCT_NEW_ARCH_ENABLED && RNS_GAMMA_ENABLED
++
++// When the guard above is disabled this translation unit is otherwise empty,
++// which makes libtool emit a "has no symbols" warning. Emit a single unused
++// symbol so the object file is never empty.
++namespace rnscreens::conversion {
++extern const char RNSConversionsScrollViewMarkerNoSymbolsGuard;
++const char RNSConversionsScrollViewMarkerNoSymbolsGuard = 0;
++} // namespace rnscreens::conversion
+diff --git a/node_modules/react-native-screens/ios/conversion/RNSConversions-Stack.mm b/node_modules/react-native-screens/ios/conversion/RNSConversions-Stack.mm
+index 92cd6d8..5bbae6f 100644
+--- a/node_modules/react-native-screens/ios/conversion/RNSConversions-Stack.mm
++++ b/node_modules/react-native-screens/ios/conversion/RNSConversions-Stack.mm
+@@ -15,3 +15,11 @@ RNSStackScreenActivityMode convert(react::RNSStackScreenActivityMode mode)
+ }; // namespace rnscreens::conversion
+ 
+ #endif // RNS_GAMMA_ENABLED
++
++// When the guard above is disabled this translation unit is otherwise empty,
++// which makes libtool emit a "has no symbols" warning. Emit a single unused
++// symbol so the object file is never empty.
++namespace rnscreens::conversion {
++extern const char RNSConversionsStackNoSymbolsGuard;
++const char RNSConversionsStackNoSymbolsGuard = 0;
++} // namespace rnscreens::conversion

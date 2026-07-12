@@ -12,7 +12,7 @@ import { EventsList, EventDetail, CreateEvent } from './EventsScreens';
  */
 export function EventsRoot({ onClose, initialCreate }: { onClose: () => void; initialCreate?: boolean }) {
   const ev = useEvents();
-  const [route, setRoute] = useState<'list' | 'detail' | 'create'>(initialCreate ? 'create' : 'list');
+  const [route, setRoute] = useState<'list' | 'detail' | 'create' | 'edit'>(initialCreate ? 'create' : 'list');
   const [selected, setSelected] = useState<CarEvent | null>(null);
 
   const render = () => {
@@ -26,8 +26,31 @@ export function EventsRoot({ onClose, initialCreate }: { onClose: () => void; in
         />
       );
     }
+    if (route === 'edit' && selected) {
+      return (
+        <CreateEvent
+          initial={selected}
+          onCreate={async (input) => {
+            await ev.updateEvent(selected.id, input);
+          }}
+          onBack={() => setRoute('list')}
+        />
+      );
+    }
     if (route === 'detail' && selected) {
-      return <EventDetail event={selected} onRSVP={ev.rsvp} onBack={() => setRoute('list')} />;
+      return (
+        <EventDetail
+          event={selected}
+          isHost={!!ev.uid && selected.hostId === ev.uid}
+          onRSVP={ev.rsvp}
+          onEdit={() => setRoute('edit')}
+          onDelete={async () => {
+            await ev.deleteEvent(selected.id);
+            setRoute('list');
+          }}
+          onBack={() => setRoute('list')}
+        />
+      );
     }
     return (
       <EventsList

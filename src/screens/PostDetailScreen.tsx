@@ -15,6 +15,7 @@ import { IGActionsRow } from '../ui/IGActionsRow';
 import { IGCommentInputBar } from '../ui/IGCommentInputBar';
 import { RichCaption } from '../social/components/RichCaption';
 import { TaggablePhoto } from '../social/components/TaggablePhoto';
+import { VideoView } from '../ui/VideoView';
 import { useComments } from '../hooks/useComments';
 import { useMutedKeywords } from '../hooks/useMutedKeywords';
 
@@ -74,12 +75,16 @@ export const PostDetailScreen: React.FC<Props> = ({
         style={styles.scroll}
         contentContainerStyle={{ paddingBottom: 80 }}
       >
-        <TaggablePhoto
-          uri={post.mediaUrl}
-          tags={post.photoTags ?? []}
-          imageStyle={styles.image}
-          onTagPress={onMentionPress}
-        />
+        {post.mediaType === 'video' ? (
+          <VideoView uri={post.mediaUrl} style={styles.image} controls muted={false} repeat />
+        ) : (
+          <TaggablePhoto
+            uri={post.mediaUrl}
+            tags={post.photoTags ?? []}
+            imageStyle={styles.image}
+            onTagPress={onMentionPress}
+          />
+        )}
 
         <IGActionsRow
           isLiked={post.isLikedByCurrentUser}

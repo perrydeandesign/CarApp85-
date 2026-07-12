@@ -19,6 +19,7 @@ import { ModifiedAppleButton } from '../onboarding/components/ModifiedAppleButto
 import { Button } from '../ui/Button';
 
 import { configureGoogle, signInWithGoogle, isGoogleConfigured } from '../auth/googleAuth';
+import { signInWithApple, isAppleConfigured } from '../auth/appleAuth';
 import { signInWithEmail, sendPasswordReset } from '../auth/emailAuth';
 
 // ⭐ Navigation
@@ -69,10 +70,16 @@ export default function Login() {
   };
 
   const handleAppleLogin = async () => {
-    Alert.alert(
-      'Apple Sign-In',
-      'Not yet enabled. Add the Sign In with Apple capability in Xcode and configure the Apple provider in Supabase to enable this.',
-    );
+    try {
+      await signInWithApple();
+    } catch (err: any) {
+      const msg =
+        err?.message ||
+        err?.error_description ||
+        err?.statusText ||
+        (typeof err === 'string' ? err : `HTTP ${err?.status ?? '?'}`);
+      Alert.alert('Apple Sign-In Failed', msg);
+    }
   };
 
   // ⭐ Forgot password — sends a reset email to the address already entered.
@@ -141,10 +148,14 @@ export default function Login() {
           {/* Email login */}
           <ModifiedPrimaryButton title="Log In" onPress={handleEmailLogin} />
 
-          {/* Apple login */}
-          <View style={{ marginTop: 12 }}>
-            <ModifiedAppleButton onPress={handleAppleLogin} />
-          </View>
+          {/* Apple login — hidden until the native "Sign in with Apple"
+              capability + Supabase Apple provider are configured (never ship a
+              dead button; App Review 2.1). See docs/APPLE_SIGNIN_SETUP.md. */}
+          {isAppleConfigured() && (
+            <View style={{ marginTop: 12 }}>
+              <ModifiedAppleButton onPress={handleAppleLogin} />
+            </View>
+          )}
 
           {/* Google login — hidden until real OAuth client IDs are configured
               (never ship a dead button; App Review 2.1). */}

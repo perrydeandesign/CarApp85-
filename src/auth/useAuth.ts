@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, type ReactNode }
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { setUserContext } from '../lib/observability';
+import { registerForPush, unregisterForPush } from '../lib/push';
 
 /** Map a Supabase session to the minimal identity Sentry reports are tagged with. */
 function sentryUser(s: Session | null) {
@@ -33,12 +34,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(data.session ?? null);
       setUserContext(sentryUser(data.session ?? null));
+      // Existing session on launch → make sure this device is registered for
+      // push. No-op until a native transport is installed (see docs/PUSH_SETUP.md).
+      if (data.session) void registerForPush();
       setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s ?? null);
       setUserContext(sentryUser(s ?? null));
+      // Keep the device_tokens table in sync with auth state.
+      if (_event === 'SIGNED_IN') void registerForPush();
+      else if (_event === 'SIGNED_OUT') void unregisterForPush();
     });
 
     return () => {

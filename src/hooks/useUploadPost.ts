@@ -6,6 +6,8 @@ import type { PhotoTag } from '../social/data/posts';
 
 export type UploadPostInput = {
   imageUri: string;
+  /** 'video' uploads as a video post; defaults to 'image'. */
+  mediaType?: 'image' | 'video';
   caption: string;
   taggedUsernames: string[];
   photoTags: PhotoTag[];
@@ -55,12 +57,16 @@ export function useUploadPost() {
         const bytes = new Uint8Array(await fileResp.arrayBuffer());
 
         // 3. Upload to Storage.
-        const ext = (input.mimeType?.split('/')[1] ?? 'jpg').replace('jpeg', 'jpg');
+        const isVideo = input.mediaType === 'video';
+        // Prefer the picked file's extension, else a sensible default per type.
+        const uriExt = input.imageUri.split('.').pop()?.split('?')[0]?.toLowerCase();
+        const ext = uriExt && uriExt.length <= 4 ? uriExt : (isVideo ? 'mp4' : 'jpg');
+        const contentType = input.mimeType ?? (isVideo ? 'video/mp4' : 'image/jpeg');
         storagePath = `${authorId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from(BUCKET)
           .upload(storagePath, bytes, {
-            contentType: input.mimeType ?? 'image/jpeg',
+            contentType,
             upsert: false,
           });
         if (uploadError) throw uploadError;
@@ -87,7 +93,7 @@ export function useUploadPost() {
         // 5. Insert the media row.
         const { error: mediaError } = await supabase
           .from('post_media')
-          .insert({ post_id: createdPostId, media_url: mediaUrl, media_type: 'image' });
+          .insert({ post_id: createdPostId, media_url: mediaUrl, media_type: isVideo ? 'video' : 'image' });
         if (mediaError) throw mediaError;
 
         setState({ status: 'success', postId: createdPostId });

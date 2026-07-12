@@ -52,6 +52,25 @@ export async function persistPostTags(postId: string, handles: string[]): Promis
   if (error) console.warn('persistPostTags failed', error);
 }
 
+/** Persist shoppable product tags for a post (tagged_type='product'). */
+export async function persistProductTags(postId: string, productKeys: string[]): Promise<void> {
+  const keys = Array.from(new Set(productKeys.filter(Boolean)));
+  if (keys.length === 0) return;
+  const rows = keys.map((k) => ({ post_id: postId, tagged_type: 'product', product_key: k }));
+  const { error } = await db.from('post_tags').insert(rows);
+  if (error) console.warn('persistProductTags failed', error);
+}
+
+/** Read the product_keys tagged on a post (for the "Shop this build" section). */
+export async function getPostProductKeys(postId: string): Promise<string[]> {
+  const { data } = await db
+    .from('post_tags')
+    .select('product_key')
+    .eq('post_id', postId)
+    .eq('tagged_type', 'product');
+  return ((data ?? []) as any[]).map((r) => r.product_key).filter(Boolean);
+}
+
 /** Is this @handle a known vendor? (used to route mention taps.) */
 export async function isVendorHandle(handle: string): Promise<boolean> {
   const h = handle.replace(/^@/, '').toLowerCase();

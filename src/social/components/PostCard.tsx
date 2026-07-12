@@ -4,10 +4,13 @@ import { IGActionsRow } from '../../ui/IGActionsRow';
 import { RichCaption } from './RichCaption';
 import { TaggablePhoto } from './TaggablePhoto';
 import { Avatar } from '../../components/Avatar';
+import { VideoView } from '../../ui/VideoView';
 
 type CardPost = {
   id: string;
   imageUrl: string;
+  /** 'video' renders a player instead of a photo. */
+  mediaType?: 'image' | 'video';
   caption: string;
   username: string;
   avatarUrl?: string;
@@ -97,8 +100,12 @@ export const PostCard: React.FC<Props> = ({
         ) : null}
       </View>
 
-      {/* Photo posts show the image; text posts show the caption as the body. */}
-      {post.imageUrl ? (
+      {/* Video posts play inline; photo posts show the image; text posts show the caption. */}
+      {post.imageUrl && post.mediaType === 'video' ? (
+        <TouchableOpacity activeOpacity={0.95} onPress={onPress}>
+          <VideoView uri={post.imageUrl} style={stylesCard.image} controls muted repeat />
+        </TouchableOpacity>
+      ) : post.imageUrl ? (
         <TouchableOpacity activeOpacity={0.95} onPress={onPress}>
           <TaggablePhoto
             uri={post.imageUrl}

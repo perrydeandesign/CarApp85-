@@ -41,7 +41,11 @@ export function SettingsRoot({
   initial?: SettingsRoute;
 }) {
   const [stack, setStack] = useState<SettingsRoute[]>(
-    initial && initial !== 'hub' ? ['hub', initial] : ['hub'],
+    // Edit Profile opened directly is a standalone screen — no 'hub' underneath,
+    // so Back/Save exits straight out (the caller returns you to your profile).
+    initial && initial !== 'hub'
+      ? (initial === 'editProfile' ? [initial] : ['hub', initial])
+      : ['hub'],
   );
   const current = stack[stack.length - 1];
 

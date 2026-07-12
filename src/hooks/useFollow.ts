@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { invalidate } from '../lib/queryCache';
 
 /**
  * Reads whether the current user follows `targetUserId` and exposes
@@ -57,7 +58,11 @@ export function useFollow(targetUserId: string | null) {
     if (error && !/duplicate key/i.test(error.message)) {
       setIsFollowing(!next); // rollback
       console.warn('toggleFollow failed', error);
+      return;
     }
+    // Follower/following counts changed for both profiles — refresh their headers.
+    invalidate(`profileHeader:${targetUserId}`);
+    invalidate(`profileHeader:${uid}`);
   }, [uid, targetUserId, isFollowing, loading]);
 
   return { isFollowing, loading, toggleFollow };

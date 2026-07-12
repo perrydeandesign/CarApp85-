@@ -15,6 +15,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { T } from '../../constants/theme';
 import { FadeInImage } from '../../ui/FadeInImage';
+import { GridMedia } from '../../ui/GridMedia';
+import { VideoView } from '../../ui/VideoView';
 import { ViewProfileContext } from '../../context/ViewProfileContext';
 
 import type { SearchPrefill } from '../../navigation/SearchPrefillContext';
@@ -435,6 +437,7 @@ const CompetitionsTab: React.FC = () => {
 type ExploreTile = {
   id: string;
   imageUrl: string;
+  isVideo: boolean;
   username: string;
   likeCount: number;
   commentCount: number;
@@ -449,6 +452,7 @@ function mapExploreRows(rows: any[]): ExploreTile[] {
     .map((p) => ({
       id: p.id,
       imageUrl: p.post_media[0].media_url,
+      isVideo: p.post_media[0].media_type === 'video',
       username: p.author?.username ?? 'user',
       likeCount: p.like_count ?? 0,
       commentCount: p.comment_count ?? 0,
@@ -459,7 +463,7 @@ function mapExploreRows(rows: any[]): ExploreTile[] {
 const EXPLORE_SELECT = `
   id, title, body, like_count, comment_count, created_at,
   author:profiles!posts_profile_id_fkey ( username ),
-  post_media:post_media!post_id ( media_url )
+  post_media:post_media!post_id ( media_url, media_type )
 `;
 
 const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
@@ -478,12 +482,18 @@ const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
       .order('created_at', { ascending: false })
       .limit(EXPLORE_PAGE);
     if (before) q = q.lt('created_at', before);
+    // Server-side text search over the caption. #hashtags are literal text in
+    // posts.body, so an ILIKE on title/body makes both hashtag taps and free
+    // text ("turbo") return real matches instead of filtering a 30-row window.
+    // Strip characters that would break the PostgREST `or` grammar (keep '#').
+    const safe = query.replace(/[,()%*]/g, ' ').trim();
+    if (safe) q = q.or(`title.ilike.%${safe}%,body.ilike.%${safe}%`);
     const { data } = await q;
     const rows = (data ?? []) as any[];
     if (rows.length < EXPLORE_PAGE) setHasMore(false);
     if (rows.length > 0) cursor.current = rows[rows.length - 1].created_at;
     return mapExploreRows(rows);
-  }, []);
+  }, [query]);
 
   useEffect(() => {
     let cancelled = false;
@@ -499,7 +509,7 @@ const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
   }, [fetchPage]);
 
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || !cursor.current || query) return; // pause paging while searching
+    if (loadingMore || !hasMore || !cursor.current) return;
     setLoadingMore(true);
     try {
       const page = await fetchPage(cursor.current);
@@ -512,11 +522,9 @@ const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
     }
   }, [fetchPage, hasMore, loadingMore, query]);
 
-  const filtered = useMemo(() => {
-    if (!query) return tiles;
-    const q = query.toLowerCase();
-    return tiles.filter((t) => t.username.toLowerCase().includes(q));
-  }, [tiles, query]);
+  // Filtering now happens server-side in fetchPage (title/body ILIKE), so the
+  // grid renders exactly what the query returned — including #hashtag matches.
+  const filtered = useMemo(() => tiles, [tiles]);
 
   if (loading) {
     return (
@@ -544,7 +552,7 @@ const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
             onPress={() => setOpenId(tile.id)}
             style={{ width: '33.333%', aspectRatio: 1, padding: 1 }}
           >
-            <FadeInImage source={{ uri: tile.imageUrl }} containerStyle={{ width: '100%', height: '100%' }} />
+            <GridMedia uri={tile.imageUrl} isVideo={tile.isVideo} containerStyle={{ width: '100%', height: '100%' }} />
           </TouchableOpacity>
         )}
         onEndReached={() => void loadMore()}
@@ -615,12 +623,22 @@ const ExploreDetailModal: React.FC<{
           </TouchableOpacity>
         </View>
         <ScrollView>
-          <TouchableOpacity activeOpacity={0.95} onPress={() => onOpenProfile?.(tile.username)}>
-            <Image
-              source={{ uri: tile.imageUrl }}
+          {tile.isVideo ? (
+            <VideoView
+              uri={tile.imageUrl}
               style={{ width: '100%', aspectRatio: 1, backgroundColor: '#000' }}
+              controls
+              muted={false}
+              repeat
             />
-          </TouchableOpacity>
+          ) : (
+            <TouchableOpacity activeOpacity={0.95} onPress={() => onOpenProfile?.(tile.username)}>
+              <Image
+                source={{ uri: tile.imageUrl }}
+                style={{ width: '100%', aspectRatio: 1, backgroundColor: '#000' }}
+              />
+            </TouchableOpacity>
+          )}
           <View style={{ flexDirection: 'row', padding: 14, gap: 18 }}>
             <TouchableOpacity
               onPress={() => { setLiked((p) => !p); setLikes((n) => n + (liked ? -1 : 1)); }}

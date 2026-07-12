@@ -13,11 +13,14 @@ import {
   StyleSheet,
 } from 'react-native';
 import { GridTileSkeleton } from '../components/Skeleton';
+import { ProfileEmpty } from '../components/ProfileEmpty';
 import { FadeInImage } from '../ui/FadeInImage';
+import { GridMedia } from '../ui/GridMedia';
 import { AnimatedCount } from '../ui/AnimatedCount';
 import { PressableScale } from '../ui/PressableScale';
 import { Button } from '../ui/Button';
 import { BuildCard, buildUrl } from '../components/BuildCard';
+import { shareBuildImage } from '../lib/buildCardShare';
 import { BannerFade } from '../components/BannerFade';
 import { useShare } from '../components/ShareProvider';
 import { captureRef } from 'react-native-view-shot';
@@ -32,12 +35,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Contexts
-import { ViewProfileContext } from '../context/ViewProfileContext';
+import { ViewProfileContext, type ViewedProfile } from '../context/ViewProfileContext';
 import { SearchPrefillContext } from '../navigation/SearchPrefillContext';
 
 // Data
 import { CONNS, ME, categorizeMods } from '../data/users';
-import { DEMO_ME_CARS, DEMO_ME_MODS } from '../data/demoBuild';
 import { getAchievements, topTier, winCount, TIER_COLOR } from '../data/achievements';
 import { AchievementsModal } from '../components/AchievementsModal';
 import { useCars, useCarMods, bucketMods, usePostsByCar, useProfilePosts, useProfileIdByUsername } from '../hooks/useProfileData';
@@ -102,9 +104,9 @@ export function ProfileScreen() {
   const [achOpen, setAchOpen] = useState(false);
 
   // 1️⃣ Determine Conn (guard against null / partial objects coming from search)
-  const conn = (isMe
+  const conn = ((isMe
     ? CONNS.find((c) => c.userId === ME.id) || CONNS[0]
-    : viewedUser) || {};
+    : viewedUser) || {}) as ViewedProfile;
 
   // Resolve a username from whichever field the caller supplied.
   const connUsername = conn.user || conn.username || 'user';
@@ -135,7 +137,7 @@ export function ProfileScreen() {
       'Car enthusiast. Modified community member.',
     followers: header?.followers ?? conn.followers ?? 0,
     following: header?.following ?? conn.following ?? 0,
-    posts: header?.posts ?? (isMe ? ME.photoPosts.length : (profileOverride?.posts || demoUser?.photos.length || 0)),
+    posts: header?.posts ?? (profileOverride?.posts || demoUser?.photos.length || 0),
     photos: demoUser?.photos || [],
     videos: demoUser?.videos || [],
     timeline: ((profileOverride?.timeline || demoUser?.timeline || []) as any[]),
@@ -146,17 +148,17 @@ export function ProfileScreen() {
 
   // 4️⃣ Active car — Supabase cars for the resolved profile.
   const { data: supaCars } = useCars(realProfileId);
-  // Demo fallback: the signed-out "me" profile shows a sample build so the
-  // Garage tab + Build Card aren't empty in the demo.
-  const usingDemoGarage = isMe && !(supaCars && supaCars.length > 0);
-  const garageCars = usingDemoGarage ? DEMO_ME_CARS : (supaCars ?? []);
+  // Live cars only. A real user with no car sees the Garage empty state (below)
+  // rather than a seeded sample build. The demo profile (jake_sti) has a real
+  // seeded car, so demos stay populated from Supabase.
+  const garageCars = supaCars ?? [];
   useEffect(() => {
     if (garageCars.length > 0 && !selectedCarId) {
       setSelectedCarId(garageCars[0].id);
     }
   }, [garageCars, selectedCarId]);
   const { data: supaMods } = useCarMods(selectedCarId);
-  const buildMods = usingDemoGarage ? DEMO_ME_MODS : (supaMods ?? []);
+  const buildMods = supaMods ?? [];
 
   const selectedSupaCar = garageCars.find((c) => c.id === selectedCarId) ?? null;
   const [activeCar, setActiveCar] = useState({
@@ -221,10 +223,11 @@ export function ProfileScreen() {
   }, [supaCarPosts, profileUser.id]);
 
   const filteredTimeline = useMemo(() => {
-    // Prefer real Supabase posts when available; fall back to demo timeline filtered by year.
-    if (supaTimeline.length > 0) return supaTimeline;
-    return profileUser.timeline.filter((t) => t.year === selectedYear);
-  }, [supaTimeline, profileUser.timeline, selectedYear]);
+    // Live car posts only — no demo fallback. A real user with no posts gets the
+    // empty state instead of a stranger's sample timeline. jake_sti's 6 seeded
+    // car posts populate this from Supabase.
+    return supaTimeline;
+  }, [supaTimeline]);
 
   // Profile-wide posts → 3-col photo grid in the Photos tab.
   const { data: supaProfilePosts, loading: profilePostsLoading, refresh: refreshProfilePosts } = useProfilePosts(realProfileId ?? null);
@@ -239,6 +242,7 @@ export function ProfileScreen() {
       .map((p) => ({
         id: p.id,
         url: p.post_media[0]?.media_url ?? null,
+        isVideo: p.post_media[0]?.media_type === 'video',
         likeCount: p.like_count,
         commentCount: p.comment_count,
         caption: [p.title, p.body].filter(Boolean).join(' — '),
@@ -256,8 +260,8 @@ export function ProfileScreen() {
 
   // ⭐ Social + Collections
   const currentUser = useMemo(
-    () => ({ id: 'me', username: ME.user, avatarUrl: ME.img || '' }),
-    [],
+    () => ({ id: me?.id ?? '', username: me?.username ?? '', avatarUrl: me?.avatar_url ?? '' }),
+    [me?.id, me?.username, me?.avatar_url],
   );
   const initialSocialPosts = useMemo(() => [], []);
   const social = usePostInteractions(initialSocialPosts as any, currentUser);
@@ -288,16 +292,17 @@ export function ProfileScreen() {
   const [capturing, setCapturing] = useState(false);
   const shareBuild = async (car: typeof selectedSupaCar) => {
     if (!car) return;
-    const link = buildUrl(car.id);
-    const message = `Check out my ${car.year ?? ''} ${car.make} ${car.model} build on MODIFIED — ${link}`;
+    const link = buildUrl(car.id, profileUser.username);
+    const message = `Check out my ${car.year ?? ''} ${car.make} ${car.model} build on MODIFIED`;
     try {
       setCapturing(true);
       // Give remote hero + QR a tick to be fully painted before snapshot.
       await new Promise<void>((r) => setTimeout(() => r(), 350));
       const uri = await captureRef(buildCardRef, { format: 'png', quality: 1 });
-      await Share.share({ url: uri, message });
+      // One-tap IG Story when configured, else the rich share sheet (with image).
+      await shareBuildImage(uri, { message, link });
     } catch (_) {
-      try { await Share.share({ url: link, message }); } catch (__) {}
+      try { await Share.share({ url: link, message: `${message} — ${link}` }); } catch (__) {}
     } finally {
       setCapturing(false);
     }
@@ -767,15 +772,16 @@ export function ProfileScreen() {
                 onPress={() => setOpenPostId(p.id)}
                 style={{ width: '33.3333%', aspectRatio: 1, padding: 1 }}
               >
-                <FadeInImage
-                  source={{ uri: p.url! }}
+                <GridMedia
+                  uri={p.url!}
+                  isVideo={p.isVideo}
                   containerStyle={{ width: '100%', height: '100%' }}
                 />
               </TouchableOpacity>
             ))}
           </View>
         ) : (
-          <ProfilePostsTab photos={isMe ? ME.photoPosts : profileUser.photos} />
+          <ProfilePostsTab isMe={isMe} username={profileUser.username} />
         )
       )}
 
@@ -788,10 +794,15 @@ export function ProfileScreen() {
       {activeTab === 'garage' && (
         <View style={{ padding: 16, gap: 12 }}>
           {garageCars.length === 0 ? (
-            <View style={{ alignItems: 'center', paddingTop: 32, gap: 8 }}>
-              <MaterialCommunityIcons name="garage" size={40} color={T.mu} />
-              <Text style={{ color: T.mu, fontSize: 13 }}>No cars in the garage yet.</Text>
-            </View>
+            <ProfileEmpty
+              icon="garage"
+              title={isMe ? 'Your garage is empty' : `@${profileUser.username} hasn't added a car yet`}
+              subtitle={
+                isMe
+                  ? 'Add your car to show off your first build and track your mods over time.'
+                  : 'Check back later to see their build.'
+              }
+            />
           ) : (
             garageCars.map((car) => {
               const active = car.id === selectedCarId;

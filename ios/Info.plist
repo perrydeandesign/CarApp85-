@@ -90,6 +90,8 @@
 		<string>whatsapp</string>
 		<string>twitter</string>
 		<string>fb-messenger</string>
+		<string>instagram</string>
+		<string>instagram-stories</string>
 	</array>
 </dict>
 </plist>

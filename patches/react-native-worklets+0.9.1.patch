@@ -1,0 +1,17 @@
+diff --git a/node_modules/react-native-worklets/apple/worklets/apple/Networking/WorkletsNetworking.mm b/node_modules/react-native-worklets/apple/worklets/apple/Networking/WorkletsNetworking.mm
+index 2ea7a71..2afc8bb 100644
+--- a/node_modules/react-native-worklets/apple/worklets/apple/Networking/WorkletsNetworking.mm
++++ b/node_modules/react-native-worklets/apple/worklets/apple/Networking/WorkletsNetworking.mm
+@@ -704,4 +704,12 @@ - (void)emitDeviceEvent:(NSString *)eventName argFactory:(id)argFactory rt:(face
+ 
+ @end
+ 
++#else
++
++// When WORKLETS_FETCH_PREVIEW_ENABLED is not defined this translation unit is
++// empty, which makes libtool warn "'WorkletsNetworking.o' has no symbols".
++// Emit a single unused symbol so the object file is never empty.
++extern const char WorkletsNetworkingUnusedSymbol;
++const char WorkletsNetworkingUnusedSymbol = 0;
++
+ #endif // WORKLETS_FETCH_PREVIEW_ENABLED

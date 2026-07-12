@@ -26,6 +26,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { useMeProfile } from '../hooks/useMeProfile';
 import { useCars } from '../hooks/useProfileData';
+import { choosePhoto, uploadImage } from '../lib/imagePicker';
 
 // LoremFlickr searches Flickr by tag — accurate to category.
 // Format: loremflickr.com/<w>/<h>/<tags>?lock=<N>  (lock makes the photo deterministic per id)
@@ -350,24 +351,37 @@ function ChallengeDetail({
       Alert.alert('Sign in required', 'Log in to enter competitions.');
       return;
     }
+    // Resolve the entry photo. Prefer a garage car's photo; otherwise let the
+    // user take a photo or choose one from their library so they can enter
+    // without first adding a car to the garage.
     const car = (myCars ?? []).find((c) => c.primary_image_url) ?? (myCars ?? [])[0];
-    if (!car) {
-      Alert.alert('Add a car first', 'Add a car with a photo to your garage, then enter the competition.');
-      return;
+    let mediaUrl: string | null = car?.primary_image_url ?? null;
+    let carId: string | null = car?.id ?? null;
+
+    if (!mediaUrl) {
+      const localUri = await choosePhoto();
+      if (!localUri) return; // cancelled
+      setSubmitting(true);
+      mediaUrl = await uploadImage(localUri, 'competitions');
+      if (!mediaUrl) {
+        setSubmitting(false);
+        Alert.alert('Upload failed', 'Could not upload that photo. Please try again.');
+        return;
+      }
+      carId = null; // entering with a standalone photo, no garage car
     }
+
     try {
       setSubmitting(true);
       const { data: entry, error } = await supabase
         .from('competition_entries')
-        .insert({ competition_id: challenge.id, profile_id: me.id, car_id: car.id })
+        .insert({ competition_id: challenge.id, profile_id: me.id, car_id: carId })
         .select('id')
         .single();
       if (error) throw error;
-      if (car.primary_image_url) {
-        await supabase.from('competition_media').insert({ entry_id: entry.id, media_url: car.primary_image_url });
-      }
+      await supabase.from('competition_media').insert({ entry_id: entry.id, media_url: mediaUrl });
       setEntries((prev) => [
-        { id: entry.id, author: me.username ?? 'you', avatar: me.avatar_url ?? '', imageUrl: car.primary_image_url ?? '', caption: '', likes: 0 },
+        { id: entry.id, author: me.username ?? 'you', avatar: me.avatar_url ?? '', imageUrl: mediaUrl!, caption: '', likes: 0 },
         ...prev,
       ].filter((e) => !!e.imageUrl));
       Alert.alert('Entry submitted', 'Your build is now in the competition. Good luck!');

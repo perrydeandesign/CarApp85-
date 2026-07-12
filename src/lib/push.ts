@@ -64,6 +64,16 @@ export async function registerForPush(): Promise<void> {
   }
 }
 
+/** Deregister this device (call on logout). Safe no-op until transport exists. */
+export async function unregisterForPush(): Promise<void> {
+  try {
+    const token = await acquireDeviceToken();
+    if (token) await unregisterDeviceToken(token);
+  } catch {
+    /* transport not installed — non-fatal */
+  }
+}
+
 /**
  * Decide whether an INCOMING push should be shown in the foreground, honouring
  * the user's prefs + quiet hours. The push handler calls this before displaying.

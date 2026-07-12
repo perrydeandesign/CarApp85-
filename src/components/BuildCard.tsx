@@ -11,8 +11,11 @@ type Props = {
 };
 
 // Deep link the QR points to (web fallback). Build page = feature 1.
-export function buildUrl(carId: string) {
-  return `https://modified.app/build/${carId}`;
+// `ref` (a username) is appended for share attribution — measures which shares
+// drive installs/visits.
+export function buildUrl(carId: string, ref?: string) {
+  const base = `https://modified.app/build/${carId}`;
+  return ref ? `${base}?ref=${encodeURIComponent(ref)}` : base;
 }
 
 // Real, scannable QR rendered as an image — no native dependency.
@@ -87,7 +90,7 @@ export function BuildCard({ car, mods, username }: Props) {
             <Text style={styles.brand}>MODIFIED</Text>
             <Text style={styles.brandSub}>Scan to view the full build</Text>
           </View>
-          <Image source={{ uri: qrUrl(buildUrl(car.id)) }} style={styles.qr} />
+          <Image source={{ uri: qrUrl(buildUrl(car.id, username)) }} style={styles.qr} />
         </View>
       </View>
     </View>
