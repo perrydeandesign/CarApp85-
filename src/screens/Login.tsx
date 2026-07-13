@@ -94,7 +94,11 @@ export default function Login() {
       // Move to the reset screen where the user enters the emailed code + new password.
       navigation.navigate('ResetPassword', { email: email.trim() });
     } catch (err: any) {
-      Alert.alert('Could not send reset email', err?.message ?? String(err));
+      console.warn('sendPasswordReset failed', err);
+      Alert.alert(
+        'Could not send email',
+        'We couldn’t send the reset email right now. Please try again in a moment.',
+      );
     }
   };
 

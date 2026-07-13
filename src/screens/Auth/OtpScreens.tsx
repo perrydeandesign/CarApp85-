@@ -15,12 +15,14 @@ import {
 } from '../../auth/emailAuth';
 
 function errMsg(err: any): string {
-  return (
+  const m =
     err?.message ||
     err?.error_description ||
     err?.statusText ||
-    (typeof err === 'string' ? err : `HTTP ${err?.status ?? '?'}`)
-  );
+    (typeof err === 'string' ? err : '');
+  // Guard against raw HTTP/response bodies leaking into an alert (e.g. a 500).
+  if (m && m.length <= 140) return m;
+  return 'Something went wrong. Please try again in a moment.';
 }
 
 function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
