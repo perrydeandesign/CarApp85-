@@ -65,6 +65,7 @@ import {
   ProfilePhotoGridTab,
   ProfileGarageTab,
 } from './Profile/ProfileTabs';
+import { ModsEditor } from './Profile/ModsEditor';
 import { PostDetailScreen } from './PostDetailScreen';
 import { SaveToSheet } from './Saved/SaveToSheet';
 
@@ -149,8 +150,9 @@ export function ProfileScreen() {
       setSelectedCarId(garageCars[0].id);
     }
   }, [garageCars, selectedCarId]);
-  const { data: supaMods } = useCarMods(selectedCarId);
+  const { data: supaMods, refresh: refreshMods } = useCarMods(selectedCarId);
   const buildMods = supaMods ?? [];
+  const [modsEditorOpen, setModsEditorOpen] = useState(false);
 
   const selectedSupaCar = garageCars.find((c) => c.id === selectedCarId) ?? null;
   const [activeCar, setActiveCar] = useState({
@@ -557,6 +559,7 @@ export function ProfileScreen() {
           buildMods={buildMods}
           capturing={capturing}
           onShareBuild={() => shareBuild(selectedSupaCar)}
+          onEditBuild={() => setModsEditorOpen(true)}
           buildCardRef={buildCardRef}
         />
       )}
@@ -578,6 +581,19 @@ export function ProfileScreen() {
         username={profileUser.username}
         achievements={achievements}
       />
+
+      {/* ════════════════════ EDIT BUILD (mods CRUD) ════════════════════ */}
+      {isMe && selectedSupaCar && (
+        <ModsEditor
+          carId={selectedSupaCar.id}
+          carName={`${selectedSupaCar.year ?? ''} ${selectedSupaCar.make} ${selectedSupaCar.model}`.trim()}
+          visible={modsEditorOpen}
+          onClose={(changed) => {
+            setModsEditorOpen(false);
+            if (changed) refreshMods();
+          }}
+        />
+      )}
 
       {/* ════════════════════ SUBPAGES (overlay) ════════════════════ */}
       <Modal

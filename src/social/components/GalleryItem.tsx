@@ -1,18 +1,25 @@
 import React from 'react';
 import { TouchableOpacity, Image, View, Text, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { GridMedia } from '../../ui/GridMedia';
 
 type GalleryItemProps = {
   imageUrl: string;
   likeCount: number;
   commentCount: number;
   onPress: () => void;
+  /** When true the tile is a video — renders a paused poster + play badge. */
+  isVideo?: boolean;
 };
 
-export const GalleryItem = ({ imageUrl, likeCount, commentCount, onPress }: GalleryItemProps) => {
+export const GalleryItem = ({ imageUrl, likeCount, commentCount, onPress, isVideo }: GalleryItemProps) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.9}>
-      <Image source={{ uri: imageUrl }} style={styles.image} />
+      {isVideo ? (
+        <GridMedia uri={imageUrl} isVideo containerStyle={styles.image} />
+      ) : (
+        <Image source={{ uri: imageUrl }} style={styles.image} />
+      )}
 
       <View style={styles.overlay}>
         <View style={styles.row}>

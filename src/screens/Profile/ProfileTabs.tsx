@@ -236,6 +236,7 @@ export function ProfileHeroTab({
           <View key={`gallery-${sp.id}`} style={{ width: '33.3333%', padding: 1 }}>
             <GalleryItem
               imageUrl={sp.mediaUrl}
+              isVideo={sp.mediaType === 'video'}
               likeCount={sp.likeCount}
               commentCount={sp.commentCount}
               onPress={() => onOpenPost(sp.id)}
@@ -301,6 +302,7 @@ export function ProfileGarageTab({
   buildMods,
   capturing,
   onShareBuild,
+  onEditBuild,
   buildCardRef,
 }: {
   cars: CarRow[];
@@ -312,6 +314,7 @@ export function ProfileGarageTab({
   buildMods: ModRow[];
   capturing: boolean;
   onShareBuild: () => void;
+  onEditBuild: () => void;
   buildCardRef: React.RefObject<View | null>;
 }) {
   return (
@@ -371,14 +374,17 @@ export function ProfileGarageTab({
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={{ color: T.wh, fontSize: 16, fontWeight: '800' }}>Build Card</Text>
             {isMe && (
-              <Button
-                label="Share"
-                icon="share-social-outline"
-                variant="primary"
-                size="sm"
-                loading={capturing}
-                onPress={onShareBuild}
-              />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Button label="Edit build" icon="create-outline" variant="secondary" size="sm" onPress={onEditBuild} />
+                <Button
+                  label="Share"
+                  icon="share-social-outline"
+                  variant="primary"
+                  size="sm"
+                  loading={capturing}
+                  onPress={onShareBuild}
+                />
+              </View>
             )}
           </View>
           <View ref={buildCardRef} collapsable={false}>

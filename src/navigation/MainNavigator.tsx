@@ -19,6 +19,8 @@ import { choosePhotoOrVideo } from '../lib/imagePicker';
 import { ReelsFeed } from '../screens/Reels/ReelsFeed';
 import { GoHomeContext } from '../context/GoHomeContext';
 import { ViewProfileContext } from '../context/ViewProfileContext';
+import { WelcomeOnboarding } from '../screens/Onboarding/WelcomeOnboarding';
+import { useOnboarding } from '../hooks/useOnboarding';
 import { ME, findUserById } from '../data/users';
 
 import { TopBar } from '../components/SharedHeader';
@@ -291,6 +293,7 @@ export function MainNavigator() {
   const [screen, setScreen] = useState<'home' | 'messages' | 'settings' | 'events' | 'discover' | 'activity'>('home');
   const [settingsInitial, setSettingsInitial] = useState<string | undefined>(undefined);
   const [eventsCreate, setEventsCreate] = useState(false);
+  const onboarding = useOnboarding();
 
   const goHome = () => setScreen('home');
   const goMessages = () => setScreen('messages');
@@ -346,5 +349,19 @@ export function MainNavigator() {
     return <YourActivity onClose={goHome} />;
   }
 
-  return <MainWithDrawer onMsg={goMessages} onNavigate={handleNavigate} />;
+  return (
+    <>
+      <MainWithDrawer onMsg={goMessages} onNavigate={handleNavigate} />
+      {onboarding.ready && onboarding.needed && (
+        <WelcomeOnboarding
+          visible
+          onDone={onboarding.complete}
+          onGoTo={(dest) => {
+            void onboarding.complete();
+            handleNavigate(dest);
+          }}
+        />
+      )}
+    </>
+  );
 }
