@@ -229,25 +229,11 @@ export function AccountSettings({ nav, back }: SettingsNavProps) {
 export function PrivacySafetySettings({ nav, back }: SettingsNavProps) {
   const { prefs, setPref } = useSettingsPrefs();
 
-  const stub = (feature: string) =>
-    Alert.alert(feature, 'This control needs a server-side setting and will be enabled in a future update.');
-
   return (
     <SubPage title="Privacy & Safety" onBack={back}>
       {wrap(
         <>
-          <SettingsSection
-            title="Account privacy"
-            footer="Private account requires a server-side setting — coming soon."
-          >
-            <SettingsToggleRow
-              icon="lock-closed-outline"
-              label="Private account"
-              subtitle="Only approved followers can see your posts"
-              value={false}
-              onValueChange={() => stub('Private account')}
-              disabled
-            />
+          <SettingsSection title="Account privacy">
             <SettingsToggleRow
               icon="ellipse-outline"
               label="Show activity status"
@@ -258,8 +244,6 @@ export function PrivacySafetySettings({ nav, back }: SettingsNavProps) {
           </SettingsSection>
 
           <SettingsSection title="Interactions">
-            <SettingsRow icon="chatbubble-outline" label="Who can message you" value="Everyone" onPress={() => stub('Who can message you')} />
-            <SettingsRow icon="at-outline" label="Who can mention you" value="Everyone" onPress={() => stub('Who can mention you')} />
             <SettingsRow icon="text-outline" label="Muted keywords" onPress={() => nav('mutedKeywords')} />
             <SettingsRow icon="ban-outline" label="Blocked accounts" onPress={() => nav('blocked')} last />
           </SettingsSection>
@@ -361,27 +345,20 @@ export function MutedKeywords({ back }: SettingsNavProps) {
 // ---------------------------------------------------------------------------
 export function SecuritySettings({ back }: SettingsNavProps) {
   const { prefs, setPref } = useSettingsPrefs();
-  const soon = (f: string) => Alert.alert(f, 'Coming soon.');
 
   return (
     <SubPage title="Security" onBack={back}>
       {wrap(
-        <>
-          <SettingsSection title="Sign in">
-            <SettingsToggleRow
-              icon="finger-print-outline"
-              label="Biometric unlock"
-              subtitle="Require Face ID / Touch ID to open the app"
-              value={prefs.biometricUnlock}
-              onValueChange={(v) => setPref('biometricUnlock', v)}
-            />
-            <SettingsRow icon="shield-checkmark-outline" label="Two-factor authentication" value="Off" onPress={() => soon('Two-factor authentication')} last />
-          </SettingsSection>
-
-          <SettingsSection title="Activity">
-            <SettingsRow icon="phone-portrait-outline" label="Login activity" onPress={() => soon('Login activity')} last />
-          </SettingsSection>
-        </>,
+        <SettingsSection title="Sign in">
+          <SettingsToggleRow
+            icon="finger-print-outline"
+            label="Biometric unlock"
+            subtitle="Require Face ID / Touch ID to open the app"
+            value={prefs.biometricUnlock}
+            onValueChange={(v) => setPref('biometricUnlock', v)}
+            last
+          />
+        </SettingsSection>,
       )}
     </SubPage>
   );
@@ -702,8 +679,6 @@ export function EditProfile({ back }: SettingsNavProps) {
 // PRIVACY CENTRE
 // ---------------------------------------------------------------------------
 export function PrivacyCentre({ nav, back }: SettingsNavProps) {
-  const soon = (f: string) => Alert.alert(f, 'Coming soon.');
-
   const downloadData = async () => {
     Alert.alert('Download your information', 'We’ll gather your data — this may take a moment.', [
       { text: 'Cancel', style: 'cancel' },
@@ -848,7 +823,29 @@ export function AboutLegal({ nav, back }: SettingsNavProps) {
 
           <SettingsSection title="About">
             <SettingsRow icon="information-circle-outline" label="Version" value="0.0.1" />
-            <SettingsRow icon="code-slash-outline" label="Open-source licenses" onPress={() => Alert.alert('Licenses', 'Coming soon.')} last />
+            <SettingsRow
+              icon="code-slash-outline"
+              label="Open-source licenses"
+              onPress={() =>
+                Alert.alert(
+                  'Open-source licenses',
+                  'MODIFIED is built with open-source software, used under permissive licenses (MIT / Apache-2.0 / BSD):\n\n' +
+                    '• React & React Native (MIT)\n' +
+                    '• React Navigation (MIT)\n' +
+                    '• Supabase JS (MIT)\n' +
+                    '• Reanimated (MIT)\n' +
+                    '• React Native Vector Icons (MIT)\n' +
+                    '• React Native Video (MIT)\n' +
+                    '• Async Storage (MIT)\n' +
+                    '• Google Sign-In (MIT)\n' +
+                    '• Apple Authentication — Invertase (Apache-2.0)\n' +
+                    '• View Shot, Image Picker (MIT)\n' +
+                    '• Sentry (MIT)\n\n' +
+                    'Full license texts ship in each package’s LICENSE file. Thanks to their authors.',
+                )
+              }
+              last
+            />
           </SettingsSection>
         </>,
       )}

@@ -327,9 +327,6 @@ function ChallengeDetail({
     } catch (_) {}
   };
 
-  const handleComment = (entry: Entry) =>
-    Alert.alert(`@${entry.author}`, 'Comments are coming soon.');
-
   const winnerId = entries
     .map((e) => ({ id: e.id, n: likes[e.id] ?? e.likes }))
     .sort((a, b) => b.n - a.n)[0]?.id;
@@ -675,15 +672,6 @@ function ChallengeDetail({
                     />
                     <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>
                       {likes[openEntry.id]}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleComment(openEntry)}
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-                  >
-                    <Icon name="message-circle" size={22} color="#fff" />
-                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>
-                      Comment
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
