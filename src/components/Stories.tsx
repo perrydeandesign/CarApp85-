@@ -10,6 +10,7 @@ import Animated, {
 import { Avatar } from './Avatar';
 import { T } from '../constants/theme';
 import { ME } from '../data/users';
+import { DEMO_MODE } from '../config';
 import { useMeProfile } from '../hooks/useMeProfile';
 import { useStoryPeople } from '../hooks/useStoryPeople';
 
@@ -62,7 +63,7 @@ export function Stories({ onGoProfile, onProfile }: Props) {
   // Recent distinct post authors, read live from Supabase.
   const people = useStoryPeople(5);
   const items = [
-    { user: 'You', av: ME.av, img: me?.avatar_url || ME.img, isMe: true, hasNew: false },
+    { user: 'You', av: me?.username?.[0]?.toUpperCase() || (DEMO_MODE ? ME.av : 'Y'), img: me?.avatar_url || (DEMO_MODE ? ME.img : undefined), isMe: true, hasNew: false },
     ...people.map((p, idx) => ({
       user: p.username,
       av: p.username?.[0]?.toUpperCase() ?? '?',

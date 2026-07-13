@@ -12,6 +12,8 @@ import { T } from '../constants/theme';
 import { FeedCardSkeleton } from '../components/Skeleton';
 
 import { ME } from '../data/users';
+import { DEMO_MODE } from '../config';
+import { ErrorState } from '../components/ErrorState';
 import { ViewProfileContext } from '../context/ViewProfileContext';
 import { useMeProfile } from '../hooks/useMeProfile';
 import { useCreatePost } from '../hooks/useCreatePost';
@@ -58,8 +60,8 @@ export function HomeTab() {
   const currentUser: UserPreview = useMemo(
     () => ({
       id: 'me',
-      username: ME.user,
-      avatarUrl: ME.img || '',
+      username: DEMO_MODE ? ME.user : '',
+      avatarUrl: DEMO_MODE ? ME.img || '' : '',
     }),
     [],
   );
@@ -161,13 +163,8 @@ export function HomeTab() {
   // ── FlatList header: everything above the feed posts ──
   const ListHeader = (
     <View>
-      {feed.error ? (
-        <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
-          <Text style={{ color: '#FF6B6B', fontSize: 12 }}>Feed error: {feed.error}</Text>
-          <TouchableOpacity onPress={feed.refresh}>
-            <Text style={{ color: T.accent, fontSize: 12, marginTop: 4 }}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+      {feed.error && visiblePosts.length === 0 ? (
+        <ErrorState message={feed.error} onRetry={feed.refresh} />
       ) : null}
 
       <CreatePostBar onPost={handleCompose} onPickMedia={handlePickMedia} />
@@ -185,9 +182,9 @@ export function HomeTab() {
           }}
           style={{ flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10, gap: 10, alignItems: 'flex-start' }}
         >
-          <Avatar img={me?.avatar_url || undefined} initials={(me?.username || ME.user)?.[0]?.toUpperCase()} size={36} />
+          <Avatar img={me?.avatar_url || undefined} initials={(me?.username || (DEMO_MODE ? ME.user : 'You'))?.[0]?.toUpperCase()} size={36} />
           <View style={{ flex: 1, backgroundColor: T.card, borderRadius: 12, padding: 10 }}>
-            <Text style={{ color: T.wh, fontWeight: '700', fontSize: 13 }}>{me?.username || ME.user}</Text>
+            <Text style={{ color: T.wh, fontWeight: '700', fontSize: 13 }}>{me?.username || (DEMO_MODE ? ME.user : 'You')}</Text>
             <Text style={{ color: T.wh, fontSize: 13, marginTop: 2 }}>{c.text}</Text>
             <Text
               style={{

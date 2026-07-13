@@ -16,6 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T } from '../../constants/theme';
 import { FadeInImage } from '../../ui/FadeInImage';
 import { GridMedia } from '../../ui/GridMedia';
+import { ErrorState } from '../../components/ErrorState';
 import { VideoView } from '../../ui/VideoView';
 import { ViewProfileContext } from '../../context/ViewProfileContext';
 
@@ -472,6 +473,8 @@ const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [openId, setOpenId] = useState<string | null>(null);
   const cursor = React.useRef<string | null>(null);
 
@@ -488,7 +491,8 @@ const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
     // Strip characters that would break the PostgREST `or` grammar (keep '#').
     const safe = query.replace(/[,()%*]/g, ' ').trim();
     if (safe) q = q.or(`title.ilike.%${safe}%,body.ilike.%${safe}%`);
-    const { data } = await q;
+    const { data, error: err } = await q;
+    if (err) throw err;
     const rows = (data ?? []) as any[];
     if (rows.length < EXPLORE_PAGE) setHasMore(false);
     if (rows.length > 0) cursor.current = rows[rows.length - 1].created_at;
@@ -498,15 +502,22 @@ const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError(null);
     cursor.current = null;
     setHasMore(true);
-    fetchPage(null).then((page) => {
-      if (cancelled) return;
-      setTiles(page);
-      setLoading(false);
-    });
+    fetchPage(null)
+      .then((page) => {
+        if (cancelled) return;
+        setTiles(page);
+        setLoading(false);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setError(e?.message ?? String(e));
+        setLoading(false);
+      });
     return () => { cancelled = true; };
-  }, [fetchPage]);
+  }, [fetchPage, reloadKey]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore || !cursor.current) return;
@@ -537,6 +548,9 @@ const ForYouGrid: React.FC<{ query: string }> = ({ query }) => {
       </View>
     );
   }
+
+  if (error && filtered.length === 0)
+    return <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />;
 
   if (filtered.length === 0) return <EmptyState icon="grid-outline" label="No posts" />;
 

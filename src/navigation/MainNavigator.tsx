@@ -22,6 +22,8 @@ import { ViewProfileContext } from '../context/ViewProfileContext';
 import { WelcomeOnboarding } from '../screens/Onboarding/WelcomeOnboarding';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { ME, findUserById } from '../data/users';
+import { DEMO_MODE } from '../config';
+import { useMeProfile } from '../hooks/useMeProfile';
 
 import { TopBar } from '../components/SharedHeader';
 import { BottomTabBar } from '../components/SharedButton';
@@ -137,6 +139,10 @@ function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNavigate: (s: string) => void }) {
+  const { data: me } = useMeProfile();
+  const drawerName = me?.username || (DEMO_MODE ? ME.name : 'Your profile');
+  const drawerAvatar = me?.avatar_url || (DEMO_MODE ? ME.img : undefined);
+  const drawerInitials = (me?.username || (DEMO_MODE ? ME.name : 'Y'))?.[0]?.toUpperCase();
   const items = [
     { icon: 'home-outline', label: 'Home', action: () => { navigation.closeDrawer(); onNavigate('home'); } },
     { icon: 'chatbubbles-outline', label: 'Messages', action: () => { navigation.closeDrawer(); onNavigate('messages'); } },
@@ -151,8 +157,8 @@ function CustomDrawerContent({ navigation, onNavigate }: { navigation: any; onNa
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: T.bg }}>
       <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: T.bd }}>
-        <Avatar initials={ME.av} size={56} accent img={ME.img} />
-        <Text style={{ color: T.wh, fontWeight: '700', fontSize: 18, marginTop: 10 }}>{ME.name}</Text>
+        <Avatar initials={drawerInitials} size={56} accent img={drawerAvatar} />
+        <Text style={{ color: T.wh, fontWeight: '700', fontSize: 18, marginTop: 10 }}>{drawerName}</Text>
       </View>
 
       {items.map((it, i) => (
