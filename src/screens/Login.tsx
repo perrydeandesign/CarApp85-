@@ -86,12 +86,13 @@ export default function Login() {
   // (There is no ForgotPassword screen; navigating to one crashed.)
   const handleForgotPassword = async () => {
     if (!email.trim()) {
-      Alert.alert('Enter your email', 'Type your email above, then tap "Forgot password" to get a reset link.');
+      Alert.alert('Enter your email', 'Type your email above, then tap "Forgot password" to get a reset code.');
       return;
     }
     try {
       await sendPasswordReset(email.trim());
-      Alert.alert('Check your email', `We sent a password reset link to ${email.trim()}.`);
+      // Move to the reset screen where the user enters the emailed code + new password.
+      navigation.navigate('ResetPassword', { email: email.trim() });
     } catch (err: any) {
       Alert.alert('Could not send reset email', err?.message ?? String(err));
     }

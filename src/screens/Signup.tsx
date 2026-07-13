@@ -71,14 +71,11 @@ export default function Signup() {
       setSubmitting(true);
       const data = await signUpWithEmail(email.trim(), password, username.trim());
       if (data.session) {
-        // Auto-signed-in; AppNavigator will swap to MainNavigator.
+        // Auto-signed-in (email confirmation disabled); AppNavigator swaps to Main.
         return;
       }
-      Alert.alert(
-        'Check your email',
-        'We sent a confirmation link to ' + email.trim() + '. Confirm to finish creating your account.',
-      );
-      navigation.navigate('Login');
+      // Email confirmation required → collect the 6-digit code in-app.
+      navigation.navigate('VerifyEmail', { email: email.trim() });
     } catch (err: any) {
       const msg =
         err?.message ||
