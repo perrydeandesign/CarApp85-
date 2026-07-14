@@ -1,0 +1,36 @@
+<svg width="1600" height="1600" viewBox="0 0 1600 1600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Variation 2 — wordmark with automotive-inspired geometry: forward lean, teal gradient, aero fins. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="75%">
+      <stop offset="0" stop-color="#10171E"/>
+      <stop offset="1" stop-color="#0A0D12"/>
+    </radialGradient>
+    <linearGradient id="tealtext" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EAFFFB"/>
+      <stop offset="0.5" stop-color="#8FF3E2"/>
+      <stop offset="1" stop-color="#12D2AF"/>
+    </linearGradient>
+    <linearGradient id="finbar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0E9E86"/>
+      <stop offset="0.5" stop-color="#2FE3C4"/>
+      <stop offset="1" stop-color="#0E9E86"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="1600" fill="url(#bg)"/>
+
+  <!-- forward-leaned wordmark with gradient fill -->
+  <g transform="translate(800,830) skewX(-9) translate(-800,-830)">
+    <text x="800" y="880" text-anchor="middle"
+          font-family="Futura, 'Avenir Next Condensed', 'Helvetica Neue', Arial, sans-serif"
+          font-weight="700" font-size="150" letter-spacing="14"
+          fill="url(#tealtext)">MODIFIED</text>
+  </g>
+
+  <!-- aero fins: three angled teal marks, tightest on top (diffuser rhythm) -->
+  <g transform="translate(800,700)">
+    <polygon points="-150,0 150,0 138,14 -162,14" fill="url(#finbar)"/>
+    <polygon points="-120,26 120,26 112,36 -128,36" fill="#2FE3C4" opacity="0.55"/>
+    <polygon points="-92,48 92,48 86,56 -98,56" fill="#2FE3C4" opacity="0.30"/>
+  </g>
+</svg>

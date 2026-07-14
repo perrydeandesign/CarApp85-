@@ -1,0 +1,8 @@
+<svg width="1600" height="1600" viewBox="0 0 1600 1600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Variation 1 — ultra-minimal wordmark tile. -->
+  <rect width="1600" height="1600" fill="#0D1117"/>
+  <text x="800" y="840" text-anchor="middle"
+        font-family="Futura, 'Avenir Next Condensed', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="700" font-size="150" letter-spacing="14"
+        fill="#F0F6FC">MODIFIED</text>
+</svg>

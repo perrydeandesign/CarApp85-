@@ -1,0 +1,110 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
+import { TABLES } from '../data/tables';
+import { query } from '../lib/queryCache';
+
+export type MeProfile = {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  bio: string | null;
+  location: string | null;
+};
+
+const PROFILE_COLS = 'id, username, avatar_url, bio, location';
+
+// The demo persona shown as "me" when there's no auth session. jake_sti is a
+// content-rich seeded profile (car + mods + posts + timeline), so the demo
+// renders a fully-populated profile instead of whichever profile happens to be
+// oldest (which may have no content).
+const DEMO_ME_USERNAME = 'jake_sti';
+
+async function fetchSeeded(): Promise<MeProfile | null> {
+  try {
+    // Prefer the demo persona; fall back to the oldest profile if absent.
+    const { data: persona } = await supabase
+      .from(TABLES.profiles)
+      .select(PROFILE_COLS)
+      .ilike('username', DEMO_ME_USERNAME)
+      .maybeSingle();
+    if (persona) return persona as MeProfile;
+
+    const { data } = await supabase
+      .from(TABLES.profiles)
+      .select(PROFILE_COLS)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    return (data ?? null) as MeProfile | null;
+  } catch {
+    return null;
+  }
+}
+
+/** Resolve (and self-heal) the profile row for an authenticated user. */
+async function fetchForUser(userId: string): Promise<MeProfile | null> {
+  const { data } = await supabase
+    .from(TABLES.profiles)
+    .select(PROFILE_COLS)
+    .eq('id', userId)
+    .maybeSingle();
+  if (data) return data as MeProfile;
+
+  // First login after sign-up and the row doesn't exist yet (no DB trigger) —
+  // create a minimal profile so the app has a "me" to attribute to.
+  const { data: authData } = await supabase.auth.getUser();
+  const username =
+    (authData.user?.user_metadata?.username as string | undefined) ||
+    authData.user?.email?.split('@')[0] ||
+    'user';
+  const { data: created } = await supabase
+    .from(TABLES.profiles)
+    .upsert({ id: userId, username }, { onConflict: 'id' })
+    .select(PROFILE_COLS)
+    .maybeSingle();
+  return (created ?? null) as MeProfile | null;
+}
+
+/**
+ * Resolves "ME".
+ *  - Authenticated  → the logged-in user's profile (created if missing).
+ *  - Demo (no session) → the first seeded profile, so the app renders
+ *    end-to-end without a login.
+ *
+ * Reads the session directly so it works whether or not the app is wrapped in
+ * AuthProvider; updates live on auth state changes.
+ */
+export function useMeProfile() {
+  const [data, setData] = useState<MeProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolve = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const uid = sessionData.session?.user.id;
+      // Cache "me" so the many components that read it share one round-trip.
+      const key = uid ? `meProfile:${uid}` : 'meProfile:seeded';
+      const row = await query(key, () => (uid ? fetchForUser(uid) : fetchSeeded()), { ttlMs: 60_000 });
+      if (!cancelled) {
+        setData(row);
+        setLoading(false);
+      }
+    };
+    void resolve();
+
+    // Re-resolve when the user logs in / out.
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      setLoading(true);
+      void resolve();
+    });
+
+    return () => {
+      cancelled = true;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  return { data, loading };
+}

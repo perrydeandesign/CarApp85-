@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MODIFIED — Email Templates</title>
+  <style>
+    body { margin:0; background:#05070A; color:#F0F6FC; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
+    header { padding:32px 24px 8px; text-align:center; }
+    .wm { color:#00C9A7; font-weight:800; letter-spacing:4px; font-size:22px; }
+    .sub { color:#8B949E; font-size:13px; margin-top:6px; }
+    .group { color:#8B949E; font-size:12px; letter-spacing:2px; text-transform:uppercase; max-width:1080px; margin:28px auto 10px; padding:0 24px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; max-width:1080px; margin:0 auto; padding:0 24px 48px; }
+    a.card { display:block; background:#0D1117; border:1px solid #1E2630; border-radius:14px; padding:20px; text-decoration:none; color:#F0F6FC; transition:border-color .15s; }
+    a.card:hover { border-color:#00C9A7; }
+    .title { font-size:15px; font-weight:700; margin:0 0 4px; }
+    .desc { font-size:12px; color:#8B949E; margin:0; line-height:1.5; }
+    .pill { display:inline-block; font-size:10px; letter-spacing:1px; color:#04110E; background:#00C9A7; border-radius:6px; padding:2px 7px; margin-bottom:12px; font-weight:700; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wm">MODIFIED</div>
+    <div class="sub">Transactional email templates — click any card to preview</div>
+  </header>
+
+  <div class="group">Supabase Auth</div>
+  <div class="grid">
+    <a class="card" href="confirm-signup.html"><span class="pill">AUTH</span><p class="title">Confirm signup</p><p class="desc">Email verification for a new account.</p></a>
+    <a class="card" href="magic-link.html"><span class="pill">AUTH</span><p class="title">Magic link</p><p class="desc">Passwordless sign-in link.</p></a>
+    <a class="card" href="reset-password.html"><span class="pill">AUTH</span><p class="title">Reset password</p><p class="desc">Forgot-password recovery.</p></a>
+    <a class="card" href="change-email.html"><span class="pill">AUTH</span><p class="title">Change email</p><p class="desc">Confirm a new email address.</p></a>
+    <a class="card" href="reauthentication.html"><span class="pill">AUTH</span><p class="title">Reauthentication</p><p class="desc">One-time verification code.</p></a>
+  </div>
+
+  <div class="group">Product &amp; Lifecycle</div>
+  <div class="grid">
+    <a class="card" href="welcome.html"><span class="pill">PRODUCT</span><p class="title">Welcome</p><p class="desc">First sign-in onboarding.</p></a>
+    <a class="card" href="security-alert.html"><span class="pill">PRODUCT</span><p class="title">Security alert</p><p class="desc">New-device sign-in notice.</p></a>
+    <a class="card" href="data-export-ready.html"><span class="pill">PRODUCT</span><p class="title">Data export ready</p><p class="desc">Download link for a data export.</p></a>
+    <a class="card" href="account-deleted.html"><span class="pill">PRODUCT</span><p class="title">Account deleted</p><p class="desc">Deletion confirmation.</p></a>
+    <a class="card" href="report-received.html"><span class="pill">PRODUCT</span><p class="title">Report received</p><p class="desc">Moderation receipt + status.</p></a>
+    <a class="card" href="weekly-digest.html"><span class="pill">PRODUCT</span><p class="title">Weekly digest</p><p class="desc">Engagement roundup.</p></a>
+  </div>
+</body>
+</html>

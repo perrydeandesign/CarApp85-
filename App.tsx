@@ -1,45 +1,28 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { AppNavigator } from './src/navigation/AppNavigator';
+import { AuthProvider } from './src/auth/useAuth';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { ShareProvider } from './src/components/ShareProvider';
+import { initObservability } from './src/lib/observability';
+import { linking } from './src/navigation/linking';
+import { AppPrefsProvider } from './src/context/AppPrefsContext';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+// Init crash reporting once at startup (no-op until a Sentry DSN is configured).
+initObservability();
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
+export default function App() {
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <AppPrefsProvider>
+        <AuthProvider>
+          <ShareProvider>
+            <NavigationContainer linking={linking}>
+              <AppNavigator />
+            </NavigationContainer>
+          </ShareProvider>
+        </AuthProvider>
+      </AppPrefsProvider>
+    </ErrorBoundary>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-export default App;

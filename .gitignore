@@ -73,3 +73,11 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+# Sentry auth token (source-map upload) — contains a secret
+sentry.properties
+**/sentry.properties

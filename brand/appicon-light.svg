@@ -1,0 +1,57 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgL" cx="50%" cy="38%" r="75%">
+      <stop offset="0" stop-color="#FCFDFE"/>
+      <stop offset="0.6" stop-color="#EAEFF3"/>
+      <stop offset="1" stop-color="#D6DDE4"/>
+    </radialGradient>
+    <linearGradient id="charFace" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#2A3644"/>
+      <stop offset="0.5" stop-color="#141B24"/>
+      <stop offset="1" stop-color="#0A0E13"/>
+    </linearGradient>
+    <linearGradient id="glossL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8FA3B5" stop-opacity="0.55"/>
+      <stop offset="0.4" stop-color="#8FA3B5" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glowL" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+    <filter id="liftL" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#5B6B7A" flood-opacity="0.45"/>
+    </filter>
+    <mask id="seamL" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#FFFFFF"/>
+      <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+        <rect x="596" y="592" width="120" height="24"
+              transform="rotate(-22 656 604)" fill="#000000"/>
+      </g>
+    </mask>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bgL)"/>
+
+  <!-- teal brand bloom behind the charcoal mark -->
+  <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+    <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+          fill="none" stroke="#00C9A7" stroke-width="56"
+          stroke-linejoin="miter" opacity="0.30" filter="url(#glowL)"/>
+  </g>
+
+  <g mask="url(#seamL)">
+    <g transform="translate(512,511) skewX(-8) translate(-512,-511)">
+      <!-- lift shadow -->
+      <g filter="url(#liftL)">
+        <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+              fill="none" stroke="#0A0E13" stroke-width="56"
+              stroke-linejoin="miter" transform="translate(0,10)"/>
+      </g>
+      <!-- charcoal face -->
+      <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+            fill="none" stroke="url(#charFace)" stroke-width="56" stroke-linejoin="miter"/>
+      <!-- top gloss -->
+      <path d="M372 650 L372 372 L512 560 L652 372 L652 650"
+            fill="none" stroke="url(#glossL)" stroke-width="56" stroke-linejoin="miter"/>
+    </g>
+  </g>
+</svg>
