@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Icon } from '../ui/Icon';
-import { T } from '../constants/theme';
+import { T, TYPO } from '../constants/theme';
 import { FadeInImage } from '../ui/FadeInImage';
 import { PressableScale } from '../ui/PressableScale';
 import { Button } from '../ui/Button';
@@ -167,8 +167,7 @@ export function ChallengesSection() {
     <View style={{ paddingTop: 6, paddingBottom: 14 }}>
       <Text
         style={{
-          fontSize: 16,
-          fontWeight: '700',
+          ...TYPO.h2,
           color: T.tx,
           paddingHorizontal: 16,
           marginBottom: 12,
@@ -183,9 +182,11 @@ export function ChallengesSection() {
         contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}
       >
         {challenges.map((c) => {
-          // Purple when ≤3 days left, blue otherwise.
+          // Cards share the neutral card treatment; urgency (≤3 days) is carried
+          // by the accent color on the "days left" data point only — one colored
+          // cue per card instead of a loud full border.
           const urgent = c.daysLeft <= 3;
-          const accent = urgent ? '#8B5CF6' : '#3B82F6';
+          const accent = urgent ? T.danger : T.accent;
           return (
             <PressableScale
               key={c.id}
@@ -193,8 +194,8 @@ export function ChallengesSection() {
               style={{
                 width: 220,
                 backgroundColor: T.card,
-                borderWidth: 1.5,
-                borderColor: accent,
+                borderWidth: 1,
+                borderColor: T.bd,
                 borderRadius: 14,
                 padding: 16,
               }}

@@ -10,6 +10,8 @@ export type CarRow = {
   year: number | null;
   build_type: 'Track' | 'Daily' | 'Show' | 'JDM' | 'Drift' | 'Stance' | null;
   primary_image_url: string | null;
+  /** Optional hero "build walkthrough" video for the Garage build card. */
+  build_video_url: string | null;
 };
 
 export type ModRow = {
@@ -70,7 +72,7 @@ export function useCars(profileId: string | null) {
     if (!profileId) return [];
     const { data, error } = await supabase
       .from('cars')
-      .select('id, make, model, year, build_type, primary_image_url')
+      .select('id, make, model, year, build_type, primary_image_url, build_video_url')
       .eq('profile_id', profileId)
       .order('created_at', { ascending: true });
     if (error) throw error;

@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, Alert, Pressable } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { T } from '../../constants/theme';
+import { T, TYPO } from '../../constants/theme';
 import { AnimatedCount } from '../../ui/AnimatedCount';
 import { PressableScale } from '../../ui/PressableScale';
 import { FadeInImage } from '../../ui/FadeInImage';
@@ -15,6 +15,9 @@ import { ProfilePostsTab } from '../../components/ProfilePostsTab';
 import { FloatingYearPicker } from '../../components/FloatingYearPicker';
 import { RimIcon } from '../../components/RimIcon';
 import { ModsList } from '../../components/ModsList';
+import { VideoView } from '../../ui/VideoView';
+import { useBuildVideo } from '../../hooks/useBuildVideo';
+import { choosePhotoOrVideo } from '../../lib/imagePicker';
 import { TimelineList } from '../../components/Timeline/TimelineList';
 import { GalleryItem } from '../../social/components/GalleryItem';
 import { BuildCard } from '../../components/BuildCard';
@@ -102,9 +105,9 @@ export function ProfileTabBar({ active, onChange }: { active: ProfileTab; onChan
           >
             <View
               style={{
-                width: 44,
-                height: 30,
-                borderRadius: 9,
+                width: 48,
+                height: 32,
+                borderRadius: 16,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: isActive ? T.accentDim : 'transparent',
@@ -158,7 +161,7 @@ export function ProfileHeroTab({
       {/* ⭐ MODIFICATIONS */}
       <View style={{ paddingHorizontal: 16, marginTop: 24 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: '#F0F6FC' }}>My Build</Text>
+          <Text style={{ ...TYPO.h2, color: T.tx }}>My Build</Text>
           {selectedYear && (
             <View style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, borderWidth: 1.5, borderColor: T.accent }}>
               <Text style={{ fontSize: 12, fontWeight: '700', color: T.accent }}>{selectedYear}</Text>
@@ -202,7 +205,7 @@ export function ProfileHeroTab({
       {/* ⭐ TIMELINE */}
       <View style={{ paddingHorizontal: 16, marginTop: 24, paddingBottom: 40 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: '#F0F6FC' }}>Timeline</Text>
+          <Text style={{ ...TYPO.h2, color: T.tx }}>Timeline</Text>
           {isMe && (
             <PressableScale
               onPress={onAddTimeline}
@@ -291,6 +294,132 @@ export function ProfilePhotoGridTab({
   );
 }
 
+// ── BUILD WALKTHROUGH VIDEO (hero clip atop the build card) ───────────────────
+function BuildVideoSection({
+  carId,
+  videoUrl,
+  isMe,
+  onChanged,
+}: {
+  carId: string;
+  videoUrl: string | null;
+  isMe: boolean;
+  onChanged?: () => void;
+}) {
+  const { busy, upload, remove } = useBuildVideo(carId);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  const pickAndUpload = async () => {
+    const picked = await choosePhotoOrVideo();
+    if (!picked) return;
+    if (picked.type !== 'video') {
+      Alert.alert('Choose a video', 'A build walkthrough needs to be a video clip.');
+      return;
+    }
+    try {
+      await upload(picked);
+      onChanged?.();
+    } catch (e: any) {
+      Alert.alert('Could not upload video', e?.message ?? String(e));
+    }
+  };
+
+  const confirmRemove = () => {
+    Alert.alert('Remove build video?', 'This clip will be removed from your build card.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await remove(videoUrl);
+            onChanged?.();
+          } catch (e: any) {
+            Alert.alert('Could not remove', e?.message ?? String(e));
+          }
+        },
+      },
+    ]);
+  };
+
+  // Non-owner with no video → render nothing.
+  if (!videoUrl && !isMe) return null;
+
+  return (
+    <View style={{ gap: 10 }}>
+      <Text style={{ color: T.wh, fontSize: 16, fontWeight: '800' }}>Build walkthrough</Text>
+
+      {videoUrl ? (
+        <>
+          <TouchableOpacity activeOpacity={0.9} onPress={() => setFullscreen(true)}>
+            <View style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: 14, overflow: 'hidden', backgroundColor: '#000' }}>
+              <VideoView uri={videoUrl} style={{ width: '100%', height: '100%' }} muted repeat resizeMode="cover" />
+              <View
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  bottom: 10,
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
+                  backgroundColor: 'rgba(0,0,0,0.55)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="expand" size={18} color={T.wh} />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {isMe && (
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Button label="Replace" variant="secondary" size="sm" loading={busy} onPress={pickAndUpload} />
+              <Button label="Remove" variant="danger" size="sm" onPress={confirmRemove} />
+            </View>
+          )}
+
+          <Modal visible={fullscreen} animationType="fade" onRequestClose={() => setFullscreen(false)}>
+            <View style={{ flex: 1, backgroundColor: '#000' }}>
+              <VideoView uri={videoUrl} style={{ flex: 1 }} muted={false} controls resizeMode="contain" />
+              <Pressable
+                onPress={() => setFullscreen(false)}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={{ position: 'absolute', top: 50, right: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Ionicons name="close" size={26} color="#fff" />
+              </Pressable>
+            </View>
+          </Modal>
+        </>
+      ) : (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={pickAndUpload}
+          disabled={busy}
+          style={{
+            width: '100%',
+            aspectRatio: 16 / 9,
+            borderRadius: 14,
+            borderWidth: 1.5,
+            borderColor: T.bd,
+            borderStyle: 'dashed',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            backgroundColor: T.card,
+          }}
+        >
+          <Ionicons name="videocam-outline" size={28} color={T.accent} />
+          <Text style={{ color: T.tx2, fontSize: 13, fontWeight: '600' }}>
+            {busy ? 'Uploading…' : 'Add a build walkthrough video'}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
 // ── GARAGE TAB (car picker + build card) ─────────────────────────────────────
 export function ProfileGarageTab({
   cars,
@@ -303,6 +432,7 @@ export function ProfileGarageTab({
   capturing,
   onShareBuild,
   onEditBuild,
+  onVideoChanged,
   buildCardRef,
 }: {
   cars: CarRow[];
@@ -315,6 +445,7 @@ export function ProfileGarageTab({
   capturing: boolean;
   onShareBuild: () => void;
   onEditBuild: () => void;
+  onVideoChanged?: () => void;
   buildCardRef: React.RefObject<View | null>;
 }) {
   return (
@@ -371,14 +502,19 @@ export function ProfileGarageTab({
       {/* ── Build Card (shareable spec sheet for the selected car) ── */}
       {selectedCar && (
         <View style={{ marginTop: 12, gap: 14 }}>
+          <BuildVideoSection
+            carId={selectedCar.id}
+            videoUrl={selectedCar.build_video_url}
+            isMe={isMe}
+            onChanged={onVideoChanged}
+          />
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ color: T.wh, fontSize: 16, fontWeight: '800' }}>Build Card</Text>
+            <Text style={{ ...TYPO.h2, color: T.tx }}>Build Card</Text>
             {isMe && (
               <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button label="Edit build" icon="create-outline" variant="secondary" size="sm" onPress={onEditBuild} />
+                <Button label="Edit build" variant="secondary" size="sm" onPress={onEditBuild} />
                 <Button
                   label="Share"
-                  icon="share-social-outline"
                   variant="primary"
                   size="sm"
                   loading={capturing}

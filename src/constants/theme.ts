@@ -45,6 +45,12 @@ export const TYPO = {
   small: { fontSize: 11, fontWeight: '600' as const },
 } as const;
 
+// Canonical avatar sizes so every screen renders avatars at a consistent scale.
+// xs=comment/row, sm=list, md=story author, lg=story hero, hero=profile header.
+export const AVATAR = {
+  xs: 32, sm: 40, md: 58, lg: 72, hero: 112,
+} as const;
+
 // Standard screen gutter (horizontal page padding).
 export const GUTTER = 16;
 

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { T, IC } from '../../constants/theme';
+import { T, IC, TYPO } from '../../constants/theme';
 import type { Vendor, VProduct } from '../../constants/types';
 import { VPRODS, productFitsGarage } from '../../data/vendors';
 import { decorateUrl } from '../../lib/affiliate';
 import { useShare } from '../../components/ShareProvider';
+import { Button } from '../../ui/Button';
 import { ProductDetailScreen } from './ProductDetail';
 
 export function VendorProductRow({ product, onPress }: { product: VProduct; onPress: () => void }) {
@@ -86,26 +87,40 @@ export function VStore({ vendor, onBack }: { vendor: Vendor; onBack?: () => void
           )}
         </View>
 
-        {/* Action Bar */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, marginTop: 16 }}>
-          <TouchableOpacity onPress={() => { setContacted(true); setTimeout(() => setContacted(false), 2500); }} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#FBBF24', borderRadius: 12 }}>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#000' }}>{contacted ? 'Sent!' : 'Contact'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setFollowing(f => !f)} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: following ? 'rgba(0,201,167,0.15)' : T.accent, borderRadius: 12 }}>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: following ? T.accent : '#000' }}>{following ? 'Following' : 'Follow'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => { const u = decorateUrl(vendor.website, vendor.id, 'visit'); if (u) Linking.openURL(u); }} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(96,165,250,0.8)', borderRadius: 12 }}>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#F0F6FC' }}>Website</Text>
-          </TouchableOpacity>
-          <View style={{ flex: 1 }} />
-          <TouchableOpacity onPress={() => share({ title: vendor.name, message: `Check out ${vendor.name} on MODIFIED`, url: decorateUrl(vendor.website, vendor.id, 'share') ?? undefined })} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="share-outline" size={16} color="white" />
-          </TouchableOpacity>
+        {/* Action Bar — Follow (primary) + unified text-only pills:
+            Website · Share · Contact (mirrors the user profile layout, no icons). */}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, paddingHorizontal: 16, marginTop: 16 }}>
+          <Button
+            label={following ? 'Following' : 'Follow'}
+            variant={following ? 'ghost' : 'primary'}
+            size="sm"
+            onPress={() => setFollowing(f => !f)}
+          />
+          <Button
+            label="Website"
+            variant="ghost"
+            size="sm"
+            tint="#60A5FA"
+            onPress={() => { const u = decorateUrl(vendor.website, vendor.id, 'visit'); if (u) Linking.openURL(u); }}
+          />
+          <Button
+            label="Share"
+            variant="secondary"
+            size="sm"
+            onPress={() => share({ title: vendor.name, message: `Check out ${vendor.name} on MODIFIED`, url: decorateUrl(vendor.website, vendor.id, 'share') ?? undefined })}
+          />
+          <Button
+            label={contacted ? 'Sent!' : 'Contact'}
+            variant="ghost"
+            size="sm"
+            tint="#FBBF24"
+            onPress={() => { setContacted(true); setTimeout(() => setContacted(false), 2500); }}
+          />
         </View>
 
         {/* Products */}
         <View style={{ marginTop: 24 }}>
-          <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', paddingHorizontal: 16, marginBottom: 12 }}>Products</Text>
+          <Text style={{ ...TYPO.h2, color: T.tx, paddingHorizontal: 16, marginBottom: 12 }}>Products</Text>
           <View style={{ paddingHorizontal: 16, gap: 12 }}>
             {vendorProds.map((p, i) => (
               <VendorProductRow key={i} product={p} onPress={() => setSelectedProduct(p)} />

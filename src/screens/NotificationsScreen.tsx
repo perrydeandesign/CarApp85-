@@ -35,6 +35,8 @@ function actionText(n: Notification): string {
       return 'mentioned you';
     case 'competition':
       return 'entered your competition';
+    case 'message':
+      return 'sent you a message';
     default:
       return n.body ?? 'did something';
   }
@@ -52,6 +54,8 @@ function iconFor(n: Notification): { name: string; color: string } {
       return { name: 'at', color: '#A855F7' };
     case 'competition':
       return { name: 'trophy', color: '#FBBF24' };
+    case 'message':
+      return { name: 'paper-plane', color: '#00C9A7' };
     default:
       return { name: 'notifications', color: T.tx2 };
   }

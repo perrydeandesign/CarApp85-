@@ -44,3 +44,10 @@ describe('mapNotificationRow actor', () => {
     expect(n.actor.avatarUrl).toBe('');
   });
 });
+
+describe('mapNotificationRow message type', () => {
+  it('carries the message type through (DMs unified under notifications)', () => {
+    const n = mapNotificationRow(row({ type: 'message' }));
+    expect(n.type).toBe('message');
+  });
+});

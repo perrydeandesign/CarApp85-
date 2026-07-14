@@ -15,6 +15,7 @@ import { T } from '../../constants/theme';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { useCarMods, type ModRow } from '../../hooks/useProfileData';
 import { useCarModsMutations, type ModCategory } from '../../hooks/useCarModsMutations';
+import { track } from '../../lib/observability';
 
 const CATEGORIES: { key: ModCategory; label: string }[] = [
   { key: 'engine', label: 'Engine' },
@@ -59,6 +60,7 @@ export function ModsEditor({
   }, [mods]);
 
   const commitAdd = async (category: ModCategory) => {
+    if (busy) return;
     const name = draftName.trim();
     if (!name) {
       setAddingCat(null);
@@ -71,6 +73,7 @@ export function ModsEditor({
       if (created) {
         setMods((prev) => [...prev, created]);
         setChanged(true);
+        track('mod_edit', { action: 'add', category });
       }
     } catch (e: any) {
       Alert.alert('Could not add modification', e?.message ?? String(e));
@@ -88,6 +91,7 @@ export function ModsEditor({
     setChanged(true);
     try {
       await updateMod(mod.id, { name });
+      track('mod_edit', { action: 'rename' });
     } catch (e: any) {
       // revert on failure
       setMods((prev) => prev.map((m) => (m.id === mod.id ? { ...m, name: mod.name } : m)));
@@ -107,6 +111,7 @@ export function ModsEditor({
           setChanged(true);
           try {
             await deleteMod(mod.id);
+            track('mod_edit', { action: 'delete' });
           } catch (e: any) {
             setMods(prev); // revert
             Alert.alert('Could not remove', e?.message ?? String(e));

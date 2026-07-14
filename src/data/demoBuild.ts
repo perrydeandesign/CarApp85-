@@ -13,6 +13,7 @@ export const DEMO_ME_CARS: CarRow[] = [
     build_type: 'Track',
     primary_image_url:
       'https://images.unsplash.com/photo-1572471275423-a6e40c020a46?w=800&h=600&fit=crop',
+    build_video_url: null,
   },
 ];
 

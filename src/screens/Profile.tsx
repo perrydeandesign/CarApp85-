@@ -74,10 +74,10 @@ import { usePostInteractions } from '../social/hooks/usePostInteractions';
 import { useCollections } from '../social/hooks/useCollections';
 
 // Theme
-import { T, IC } from '../constants/theme';
+import { T, IC, AVATAR } from '../constants/theme';
 
 // Constants
-const AVATAR_SZ = 100;
+const AVATAR_SZ = AVATAR.hero;
 const BANNER_H = 165; // 25% shorter than the 220 redesign height
 
 export function ProfileScreen() {
@@ -140,7 +140,7 @@ export function ProfileScreen() {
   };
 
   // 4️⃣ Active car — Supabase cars for the resolved profile.
-  const { data: supaCars } = useCars(realProfileId);
+  const { data: supaCars, refresh: refreshCars } = useCars(realProfileId);
   // Live cars only. A real user with no car sees the Garage empty state (below)
   // rather than a seeded sample build. The demo profile (jake_sti) has a real
   // seeded car, so demos stay populated from Supabase.
@@ -421,6 +421,7 @@ export function ProfileScreen() {
             initials={profileUser.username[0]?.toUpperCase()}
             size={AVATAR_SZ}
             img={isMe ? me?.avatar_url || profileUser.avatar : profileUser.avatar}
+            shadow
           />
         </View>
         {ringTier && (
@@ -495,7 +496,6 @@ export function ProfileScreen() {
         <View style={{ flex: 1 }}>
           <Button
             label="Share"
-            icon="share-social-outline"
             variant="secondary"
             size="md"
             fullWidth
@@ -560,6 +560,7 @@ export function ProfileScreen() {
           capturing={capturing}
           onShareBuild={() => shareBuild(selectedSupaCar)}
           onEditBuild={() => setModsEditorOpen(true)}
+          onVideoChanged={refreshCars}
           buildCardRef={buildCardRef}
         />
       )}

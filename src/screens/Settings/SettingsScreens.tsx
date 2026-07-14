@@ -25,6 +25,8 @@ import { Icon } from '../../ui/Icon';
 import { pickAndUploadImage, isImagePickerAvailable } from '../../lib/imagePicker';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { haptic } from '../../lib/haptics';
+import { useCars } from '../../hooks/useProfileData';
+import { ModsEditor } from '../Profile/ModsEditor';
 
 // ---------------------------------------------------------------------------
 // Navigation contract (state-based, provided by SettingsRoot)
@@ -565,6 +567,12 @@ export function EditProfile({ back }: SettingsNavProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uid, setUid] = useState<string | null>(null);
 
+  // Modifications editing — the user can manage their build's mods without
+  // leaving Edit profile. ModsEditor is per-car, so we pick a car first.
+  const { data: cars } = useCars(uid);
+  const [modsCarId, setModsCarId] = useState<string | null>(null);
+  const modsCar = (cars ?? []).find((c) => c.id === modsCarId) ?? null;
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -668,8 +676,58 @@ export function EditProfile({ back }: SettingsNavProps) {
           {field('Bio', bio, setBio, { multiline: true, max: 160 })}
           {field('Location', location, setLocation, { max: 60 })}
 
+          {/* Modifications — edit the build's mod list right here. */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ color: T.mu, fontSize: 12, fontWeight: '700', marginBottom: 6, marginLeft: 4 }}>
+              Modifications
+            </Text>
+            {(cars ?? []).length === 0 ? (
+              <Text style={{ color: T.mu, fontSize: 13, lineHeight: 19, marginLeft: 4 }}>
+                Add a car to your garage to start tracking modifications.
+              </Text>
+            ) : (
+              <View style={{ gap: 8 }}>
+                {(cars ?? []).map((car) => {
+                  const name = `${car.year ?? ''} ${car.make} ${car.model}`.trim();
+                  return (
+                    <TouchableOpacity
+                      key={car.id}
+                      activeOpacity={0.85}
+                      onPress={() => setModsCarId(car.id)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        backgroundColor: T.card,
+                        borderWidth: 1,
+                        borderColor: T.bd,
+                        borderRadius: 12,
+                        paddingHorizontal: 14,
+                        paddingVertical: 12,
+                      }}
+                    >
+                      <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600', flex: 1 }} numberOfLines={1}>
+                        {name}
+                      </Text>
+                      <Icon name="create-outline" size={18} color={T.accent} />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+
           <PrimaryButton label="Save changes" onPress={save} loading={saving} style={{ marginTop: 8 }} />
         </ScrollView>
+      )}
+
+      {modsCar && (
+        <ModsEditor
+          carId={modsCar.id}
+          carName={`${modsCar.year ?? ''} ${modsCar.make} ${modsCar.model}`.trim()}
+          visible={!!modsCar}
+          onClose={() => setModsCarId(null)}
+        />
       )}
     </SubPage>
   );

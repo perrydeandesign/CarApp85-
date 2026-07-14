@@ -8,6 +8,7 @@ import { productKey } from '../../data/productKey';
 import { resolveBuyUrl } from '../../lib/affiliate';
 import { useSavedProducts } from '../../hooks/useSavedProducts';
 import { useShare } from '../../components/ShareProvider';
+import { Button } from '../../ui/Button';
 
 export function ProductDetailScreen({ product, onBack }: { product: VProduct; onBack: () => void }) {
   const fits = product.fitsSelectedCar ?? productFitsGarage(product).fits;
@@ -87,16 +88,13 @@ export function ProductDetailScreen({ product, onBack }: { product: VProduct; on
           <Text style={{ fontSize: 17, fontWeight: '700', color: '#F0F6FC', marginTop: 16 }}>Description</Text>
           <Text style={{ fontSize: 15, color: '#C9D1D9', lineHeight: 22, marginTop: 6 }}>{product.desc}</Text>
 
-          {/* Subtle Buy now — opens the vendor's product page (affiliate-decorated) */}
+          {/* Primary commercial CTA — opens the vendor's product page
+              (affiliate-decorated). Solid teal, full-width so it's the clear
+              action on the page. */}
           {buyUrl ? (
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={() => Linking.openURL(buyUrl)}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 16, borderWidth: 1, borderColor: T.accent, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 9 }}
-            >
-              <Text style={{ color: T.accent, fontSize: 13, fontWeight: '700' }}>Buy now</Text>
-              <Ionicons name="open-outline" size={14} color={T.accent} />
-            </TouchableOpacity>
+            <View style={{ marginTop: 20 }}>
+              <Button label="Buy now" variant="primary" size="lg" fullWidth onPress={() => Linking.openURL(buyUrl)} />
+            </View>
           ) : null}
         </View>
 

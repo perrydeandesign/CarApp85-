@@ -2,7 +2,7 @@
 // therefore of react-native-url-polyfill / @env) so it can be unit-tested and
 // imported without side effects. useNotifications re-exports these.
 
-export type NotifType = 'like' | 'comment' | 'follow' | 'mention' | 'competition';
+export type NotifType = 'like' | 'comment' | 'follow' | 'mention' | 'competition' | 'message';
 
 export type Notification = {
   id: string;

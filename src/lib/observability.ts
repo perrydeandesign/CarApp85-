@@ -46,6 +46,23 @@ export function captureError(error: unknown, context?: Record<string, any>) {
   console.error('[captureError]', error, context ?? '');
 }
 
+/**
+ * Lightweight analytics/breadcrumb seam. Records a named event (e.g.
+ * 'story_create', 'story_view', 'mod_edit', 'notification_open') as a Sentry
+ * breadcrumb when available, else logs to the console. Always safe to call.
+ */
+export function track(event: string, data?: Record<string, any>) {
+  if (sentry) {
+    try {
+      sentry.addBreadcrumb({ category: 'app', type: 'user', message: event, data, level: 'info' });
+      return;
+    } catch {
+      // fall through to console
+    }
+  }
+  if (__DEV__) console.log('[track]', event, data ?? '');
+}
+
 /** Tag the signed-in user on reports (call after login / on resolve). */
 export function setUserContext(user: { id: string; username?: string } | null) {
   if (!sentry) return;

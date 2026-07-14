@@ -15,6 +15,12 @@ type Props = {
   size?: Size;
   /** Optional leading Ionicons (or Feather, auto-mapped) icon name. */
   icon?: string;
+  /**
+   * Override the fill color while keeping every other pill dimension
+   * (height, padding, radius, weight) identical. Use for colored action pills
+   * — e.g. amber Contact, blue Website — so they stay visually consistent.
+   */
+  tint?: string;
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -47,13 +53,21 @@ export function Button({
   variant = 'primary',
   size = 'md',
   icon,
+  tint,
   loading,
   disabled,
   fullWidth,
   style,
 }: Props) {
   const s = SIZES[size];
-  const p = palette(variant);
+  const base = palette(variant);
+  // A `tint` fills solid variants with the given color (dark fg for contrast)
+  // and recolors outline variants' border/label — geometry is untouched.
+  const p = tint
+    ? base.border
+      ? { bg: 'transparent', fg: tint, border: tint }
+      : { bg: tint, fg: '#04110E' }
+    : base;
   const isDisabled = disabled || loading;
 
   return (

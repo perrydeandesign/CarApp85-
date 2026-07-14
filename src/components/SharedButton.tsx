@@ -11,9 +11,10 @@ import { PressableScale } from '../ui/PressableScale';
 import { haptic } from '../lib/haptics';
 import { T, IC } from '../constants/theme';
 
+// Search lives in the top bar (next to notifications), so it's intentionally
+// absent here — keeping the bottom bar to six evenly-weighted destinations.
 const TAB_ITEMS: { key: string; icon: string; label: string }[] = [
   { key: 'home', icon: 'home-outline', label: 'Home' },
-  { key: 'search', icon: 'search-outline', label: 'Search' },
   { key: 'reels', icon: 'film-outline', label: 'Reels' },
   { key: 'camera', icon: 'add', label: 'Create' },
   { key: 'groups', icon: 'people-outline', label: 'Groups' },

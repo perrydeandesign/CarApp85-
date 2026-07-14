@@ -54,6 +54,7 @@ export function VerifyEmailScreen() {
   const [busy, setBusy] = useState(false);
 
   const verify = async () => {
+    if (busy) return;
     if (code.trim().length < 6) {
       Alert.alert('Enter the code', 'Enter the 6-digit code from your email.');
       return;
@@ -107,6 +108,7 @@ export function ResetPasswordScreen() {
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
+    if (busy) return;
     if (code.trim().length < 6) {
       Alert.alert('Enter the code', 'Enter the 6-digit code from your email.');
       return;

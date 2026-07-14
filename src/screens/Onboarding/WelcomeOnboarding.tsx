@@ -38,6 +38,14 @@ export function WelcomeOnboarding({
       onPress: () => onGoTo('editProfile'),
     },
     {
+      icon: 'wrench-outline',
+      fam: 'mci',
+      title: 'Add your build & mods',
+      subtitle: 'List your modifications so the community can see what you’re running.',
+      cta: 'Edit build',
+      onPress: () => onGoTo('editProfile'),
+    },
+    {
       icon: 'account-group-outline',
       fam: 'mci',
       title: 'Follow enthusiasts',

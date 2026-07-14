@@ -91,8 +91,8 @@ function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
       <SafeAreaView style={{ flex: 1, backgroundColor: T.bg }}>
         <TopBar
           onMenu={() => navigation.dispatch(DrawerActions.openDrawer())}
+          onSearch={() => { setViewProf(null); setTab('search'); }}
           onNotif={() => setNotifOpen(true)}
-          onMsg={onMsg}
         />
 
         <FadeSwitch triggerKey={viewProf ? 'profile-view' : tab} style={{ flex: 1 }}>
@@ -130,7 +130,12 @@ function MainTabsScreen({ onMsg, onNavigate }: { onMsg: () => void; onNavigate: 
           }}
         />
 
-        <NotifDrop visible={notifOpen} onClose={() => setNotifOpen(false)} />
+        <NotifDrop
+          visible={notifOpen}
+          onClose={() => setNotifOpen(false)}
+          onProfilePress={(userId) => openProfile({ userId })}
+          onOpenMessages={onMsg}
+        />
       </SafeAreaView>
     </ViewProfileContext.Provider>
   );

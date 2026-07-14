@@ -13,7 +13,9 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { T } from '../constants/theme';
 import { useNotifications, type Notification } from '../hooks/useNotifications';
+import { useConversations } from '../hooks/useMessages';
 import { useMeProfile } from '../hooks/useMeProfile';
+import { track } from '../lib/observability';
 
 type Props = {
   visible: boolean;
@@ -23,6 +25,8 @@ type Props = {
   onPostPress?: (postId: string) => void;
   /** Opens the full Notifications screen. */
   onViewAll?: () => void;
+  /** Opens the Messages inbox (Instagram-style: messages live under notifications). */
+  onOpenMessages?: () => void;
 };
 
 function actionText(n: Notification): string {
@@ -32,6 +36,7 @@ function actionText(n: Notification): string {
     case 'follow':      return 'started following you';
     case 'mention':     return 'mentioned you';
     case 'competition': return 'entered your competition';
+    case 'message':     return 'sent you a message';
     default:            return n.body ?? '';
   }
 }
@@ -43,6 +48,7 @@ function iconFor(n: Notification): { name: string; color: string } {
     case 'follow':      return { name: 'person-add',  color: '#00C9A7' };
     case 'mention':     return { name: 'at',          color: '#A855F7' };
     case 'competition': return { name: 'trophy',      color: '#FBBF24' };
+    case 'message':     return { name: 'paper-plane', color: '#00C9A7' };
     default:            return { name: 'notifications', color: T.tx2 };
   }
 }
@@ -57,11 +63,16 @@ function timeAgo(iso: string): string {
 
 const PREVIEW_LIMIT = 6;
 
-export function NotifDrop({ visible, onClose, onProfilePress, onPostPress, onViewAll }: Props) {
+const MSG_PREVIEW_LIMIT = 3;
+
+export function NotifDrop({ visible, onClose, onProfilePress, onPostPress, onViewAll, onOpenMessages }: Props) {
   const { data: me } = useMeProfile();
   const { notifications, loading, unreadCount, markAsRead, markAllAsRead } = useNotifications(me?.id ?? null);
+  const { data: conversations } = useConversations(me?.id ?? null);
+  const recentConversations = conversations.filter((c) => c.other).slice(0, MSG_PREVIEW_LIMIT);
 
   const handleTap = (n: Notification) => {
+    track('notification_open', { type: n.type });
     if (!n.readAt) void markAsRead(n.id);
     if (n.type === 'follow') {
       onProfilePress?.(n.actor.id);
@@ -109,7 +120,54 @@ export function NotifDrop({ visible, onClose, onProfilePress, onPostPress, onVie
               </View>
             ) : null}
 
-            <ScrollView style={{ maxHeight: 360 }}>
+            <ScrollView style={{ maxHeight: 420 }}>
+              {/* Messages section — Instagram-style: DMs live under notifications. */}
+              {onOpenMessages && recentConversations.length > 0 ? (
+                <View>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionLabel}>Messages</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        onClose();
+                        onOpenMessages();
+                      }}
+                    >
+                      <Text style={styles.markAll}>See all</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {recentConversations.map((c) => (
+                    <TouchableOpacity
+                      key={c.id}
+                      style={styles.row}
+                      onPress={() => {
+                        onClose();
+                        onOpenMessages();
+                      }}
+                    >
+                      {c.other?.avatarUrl ? (
+                        <Image source={{ uri: c.other.avatarUrl }} style={styles.avatar} />
+                      ) : (
+                        <View style={[styles.avatar, styles.avatarFallback]}>
+                          <Text style={styles.avatarInitials}>
+                            {c.other?.username.slice(0, 2).toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={{ flex: 1, marginLeft: 10 }}>
+                        <Text style={styles.line} numberOfLines={1}>
+                          <Text style={styles.actor}>{c.other?.username}</Text>
+                        </Text>
+                        <Text style={styles.action} numberOfLines={1}>
+                          {c.lastMessage ?? 'Say hi 👋'}
+                        </Text>
+                      </View>
+                      <Ionicons name="paper-plane" size={16} color={T.accent} />
+                    </TouchableOpacity>
+                  ))}
+                  {notifications.length > 0 ? <Text style={styles.sectionTitle}>Activity</Text> : null}
+                </View>
+              ) : null}
+
               {notifications.slice(0, PREVIEW_LIMIT).map((n) => {
                 const icon = iconFor(n);
                 return (
@@ -186,6 +244,31 @@ const styles = StyleSheet.create({
   },
   title: { color: T.wh, fontWeight: '700', fontSize: 15 },
   markAll: { color: T.accent, fontWeight: '600', fontSize: 12 },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  sectionLabel: {
+    color: T.mu,
+    fontWeight: '700',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  sectionTitle: {
+    color: T.mu,
+    fontWeight: '700',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

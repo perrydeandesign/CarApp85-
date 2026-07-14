@@ -112,6 +112,7 @@ export type Database = {
       cars: {
         Row: {
           build_type: string
+          build_video_url: string | null
           created_at: string
           id: string
           make: string
@@ -122,6 +123,7 @@ export type Database = {
         }
         Insert: {
           build_type: string
+          build_video_url?: string | null
           created_at?: string
           id?: string
           make: string
@@ -132,6 +134,7 @@ export type Database = {
         }
         Update: {
           build_type?: string
+          build_video_url?: string | null
           created_at?: string
           id?: string
           make?: string
@@ -975,6 +978,77 @@ export type Database = {
           {
             foreignKeyName: "saved_posts_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stories: {
+        Row: {
+          caption: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          profile_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url: string
+          profile_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stories_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_views: {
+        Row: {
+          story_id: string
+          viewed_at: string
+          viewer_id: string
+        }
+        Insert: {
+          story_id: string
+          viewed_at?: string
+          viewer_id: string
+        }
+        Update: {
+          story_id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_views_viewer_id_fkey"
+            columns: ["viewer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

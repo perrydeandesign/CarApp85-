@@ -68,7 +68,7 @@ export function ModsList({ items, categoryLabel }: Props) {
             color={T.accent}
           />
           <Text style={{ fontSize: 12, fontWeight: '700', color: T.accent }}>
-            {expanded ? 'Show less' : `Show ${hidden} more`}
+            {expanded ? 'Show less' : 'Show more'}
           </Text>
         </TouchableOpacity>
       ) : null}
