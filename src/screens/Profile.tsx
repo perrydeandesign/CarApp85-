@@ -12,7 +12,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Button } from '../ui/Button';
-import { buildUrl } from '../components/BuildCard';
+import { buildUrl, BuildCard } from '../components/BuildCard';
 import { shareBuildImage } from '../lib/buildCardShare';
 import { BannerFade } from '../components/BannerFade';
 import { useShare } from '../components/ShareProvider';
@@ -287,7 +287,9 @@ export function ProfileScreen() {
   const shareBuild = async (car: typeof selectedSupaCar) => {
     if (!car) return;
     const link = buildUrl(car.id, profileUser.username);
-    const message = `Check out my ${car.year ?? ''} ${car.make} ${car.model} build on MODIFIED`;
+    const message = isMe
+      ? `Check out my ${car.year ?? ''} ${car.make} ${car.model} build on MODIFIED`
+      : `Check out @${profileUser.username}'s ${car.year ?? ''} ${car.make} ${car.model} build on MODIFIED`;
     try {
       setCapturing(true);
       // Give remote hero + QR a tick to be fully painted before snapshot.
@@ -499,16 +501,37 @@ export function ProfileScreen() {
             variant="secondary"
             size="md"
             fullWidth
-            onPress={() =>
-              share({
-                title: `${isMe ? 'My' : `@${profileUser.username}'s`} build on MODIFIED`,
-                message: `Check out ${isMe ? 'my' : `@${profileUser.username}'s`} build on MODIFIED — ${activeCar.name}.`,
-                url: `https://modified.app/profile/${profileUser.username}`,
-              })
-            }
+            loading={capturing}
+            onPress={() => {
+              // Build Card is the primary share artifact: if this profile has a
+              // car, generate + share the spec-card image. Fall back to a plain
+              // profile link when the garage is empty.
+              if (selectedSupaCar) {
+                shareBuild(selectedSupaCar);
+              } else {
+                share({
+                  title: `${isMe ? 'My' : `@${profileUser.username}'s`} build on MODIFIED`,
+                  message: `Check out ${isMe ? 'my' : `@${profileUser.username}'s`} build on MODIFIED.`,
+                  url: `https://modified.app/profile/${profileUser.username}`,
+                });
+              }
+            }}
           />
         </View>
       </View>
+
+      {/* Off-screen capture surface — keeps the Build Card mounted regardless of
+          the active tab so the header Share button can always snapshot it. */}
+      {selectedSupaCar && (
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', left: -10000, top: 0, opacity: 0 }}
+        >
+          <View ref={buildCardRef} collapsable={false}>
+            <BuildCard car={selectedSupaCar} mods={buildMods} username={profileUser.username} />
+          </View>
+        </View>
+      )}
 
       {/* ════════════════════ TAB BAR (INSTAGRAM STYLE) ════════════════════ */}
       <ProfileTabBar active={activeTab} onChange={setActiveTab} />
@@ -557,11 +580,8 @@ export function ProfileScreen() {
           username={profileUser.username}
           selectedCar={selectedSupaCar}
           buildMods={buildMods}
-          capturing={capturing}
-          onShareBuild={() => shareBuild(selectedSupaCar)}
           onEditBuild={() => setModsEditorOpen(true)}
           onVideoChanged={refreshCars}
-          buildCardRef={buildCardRef}
         />
       )}
 

@@ -429,11 +429,8 @@ export function ProfileGarageTab({
   username,
   selectedCar,
   buildMods,
-  capturing,
-  onShareBuild,
   onEditBuild,
   onVideoChanged,
-  buildCardRef,
 }: {
   cars: CarRow[];
   selectedCarId: string | null;
@@ -442,11 +439,8 @@ export function ProfileGarageTab({
   username: string;
   selectedCar: CarRow | null;
   buildMods: ModRow[];
-  capturing: boolean;
-  onShareBuild: () => void;
   onEditBuild: () => void;
   onVideoChanged?: () => void;
-  buildCardRef: React.RefObject<View | null>;
 }) {
   return (
     <View style={{ padding: 16, gap: 12 }}>
@@ -511,21 +505,10 @@ export function ProfileGarageTab({
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={{ ...TYPO.h2, color: T.tx }}>Build Card</Text>
             {isMe && (
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button label="Edit build" variant="secondary" size="sm" onPress={onEditBuild} />
-                <Button
-                  label="Share"
-                  variant="primary"
-                  size="sm"
-                  loading={capturing}
-                  onPress={onShareBuild}
-                />
-              </View>
+              <Button label="Edit build" variant="secondary" size="sm" onPress={onEditBuild} />
             )}
           </View>
-          <View ref={buildCardRef} collapsable={false}>
-            <BuildCard car={selectedCar} mods={buildMods} username={username} />
-          </View>
+          <BuildCard car={selectedCar} mods={buildMods} username={username} />
         </View>
       )}
     </View>
